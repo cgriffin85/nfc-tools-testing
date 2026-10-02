@@ -376,6 +376,10 @@ html,body{transition:background-color .25s ease,color .25s ease;}
     .lvl-row .inp-box { padding: 6px 10px; width: 110px; }
     .lvl-row .inp-box input { font-size: 17px; }
     .lvl-unit { font-size: 11px; color: var(--vr-txt-2); }
+    /* Thumb reach: label stack and roller sit right-justified, bottom right of the dock */
+    .lvl-row { justify-content: flex-end; }
+    .lvl-txt { display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 2px; }
+    .lvl-txt .lvl-unit { font-size: 10px; letter-spacing: .3px; }
     .eq-row input, .ow-grid input { -moz-appearance: textfield; }
     .ow-grid input::-webkit-outer-spin-button, .ow-grid input::-webkit-inner-spin-button,
     .lvl-row input::-webkit-outer-spin-button, .lvl-row input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -578,9 +582,8 @@ html,body{transition:background-color .25s ease,color .25s ease;}
   <div class="vessel-wrap">
     <div id="vessel-svg-container"></div>
     <div class="lvl-row">
-      <span class="inp-lbl" id="lvl-lbl">Liquid level</span>
+      <div class="lvl-txt"><span class="inp-lbl" id="lvl-lbl">Liquid level</span><span class="lvl-unit" id="lvl-unit">from centerline (CL)</span></div>
       <div class="dgroup"><div class="dwin"><div class="drum" id="lvl" tabindex="0" role="listbox" aria-labelledby="lvl-lbl lvl-unit"></div></div><span class="dspin" aria-hidden="true"><i></i><i></i></span></div>
-      <span class="lvl-unit" id="lvl-unit">from centerline (CL)</span>
     </div>
   </div>
   </div><!-- /vessel-dock -->
@@ -1290,7 +1293,7 @@ restoreState(); clampState(); syncSplit(); syncSetup(); update();
 
 
 <div class="footer">
-  Rev. 2026-10-02e<br>
+  Rev. 2026-10-02f<br>
   NFC Services &bull; <a href="https://www.nfcservices.com" target="_blank" rel="noopener">nfcservices.com</a>
 </div>
 
