@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0D0D0D">
+  <meta name="theme-color" id="themeColorMeta" content="#0A0A0A">
   <title>NFC — Vessel Retention</title>
   <style>/* NFC site theme — inlined from tools.nfcservices.com/theme.css 2026-10-02 */
 :root[data-theme="dark"]{
@@ -21,55 +21,15 @@
   --accent:#C00000; --accent-bright:#C00000;
 }
 html,body{transition:background-color .25s ease,color .25s ease;}
-#nfc-theme-toggle{
-  position:fixed;top:14px;right:14px;z-index:9999;
-  width:40px;height:40px;display:flex;align-items:center;justify-content:center;
-  border-radius:8px;border:1px solid var(--rule-strong,#3A3A3A);
-  background:var(--surface,#141414);color:var(--text,#F0F0F0);
-  cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.18);
-  transition:background .2s,border-color .2s,color .2s,transform .15s;
-  -webkit-tap-highlight-color:transparent;font:inherit;padding:0;
-}
-#nfc-theme-toggle:hover{border-color:var(--accent,#C00000);color:var(--accent,#C00000);transform:translateY(-1px);}
-#nfc-theme-toggle svg{width:20px;height:20px;display:block;}
 @media print{#nfc-theme-toggle{display:none !important;}}
 </style>
-  <script>/* NFC site theme toggle — inlined from tools.nfcservices.com/theme.js 2026-10-02 */
-(function(){
-  var KEY='nfc-theme';
-  function pref(){
-    try{var s=localStorage.getItem(KEY);if(s==='light'||s==='dark')return s;}catch(e){}
-    return location.pathname.indexOf('/internal')===0 ? 'light' : 'dark';
-  }
-  function apply(t){document.documentElement.setAttribute('data-theme',t);}
-  apply(pref());
-  var SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
-  var MOON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
-  var btn;
-  function paint(){
-    if(!btn)return;
-    var dark=document.documentElement.getAttribute('data-theme')!=='light';
-    btn.innerHTML=dark?SUN:MOON;
-    btn.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');
-    btn.setAttribute('title',dark?'Light mode':'Dark mode');
-  }
-  function toggle(){
-    var next=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
-    apply(next);
-    try{localStorage.setItem(KEY,next);}catch(e){}
-    paint();
-  }
-  function mount(){
-    btn=document.createElement('button');
-    btn.id='nfc-theme-toggle';
-    btn.type='button';
-    btn.addEventListener('click',toggle);
-    document.body.appendChild(btn);
-    paint();
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
-})();
-</script>
+  <!-- Set the theme before first paint (shared 'nfc-theme' key across every NFC tool) so there is no flash. Bottoms-Up pattern. -->
+  <script>(function(){try{var t=localStorage.getItem('nfc-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+  <!-- Home-screen / tab icon: the sanctioned Dark Background Vertical variant,
+     which the brand guide lists for avatars and square formats. Solid tile,
+     not transparent — iOS composites transparent icons onto white. -->
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
   <script src="/analytics.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -508,16 +468,76 @@ html,body{transition:background-color .25s ease,color .25s ease;}
     .dspin i { display: block; width: 0; height: 0; border-left: 3.5px solid transparent; border-right: 3.5px solid transparent; }
     .dspin i:first-child { border-bottom: 4px solid var(--vr-txt-2); }
     .dspin i:last-child { border-top: 4px solid var(--vr-txt-2); }
+
+    /* ── HEADER — same build as Bottoms-Up: title + NFC mark, subtitle, button group (2026-10-02) ── */
+    .hdr { display: flex; align-items: center; gap: 12px; }
+    .hdrtxt { flex: 1; min-width: 0; }
+    .hdr .hdr-back { display: inline-block; font-family: var(--fm); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--vr-txt-2); text-decoration: none; margin-bottom: 8px; }
+    .hdr .hdr-back:hover, .hdr .hdr-back:focus-visible { color: var(--vr-accent); }
+    .titlerow { display: flex; align-items: center; gap: 9px; min-width: 0; }
+    .hdr-title { margin: 0; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hdr-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .brandmark { height: 28px; width: auto; flex: none; display: none; }
+    :root[data-theme="light"] .brandmark.lt { display: block; }
+    :root[data-theme="dark"] .brandmark.dk { display: block; }
+    .hdr.fl-collapsed .brandmark { height: 20px; }
+    .hdrbtns { flex: none; display: flex; align-items: center; gap: 8px; }
+    .newjob { background: transparent; border: 1px solid var(--vr-border); color: var(--vr-txt-2); font-family: var(--fb); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding: 6px 11px; cursor: pointer; white-space: nowrap; }
+    .newjob:active, .newjob:focus-visible { background: var(--vr-accent-dim); color: var(--vr-accent); border-color: var(--vr-accent); outline: none; }
+    #nfc-theme-toggle { width: 32px; height: 30px; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid var(--vr-border); color: var(--vr-txt-2); cursor: pointer; padding: 0; flex: none; -webkit-tap-highlight-color: transparent; transition: border-color .18s, color .18s, background .18s; }
+    #nfc-theme-toggle:active, #nfc-theme-toggle:focus-visible { background: var(--vr-accent-dim); color: var(--vr-accent); border-color: var(--vr-accent); outline: none; }
+    #nfc-theme-toggle svg { width: 16px; height: 16px; display: block; }
+    @media print { #nfc-theme-toggle { display: none !important; } }
+    @media (max-width: 580px) { .hdr-sub .lg { display: none; } }
+    @media (max-width: 520px) { .hdr { padding-left: 16px; padding-right: 16px; gap: 10px; } .hdrbtns { gap: 6px; } .newjob { font-size: 10px; padding: 6px 8px; letter-spacing: .5px; } .newjob .lg { display: none; }
+      .hdr-title { font-size: 23px; } .hdr.fl-collapsed .hdr-title { font-size: 18px; } .brandmark { height: 22px; } .hdr.fl-collapsed .brandmark { height: 17px; } .titlerow { gap: 7px; }
+      #nfc-theme-toggle { width: 28px; height: 28px; } #nfc-theme-toggle svg { width: 14px; height: 14px; } }
+    @media (max-width: 330px) { .hdr { padding-left: 12px; padding-right: 12px; gap: 8px; } .hdr-title { font-size: 19px; } .newjob { padding: 6px 6px; font-size: 9.5px; } }
+
+    /* ── SAVE / NEW sheet — Bottoms-Up modal ── */
+    .modal { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,.62); display: flex; align-items: flex-end; justify-content: center; padding: 0; }
+    .modal[hidden] { display: none; }
+    .modalcard { width: 100%; max-width: 680px; max-height: 86dvh; overflow: auto; background: var(--vr-card); border: 1px solid var(--vr-border); border-bottom: none; padding: 18px 16px 20px; animation: mrise .2s ease; }
+    @keyframes mrise { from { transform: translateY(14px); opacity: .4 } to { transform: none; opacity: 1 } }
+    @media (prefers-reduced-motion: reduce) { .modalcard { animation: none; } }
+    @media (min-width: 700px) { .modal { align-items: center; } .modalcard { border-bottom: 1px solid var(--vr-border); } }
+    .modalttl { font-family: var(--fd); font-size: 19px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--vr-txt); margin-bottom: 4px; }
+    .modalsub { font-size: 12px; color: var(--vr-txt-2); margin-bottom: 14px; line-height: 1.45; }
+    .mbtn { width: 100%; background: var(--vr-surface); border: 1px solid var(--vr-border); color: var(--vr-txt); font-family: var(--fb); font-size: 14px; letter-spacing: .5px; padding: 12px; cursor: pointer; margin-top: 8px; }
+    .mbtn:active { background: var(--vr-accent-dim); border-color: var(--vr-accent); color: var(--vr-accent); }
+    .mbtn.prim { border-color: var(--vr-accent); color: var(--vr-accent); background: var(--vr-accent-dim); }
+    .wells { margin-top: 6px; display: flex; flex-direction: column; gap: 7px; }
+    .wellrow { display: flex; align-items: center; gap: 10px; border: 1px solid var(--vr-border); background: var(--vr-surface); padding: 9px 10px; }
+    .wellrow .nm { flex: 1; min-width: 0; overflow: hidden; }
+    .wellrow .nm b { display: block; font-size: 13.5px; font-weight: 600; color: var(--vr-txt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .wellrow .nm span { display: block; font-family: var(--fm); font-size: 10.5px; color: var(--vr-txt-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .wellrow .op { flex: none; background: transparent; border: 1px solid var(--vr-border); color: var(--vr-txt-2); font-family: var(--fb); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding: 6px 10px; cursor: pointer; }
+    .wellrow .op:active { border-color: var(--vr-accent); color: var(--vr-accent); background: var(--vr-accent-dim); }
+    .wellrow .del { flex: none; width: 30px; height: 30px; background: transparent; border: 1px solid var(--vr-border); color: var(--vr-txt-m); font-size: 15px; line-height: 1; cursor: pointer; padding: 0; }
+    .modalnote { font-size: 11px; color: var(--vr-txt-m); line-height: 1.5; margin-top: 14px; }
+    .mfoot { display: flex; gap: 8px; margin-top: 14px; }
+    .mfoot .mbtn { margin-top: 0; }
+    .mfld label { display: block; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--vr-txt-2); margin-bottom: 6px; }
+    .mfld input { width: 100%; background: var(--vr-surface); border: 1px solid var(--vr-border); color: var(--vr-txt); font-family: var(--fb); font-size: 16px; padding: 10px 12px; outline: none; }
+    .mfld input:focus { border-color: var(--vr-accent); }
   </style>
 </head>
 <body>
 
 <!-- ── HEADER — Deal Size Estimator style ───────────── -->
 <header class="hdr">
-  <a href="/" class="hdr-back" style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--vr-txt-2);text-decoration:none;display:inline-block;margin-bottom:8px;transition:color 0.2s" onmouseover="this.style.color='var(--vr-accent)'" onmouseout="this.style.color='var(--vr-txt-2)'">&larr; All Tools</a>
-  <div class="hdr-title">Vessel Retention</div>
-  <div class="hdr-sub">Horizontal Vessel · NFC Services</div>
+  <div class="hdrtxt">
+    <a href="/" class="hdr-back">&larr; All Tools</a>
+    <div class="titlerow"><h1 class="hdr-title">Vessel Retention</h1><img class="brandmark lt" alt="NFC" src="data:image/png;base64,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"><img class="brandmark dk" alt="NFC" src="data:image/png;base64,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"></div>
+    <div class="hdr-sub">Horizontal Vessel<span class="lg"> &middot; NFC Services</span></div>
+  </div>
+  <div class="hdrbtns">
+    <button id="nfc-theme-toggle" type="button" aria-label="Toggle light or dark theme"></button>
+    <button id="saveVessel" class="newjob" type="button" aria-label="Save vessel">Save<span class="lg"> vessel</span></button>
+    <button id="newJob" class="newjob" type="button" aria-label="New">New</button>
+  </div>
 </header>
+<div class="modal" id="modal" hidden><div class="modalcard" role="dialog" aria-modal="true" aria-labelledby="modalTtl"><div class="modalttl" id="modalTtl"></div><div class="modalsub" id="modalSub"></div><div id="modalBody"></div></div></div>
 
 <div class="wrap">
 
@@ -984,7 +1004,7 @@ function drawVessel() {
 
 // ── UPDATE ────────────────────────────────────────────────
 function update(keepFocus) {
-  clampState(); calc(); drawVessel();
+  clampState(); calc(); drawVessel(); if (typeof saveSoon === 'function') saveSoon();
 }
 
 // ── OIL & WATER SECTION — fold and drawing ease together ──
@@ -1016,7 +1036,7 @@ function setOW(open) {
     requestAnimationFrame(() => { body.style.height = '0px'; });
     body.inert = true;
   }
-  calc(); animateT(open ? 1 : 0);
+  calc(); animateT(open ? 1 : 0); if (typeof saveSoon === 'function') saveSoon();
 }
 $('ow-toggle').addEventListener('click', () => setOW(!S.ow));
 window.addEventListener('resize', () => drawVessel());
@@ -1130,13 +1150,143 @@ buildDrum();
   }, { passive: true });
 })();
 
+// ── LIGHT / DARK — Bottoms-Up pattern ─────────────────────
+// data-theme on <html>, shared 'nfc-theme' key so the choice carries across every NFC tool.
+// The icon shows the theme you will GET on tap (sun in dark, moon in light).
+(function () {
+  var SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+  var MOON = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+  var BAR = { dark: '#0A0A0A', light: '#F4F3F1' };
+  var KEY = 'nfc-theme', root = document.documentElement, btn = $('nfc-theme-toggle');
+  function apply(t) {
+    root.setAttribute('data-theme', t);
+    try { localStorage.setItem(KEY, t); } catch (e) {}
+    if (btn) btn.innerHTML = (t === 'dark') ? SUN : MOON;
+    var m = $('themeColorMeta'); if (m) m.setAttribute('content', BAR[t] || BAR.dark);
+  }
+  var saved = null; try { saved = localStorage.getItem(KEY); } catch (e) {}
+  apply(saved === 'light' ? 'light' : 'dark');
+  if (btn) btn.addEventListener('click', function () { apply(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); });
+})();
+
+// ── AUTO-RESTORE — a swiped-closed phone app reopens where it left off ──
+const SAVE_KEY = 'nfc-vessel-v1';
+let saveT = null;
+function saveSoon() { clearTimeout(saveT); saveT = setTimeout(saveState, 250); }
+function saveState() {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      D: S.D, Lft: S.Lft, api: S.api, hL: S.hL, ow: S.ow, wc: S.wc, wp: S.wp, iw: S.iw, io: S.io,
+      rateSrc: rateSrc, hr: $('r-hr').value, day: $('r-day').value }));
+  } catch (e) {}
+}
+function restoreState() {
+  let st = null; try { st = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) { st = null; }
+  if (!st) return false;
+  ['D', 'Lft', 'api', 'hL', 'wc', 'wp', 'iw', 'io'].forEach(k => { if (typeof st[k] === 'number' && isFinite(st[k])) S[k] = st[k]; });
+  $('diam').value = S.D; $('len').value = S.Lft; $('api-sl').value = S.api;
+  if (st.hr !== undefined) $('r-hr').value = st.hr;
+  if (st.day !== undefined) $('r-day').value = st.day;
+  rateSrc = st.rateSrc === 'day' ? 'day' : 'hr';
+  $('box-hr').classList.toggle('hot', rateSrc === 'hr'); $('box-day').classList.toggle('hot', rateSrc === 'day');
+  buildDrum();
+  if (st.ow) { S.ow = true; S.t = 1; const b = $('ow-body'); b.inert = false; b.style.height = 'auto';
+    $('ow-toggle').setAttribute('aria-expanded', 'true'); $('lvl-lbl').textContent = 'Weir top'; }
+  return true;
+}
+
+// ── SAVED VESSELS + NEW — Bottoms-Up "Save well / New job" pattern ──
+// A saved vessel is the SETUP that repeats: size, liquid level / weir top, and the Oil & Water vessel settings.
+// Deliberately NOT saved, because they change from well to well: flow rate, water cut, oil gravity.
+const VESSELS_KEY = 'nfc-vessel-setups', VESSELS_MAX = 25;
+function loadVessels() { try { const a = JSON.parse(localStorage.getItem(VESSELS_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+function storeVessels(a) { try { localStorage.setItem(VESSELS_KEY, JSON.stringify(a.slice(0, VESSELS_MAX))); return true; } catch (e) { return false; } }
+function collectSetup() { return { D: S.D, Lft: S.Lft, hL: S.hL, ow: S.ow, wp: S.wp, iw: S.iw, io: S.io }; }
+function setupSummary(st) {
+  const off = Math.round(st.hL - st.D / 2);
+  let t = `${st.D}″ × ${st.Lft}′  ·  level ${off >= 0 ? '+' : '−'}${Math.abs(off)}″ CL`;
+  if (st.ow) t += `  ·  weir ${st.wp}″`;
+  return t;
+}
+function applySetup(st) {
+  if (!st) return;
+  S.D = st.D; S.Lft = st.Lft; S.hL = st.hL; S.wp = st.wp; S.iw = st.iw; S.io = st.io;
+  $('diam').value = S.D; $('len').value = S.Lft;
+  buildDrum(); clampState(); syncSetup(); update();
+  if (!!st.ow !== S.ow) setOW(!!st.ow);
+  saveState();
+}
+const _modal = $('modal');
+function closeModal() { _modal.hidden = true; }
+function openModal(title, sub, build) {
+  $('modalTtl').textContent = title; $('modalSub').textContent = sub || '';
+  const body = $('modalBody'); body.innerHTML = ''; build(body); _modal.hidden = false;
+}
+_modal.addEventListener('click', e => { if (e.target === _modal) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !_modal.hidden) closeModal(); });
+function mkBtn(label, cls, fn) { const b = document.createElement('button'); b.type = 'button'; b.className = 'mbtn' + (cls ? ' ' + cls : ''); b.textContent = label; b.addEventListener('click', fn); return b; }
+function openSaveVessel() {
+  const setup = collectSetup();
+  openModal('Save this vessel', 'Saves the size and level settings so the next well on this vessel only needs its rates.', body => {
+    const wrap = document.createElement('div'); wrap.className = 'mfld';
+    wrap.innerHTML = '<label for="vesselName">Label</label><input id="vesselName" type="text" maxlength="40" placeholder="e.g. Test sep #3, 48 × 10">';
+    body.appendChild(wrap);
+    const msg = document.createElement('div'); msg.className = 'modalnote'; msg.textContent = setupSummary(setup); body.appendChild(msg);
+    const foot = document.createElement('div'); foot.className = 'mfoot';
+    foot.appendChild(mkBtn('Save', 'prim', () => {
+      const nm = ($('vesselName').value || '').trim() || setupSummary(setup);
+      const list = loadVessels(), hit = list.findIndex(v => v.name.toLowerCase() === nm.toLowerCase());
+      if (hit > -1) list.splice(hit, 1);
+      list.unshift({ name: nm, when: new Date().toISOString(), data: setup });
+      if (!storeVessels(list)) { msg.textContent = 'Could not save — this browser is blocking storage.'; return; }
+      closeModal();
+    }));
+    foot.appendChild(mkBtn('Cancel', '', closeModal)); body.appendChild(foot);
+    if (loadVessels().length >= VESSELS_MAX) { const w = document.createElement('div'); w.className = 'modalnote'; w.textContent = 'You have ' + VESSELS_MAX + ' saved vessels — the oldest will drop off.'; body.appendChild(w); }
+    try { $('vesselName').focus(); } catch (e) {}
+  });
+}
+function openNew() {
+  openModal('New', '', body => {
+    body.appendChild(mkBtn('Start from scratch', 'prim', () => { closeModal(); try { localStorage.removeItem(SAVE_KEY); } catch (e) {} location.reload(); }));
+    const list = loadVessels();
+    const h = document.createElement('div'); h.className = 'modalsub'; h.style.margin = '18px 0 0';
+    h.textContent = list.length ? 'Or start from a saved vessel:' : 'No saved vessels yet — set one up and tap “Save”.';
+    body.appendChild(h);
+    if (list.length) {
+      const box = document.createElement('div'); box.className = 'wells';
+      list.forEach((rec, idx) => {
+        const row = document.createElement('div'); row.className = 'wellrow';
+        const nm = document.createElement('div'); nm.className = 'nm';
+        const b = document.createElement('b'); b.textContent = rec.name;
+        const sp = document.createElement('span'); sp.textContent = setupSummary(rec.data || {});
+        nm.appendChild(b); nm.appendChild(sp); row.appendChild(nm);
+        const op = document.createElement('button'); op.type = 'button'; op.className = 'op'; op.textContent = 'Open';
+        op.addEventListener('click', () => { closeModal(); applySetup(rec.data); window.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' }); });
+        row.appendChild(op);
+        const del = document.createElement('button'); del.type = 'button'; del.className = 'del'; del.setAttribute('aria-label', 'Delete ' + rec.name); del.innerHTML = '&times;';
+        del.addEventListener('click', () => { const a = loadVessels(); a.splice(idx, 1); storeVessels(a); openNew(); });
+        row.appendChild(del);
+        box.appendChild(row);
+      });
+      body.appendChild(box);
+    }
+    const note = document.createElement('div'); note.className = 'modalnote';
+    note.textContent = 'Saved vessels live on this device only — they are not synced, and clearing this browser’s site data removes them.';
+    body.appendChild(note);
+    const foot = document.createElement('div'); foot.className = 'mfoot'; foot.appendChild(mkBtn('Cancel', '', closeModal)); body.appendChild(foot);
+  });
+}
+$('saveVessel').addEventListener('click', openSaveVessel);
+$('newJob').addEventListener('click', openNew);
+
 // ── INIT ──────────────────────────────────────────────────
-syncSplit(); syncSetup(); update();
+restoreState(); clampState(); syncSplit(); syncSetup(); update();
 </script>
 
 
 <div class="footer">
-  Rev. 2026-10-02<br>
+  Rev. 2026-10-02b<br>
   NFC Services &bull; <a href="https://www.nfcservices.com" target="_blank" rel="noopener">nfcservices.com</a>
 </div>
 
