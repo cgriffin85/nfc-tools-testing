@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bottoms-Up">
+<meta name="theme-color" content="#0A0A0A" id="themeColorMeta">
+<!-- Set the theme before first paint so there is no flash of the wrong theme on load. -->
+<script>(function(){try{var t=localStorage.getItem('nfc-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}})();</script>
+<!-- Home-screen / tab icon: the sanctioned Dark Background Vertical variant,
+     which the brand guide lists for avatars and square formats. Solid tile,
+     not transparent — iOS composites transparent icons onto white. -->
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<title>Bottoms-Up Calculator</title>
+<!-- Analytics. Only external dependency; 404s harmlessly if published elsewhere. -->
+<script src="/analytics.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* ===== NFC Tools canonical theme tokens =====
+     Mirrors the live tools.nfcservices.com/theme.css exactly, baked in so this file
+     is self-contained: the published page needs no external theme.css or theme.js.
+     Accent is #C00000 (the deployed value) — the deployed tool wins over the older
+     #D42B2B in the project theme block. Status / diagram colours are tuned per theme. */
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --bg:#0A0A0A; --surface:#141414; --surface-2:#1B1B1B;
+    --text:#F0F0F0; --text-mid:#8A8A8A; --text-dim:#5A5A5A;
+    --rule:#2A2A2A; --rule-strong:#3A3A3A;
+    --accent:#C00000; --accent-bright:#E10600;
+    --txt-out:#AAAAAA;
+    --warn:#DBC44A; --warn-bg:rgba(122,100,42,0.12); --warn-bd:rgba(219,196,74,0.20);
+    --ok:#7CC47C; --ok-bd:rgba(124,196,124,0.40); --ok-bg:rgba(124,196,124,0.08);
+    --casing:#565C64; --string:#3DDC84; --spot:#E8B400;
+  }
+  :root[data-theme="light"]{
+    color-scheme:light;
+    --bg:#F4F3F1; --surface:#FFFFFF; --surface-2:#FAFAF8;
+    --text:#1A1A1A; --text-mid:#6A6A6A; --text-dim:#9A9A9A;
+    --rule:#DCDCDC; --rule-strong:#C5C5C5;
+    --accent:#C00000; --accent-bright:#C00000;
+    --txt-out:#3A3A3A;
+    --warn:#C2740A; --warn-bg:rgba(194,116,10,0.14); --warn-bd:rgba(194,116,10,0.38);
+    --ok:#1E7A38; --ok-bd:rgba(30,122,56,0.35); --ok-bg:rgba(30,122,56,0.08);
+    --casing:#565C64; --string:#15A34A; --spot:#B8860B;
+  }
+  /* Aliases — the calculator's original token names map onto the canonical set,
+     so the ~400 lines of CSS below did not have to change. */
+  :root{
+    --card:var(--surface-2); --border:var(--rule);
+    --accent-dim:rgba(192,0,0,0.08); --accent-glow:rgba(192,0,0,0.18);
+    --txt:var(--text); --txt-2:var(--text-mid); --txt-m:var(--text-dim);
+    --fd:'Bebas Neue',sans-serif; --fb:'Barlow',sans-serif; --fm:'JetBrains Mono',monospace;
+    --ctl:44px;   /* shared height for every field control — text, select, readout, drum */
+  }
+  html,body{transition:background-color .22s ease,color .22s ease}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:var(--fb);-webkit-font-smoothing:antialiased;padding-bottom:60px;
+    /* the collapsing header changes flow height; without this the browser
+       "helpfully" re-anchors the scroll position and the header oscillates */
+    overflow-anchor:none}
+  /* Flex row, NOT absolutely-positioned buttons: the title block and the button
+     group are siblings that push each other apart, so nothing can ever overlap
+     no matter how narrow the screen or how long the subtitle. */
+  .hdr{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--border);padding:18px 20px 14px;display:flex;align-items:center;gap:12px}
+  .hdrtxt{flex:1;min-width:0}
+  /* NFC mark. Two files, not one: the brand guide is explicit that the full-colour
+     logo goes on light backgrounds only and dark surfaces take the white-outline
+     version — a single asset looks wrong in one theme or the other. Embedded as
+     base64 to keep this a single file (~7 KB for the pair). */
+  .titlerow{display:flex;align-items:center;gap:9px;min-width:0}
+  .brandmark{height:28px;width:auto;flex:none;display:none}
+  :root[data-theme="light"] .brandmark.lt{display:block}
+  :root[data-theme="dark"] .brandmark.dk{display:block}
+  .hdr.fl-collapsed .brandmark{height:20px}
+  @media(max-width:520px){ .brandmark{height:22px} .hdr.fl-collapsed .brandmark{height:17px} .titlerow{gap:7px} }
+  .hdr h1{font-family:var(--fd);font-size:30px;letter-spacing:1.5px;font-weight:400;line-height:1;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hdr .sub{font-size:10px;text-transform:uppercase;letter-spacing:2.5px;color:var(--accent);font-weight:500;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wrap{max-width:680px;margin:0 auto;padding:11px 14px;display:flex;flex-direction:column;gap:11px}
+  .sec{display:flex;align-items:center;font-family:var(--fd);font-size:11px;text-transform:uppercase;letter-spacing:3.5px;color:var(--txt-2);margin-bottom:6px}
+  .sec::after{content:"";flex:1;height:1px;background:var(--border);margin-left:10px}
+  .sech{display:flex;align-items:center;font-family:var(--fd);font-size:11px;text-transform:uppercase;letter-spacing:3.5px;color:var(--txt-2);margin-bottom:6px;cursor:pointer;-webkit-user-select:none;user-select:none}
+  .sech .ln{flex:1;height:1px;background:var(--border);margin:0 10px}
+  .chip{font-family:var(--fb);font-size:9px;font-weight:600;letter-spacing:1px;padding:2px 7px;border:1px solid var(--border);white-space:nowrap;text-transform:uppercase}
+  .chip.ok{color:var(--ok);border-color:var(--ok-bd);background:var(--ok-bg)}
+  .chip.warn{color:var(--warn);border-color:var(--warn-bd);background:var(--warn-bg)}
+  .chip.opt{color:var(--txt-m);border-color:var(--border)}
+  .caret{margin-left:9px;font-size:15px;color:var(--txt-2);transition:transform .18s}
+  .caret.col{transform:rotate(-90deg)}
+  .card.col{display:none}
+  .collapse-btn{margin-top:14px;width:100%;background:var(--surface);border:1px solid var(--border);color:var(--txt-2);font-family:var(--fb);font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:10px;cursor:pointer}
+  .collapse-btn:active{background:var(--accent-dim);color:var(--accent)}
+  .card{background:var(--card);border:1px solid var(--border);padding:15px}
+  .row{display:flex;gap:12px;align-items:flex-start}
+  .row+.row{margin-top:12px}
+  .fld{flex:1;min-width:0}
+  .fld label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt-2);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fld label .u{color:var(--txt-m);letter-spacing:1px}
+  .ibox{position:relative;display:flex;align-items:center;height:var(--ctl);background:var(--surface);border:1px solid var(--border);transition:border-color .18s,box-shadow .18s}
+  .ibox:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+  .ibox input{flex:1;min-width:0;height:100%;background:transparent;border:none;outline:none;color:var(--txt);font-family:var(--fm);font-size:20px;font-weight:600;padding:0 11px}
+  .ibox input::placeholder{color:var(--txt-m);font-weight:400}
+  .ibox .unit{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--txt-2);padding:0 11px 0 4px;white-space:nowrap}
+  /* ---- flick-in-place drum picker -------------------------------------
+     One row tall, same footprint as the input box it replaces. The scroller
+     is always 3 rows (44px pads top and bottom) so scrollTop = index*44 always
+     centres an item; a .dwin wrapper clips it to one row and nudges it up by
+     one. Keeping the scroll maths constant is what makes the collapsed and
+     expanded states agree. Feeds a hidden <input>, so everything downstream
+     (compute, save/restore, chips) is untouched.
+  --------------------------------------------------------------------- */
+  .dgroup{display:flex;align-items:center;position:relative;height:var(--ctl);background:var(--surface);border:1px solid var(--border);transition:border-color .18s,box-shadow .18s}
+  .dgroup:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+  .dwin{flex:1;min-width:0;overflow:hidden;height:42px}   /* = the .ibox input height, so a drum field and a text field are the same size */
+  .drum{height:126px;margin-top:-42px;overflow-y:auto;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;-ms-overflow-style:none;outline:none;touch-action:pan-y;overscroll-behavior:contain}
+  .drum::-webkit-scrollbar{display:none}
+  .drum .it,.drum .pad{height:42px}
+  .drum .it{display:flex;align-items:center;justify-content:center;scroll-snap-align:center;
+    font-family:var(--fm);font-size:20px;font-weight:600;color:var(--txt-m);transition:color .12s}
+  .drum .it.sel{color:var(--txt)}
+  /* You must be able to see which column has the pen. :focus-visible alone is
+     not enough — it does not match a mouse click, so clicking in showed nothing
+     but the group border. :focus covers click and touch; :focus-visible adds the
+     stronger ring for keyboard users. */
+  .drum:focus{background:var(--accent-dim);outline:none}
+  .drum:focus .it.sel{color:var(--accent)}
+  .drum:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .dsep{align-self:center;font-family:var(--fm);font-size:18px;font-weight:600;color:var(--txt-m);padding:0 1px}
+  /* the only affordance that costs no height: a faint spin marker */
+  /* A real flex item, not absolutely positioned — as an overlay it sat on top of
+     the last column and clipped the AM/PM text. */
+  .dspin{flex:none;align-self:center;display:flex;flex-direction:column;gap:2px;margin:0 5px;pointer-events:none;opacity:.45}
+  .dspin i{display:block;width:0;height:0;border-left:3.5px solid transparent;border-right:3.5px solid transparent}
+  .dspin i:first-child{border-bottom:4px solid var(--txt-m)}
+  .dspin i:last-child{border-top:4px solid var(--txt-m)}
+  /* 12h / 24h toggle, inside the time field */
+  .fmtbtn{align-self:center;flex:none;margin-right:5px;min-width:34px;padding:3px 5px;
+    background:var(--surface);border:1px solid var(--border);color:var(--txt-2);font-family:var(--fb);font-size:9.5px;
+    font-weight:600;letter-spacing:.4px;text-transform:lowercase;cursor:pointer;-webkit-tap-highlight-color:transparent;
+    transition:border-color .18s,color .18s,background .18s}
+  .fmtbtn:active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+  @media(max-width:360px){ .drum .it{font-size:18px} .dsep{font-size:16px} }
+  @media(max-width:330px){ .drum .it{font-size:16px} .fmtbtn{min-width:30px;font-size:9px;padding:2px 4px} .dspin{display:none} .dsep{padding:0;font-size:14px} }
+  .seg{display:flex;border:1px solid var(--border)}
+  .seg button{flex:1;background:var(--surface);border:none;color:var(--txt-2);font-family:var(--fb);font-size:14px;font-weight:500;padding:10px;cursor:pointer;transition:background .18s,color .18s;border-bottom:2px solid transparent}
+  .seg button.on{background:var(--accent-dim);color:var(--accent);border-bottom:2px solid var(--accent)}
+  .seg.modetabs button{padding:13px;font-size:15px;letter-spacing:.5px}
+  .seg.sm{display:inline-flex}
+  /* casing-count picker — separated tiles + telescoping-casing glyph */
+  .csgpick{display:flex;gap:8px}
+  .csgpick button{flex:1;min-width:0;background:var(--surface);border:1px solid var(--border);color:var(--txt-2);font-family:var(--fb);padding:9px 4px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:background .18s,border-color .18s,color .18s;-webkit-tap-highlight-color:transparent}
+  .csgpick button .w{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+  .csgpick button.on{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+  .csgpick svg{display:block;flex:none}
+  @media(max-width:360px){ .csgpick{gap:6px} .csgpick button .w{font-size:9.5px;letter-spacing:.4px} }
+  /* ---- saved wells modal ---- */
+  .modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;justify-content:center;padding:0}
+  .modal[hidden]{display:none}
+  .modalcard{width:100%;max-width:680px;max-height:86dvh;overflow:auto;background:var(--card);border:1px solid var(--border);border-bottom:none;padding:18px 16px 20px;animation:mrise .2s ease}
+  @keyframes mrise{from{transform:translateY(14px);opacity:.4}to{transform:none;opacity:1}}
+  @media(prefers-reduced-motion:reduce){.modalcard{animation:none}}
+  @media(min-width:700px){.modal{align-items:center}.modalcard{border-bottom:1px solid var(--border)}}
+  .modalttl{font-family:var(--fd);font-size:19px;letter-spacing:1.4px;text-transform:uppercase;color:var(--txt);margin-bottom:4px}
+  .modalsub{font-size:12px;color:var(--txt-2);margin-bottom:14px;line-height:1.45}
+  .mbtn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--txt);font-family:var(--fb);font-size:14px;letter-spacing:.5px;padding:12px;cursor:pointer;margin-top:8px}
+  .mbtn:active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+  .mbtn.prim{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+  .wells{margin-top:6px;display:flex;flex-direction:column;gap:7px}
+  .wellrow{display:flex;align-items:center;gap:10px;border:1px solid var(--border);background:var(--surface);padding:9px 10px}
+  .wellrow .nm{flex:1;min-width:0;overflow:hidden}
+  .wellrow .nm b{display:block;font-size:13.5px;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wellrow .nm span{display:block;font-family:var(--fm);font-size:10.5px;color:var(--txt-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+  .wellrow .op{flex:none;background:transparent;border:1px solid var(--border);color:var(--txt-2);font-family:var(--fb);font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:6px 10px;cursor:pointer}
+  .wellrow .op:active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+  .wellrow .del{flex:none;width:30px;height:30px;background:transparent;border:1px solid var(--border);color:var(--txt-m);font-size:15px;line-height:1;cursor:pointer;padding:0}
+  .wellrow .del:active{border-color:var(--accent);color:var(--accent)}
+  .modalnote{font-size:11px;color:var(--txt-m);line-height:1.5;margin-top:14px}
+  .mfoot{display:flex;gap:8px;margin-top:14px}
+  .mfoot .mbtn{margin-top:0}
+  .seg.sm button{flex:none;padding:5px 12px;font-size:11px}
+  .selbox{position:relative;display:flex;align-items:center;height:var(--ctl);background:var(--surface);border:1px solid var(--border);transition:border-color .18s,box-shadow .18s}
+  .selbox:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+  .selbox select{flex:1;height:100%;appearance:none;-webkit-appearance:none;width:100%;background:transparent;border:none;outline:none;color:var(--txt);font-family:var(--fm);font-size:20px;font-weight:600;padding:0 30px 0 11px;cursor:pointer}
+  .selbox::after{content:"";position:absolute;right:12px;top:50%;width:8px;height:8px;border-right:2px solid var(--txt-2);border-bottom:2px solid var(--txt-2);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+  .selbox select option{background:var(--surface);color:var(--txt)}
+  .roval{display:flex;align-items:center;height:var(--ctl);background:var(--bg);border:1px solid var(--border);padding:0 11px;font-family:var(--fm);font-size:20px;font-weight:600;color:var(--txt-out)}
+  .csgblk{border-left:2px solid var(--border);padding-left:11px;margin-top:12px}
+  .idnote{font-family:var(--fm);font-size:12px;color:var(--txt-out);margin-top:8px}
+  .check-toggle{margin-top:9px;font-size:12px;color:var(--accent);background:none;border:none;cursor:pointer;font-family:var(--fb);padding:2px 0;letter-spacing:.3px}
+  .check{margin-top:11px;border-left:2px solid var(--border);padding:11px 0 4px 12px;display:none}
+  .check.open{display:block}
+  .check .delta{font-family:var(--fm);font-size:13px;margin-top:8px;color:var(--txt-out);line-height:1.5}
+  .check .delta.warn{color:var(--warn)}
+  .disc{border-left:2px solid var(--border);padding:2px 0 2px 12px;margin-top:12px;font-size:11px;color:var(--txt-m);line-height:1.7}
+  .disc b{color:var(--txt-2)}
+  .outwrap{display:flex;flex-direction:column;gap:11px}
+  .hilite{background:var(--accent-dim);border:1px solid rgba(212,43,43,0.4);padding:15px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .hilite .lbl{font-family:var(--fd);font-size:13px;letter-spacing:2px;color:var(--accent)}
+  .hilite .hsub{font-size:12px;color:var(--txt-2);margin-top:4px;font-family:var(--fm)}
+  .hilite .hbig{font-family:var(--fm);font-size:30px;font-weight:600;color:var(--txt);text-align:right;white-space:nowrap;line-height:1.0}
+  .outrow{display:flex;gap:11px}
+  .out{flex:1;background:var(--bg);border:1px solid var(--border);padding:9px 11px;min-width:0}
+  .out .lbl{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--txt-m)}
+  .out .val{font-family:var(--fm);font-size:16px;font-weight:600;color:var(--txt-out);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .out .subv{font-family:var(--fm);font-size:11px;color:var(--txt-m);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* .out.inline puts the bbl figure on the same line as the time, pushed to the
+     right edge of the box — recovers a whole line of height per box. Surface to
+     surface stays stacked: "372.2 bbl" + "string + annulus" will not fit side by
+     side at phone width. */
+  .out.inline{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"l l" "v s";align-items:baseline;column-gap:8px}
+  .out.inline .lbl{grid-area:l}
+  .out.inline .val{grid-area:v}
+  .out.inline .subv{grid-area:s;text-align:right;margin-top:0}
+  /* .out.side — caption in its own column spanning BOTH rows, so three short
+     lines fit inside the height the label and value already occupy. 68px -> 54px
+     without losing the caption. */
+  .out.side{display:grid;grid-template-columns:1fr auto;grid-template-areas:"l s" "v s";align-items:center;column-gap:8px}
+  /* nowrap is load-bearing: with the caption column taking width, "SURFACE TO
+     SURFACE" wrapped to two lines between 370 and 400px — which is where most
+     phones sit — and the second line ate the whole saving. Slightly tighter
+     type buys the room to keep it on one line. */
+  .out.side .lbl{grid-area:l;white-space:nowrap;font-size:8.5px;letter-spacing:0}
+  .out.side .val{grid-area:v}
+  .out.side .subv{grid-area:s;align-self:center;margin-top:0;font-size:8.5px;line-height:1.22;text-align:center;white-space:normal}
+  .out.side .subv span{display:block}
+  /* On a very narrow phone the caption column steals enough width to clip the
+     value, so it drops back under it — spans not <br> so the words keep their
+     spaces when they go back inline. */
+  @media(max-width:370px){
+    .out.side{display:block}
+    .out.side .lbl{white-space:normal;font-size:9px;letter-spacing:.5px}
+    .out.side .subv{text-align:left;font-size:11px;margin-top:3px}
+    .out.side .subv span{display:inline}
+    .out.side .subv span+span{margin-left:.35em}
+  }
+  /* Same story one box over: below ~330px the bbl figure will not sit beside the
+     time either, so To bottom / Bottoms up go back to stacked as well. */
+  @media(max-width:330px){
+    .out.inline{display:block}
+    .out.inline .subv{text-align:left;margin-top:3px}
+  }
+  /* compact segmented control for a label line */
+  .seg.xs{flex:none}
+  .seg.xs button{padding:2px 6px;font-size:9px;letter-spacing:.3px;border-bottom-width:1px}
+  .seg.xs button.on{border-bottom-width:1px}
+  .lblrow{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:5px}
+  .lblrow label{margin-bottom:0;flex:1 1 auto;min-width:0}
+  /* .outwrap is a flex column, which stretches a bare <button> full width and
+     centres its text. Keep these explainer toggles reading left, like the rest. */
+  .outwrap > .check-toggle{align-self:flex-start;text-align:left}
+  /* "Time sent NOW" plus the 12h/24h control will not both fit a phone label
+     line. The "now" hint goes first — the field shows the actual time anyway. */
+  @media(max-width:430px){ .lblrow label .u{display:none} }
+  @media(max-width:345px){ .lblrow label{font-size:9px;letter-spacing:1px} .seg.xs button{padding:2px 5px;font-size:8.5px} }
+  .cpfx{font-size:11px;font-weight:400;color:var(--txt-2);letter-spacing:.3px}
+  .avwrap{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.5}
+  /* AV banding: under 80 fpm red, 80–120 amber, over 120 green */
+  .av-lo{color:var(--accent)}
+  .av-mid{color:var(--warn)}
+  .av-hi{color:var(--ok)}
+  .avkey{font-size:10.5px;color:var(--txt-m);letter-spacing:.2px;margin-top:6px;line-height:1.5}
+  .avkey i{font-style:normal;font-weight:600}
+  .avkey i.av-lo{color:var(--accent)} .avkey i.av-mid{color:var(--warn)} .avkey i.av-hi{color:var(--ok)}
+  .note{border-top:1px solid var(--border);padding-top:12px;font-size:10px;color:var(--txt-m);line-height:1.6}
+  .warnbox{background:var(--warn-bg);border:1px solid var(--warn-bd);border-left:3px solid var(--warn);padding:10px 12px;font-size:12px;color:var(--txt);line-height:1.45;display:none}
+  .warnbox.show{display:block}
+  .ftr{text-align:center;font-size:10px;color:var(--txt-m);letter-spacing:.5px;margin-top:8px;line-height:1.7}
+  .ftr a{color:var(--accent);text-decoration:none}
+  @media(max-width:360px){ .ibox input,.selbox select,.roval{font-size:18px} .hilite .hbig{font-size:25px} }
+  /* Narrow phones: the leading clock icon is the first thing to go. The field is
+     still tappable across its whole width and the format button shows it is live. */
+  .profwrap{display:block;margin:14px 0 2px}
+  .profwrap .profsvg svg{width:100%;height:auto;display:block;border-radius:8px}
+  .hintrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;min-height:18px}
+  .hintrow .check-toggle{margin-top:0;flex:none;white-space:nowrap}
+  .profhint{display:none;align-items:center;gap:6px;font-size:11px;color:var(--txt-2);margin-bottom:0;letter-spacing:.3px;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .profhint .rot{color:var(--accent);font-size:14px;line-height:1}
+  @media(max-width:600px){.profhint{display:flex}}
+  .proflegend{margin-top:8px;font-size:11px;color:var(--txt-2);line-height:1.55}
+  .proflegend b{font-weight:600}
+  /* header button group — absolutely placed as one unit so both buttons survive the
+     .fl-collapsed scroll shrink, and the toggle can never collide with "New job". */
+  .hdrbtns{flex:none;display:flex;align-items:center;gap:8px}
+  .newjob{background:transparent;border:1px solid var(--border);color:var(--txt-2);font-family:var(--fb);font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:6px 11px;cursor:pointer;white-space:nowrap}
+  .newjob:active{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+  #nfc-theme-toggle{width:32px;height:30px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border);color:var(--txt-2);cursor:pointer;padding:0;flex:none;-webkit-tap-highlight-color:transparent;transition:border-color .18s,color .18s,background .18s}
+  #nfc-theme-toggle:active{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+  #nfc-theme-toggle svg{width:16px;height:16px;display:block}
+  /* three buttons + the title do not fit a narrow phone — shorten the labels
+     to "Save"/"New" and drop the title a size. Full words return above 430px. */
+  /* The "· NFC Services" tail needs ~290px of subtitle plus the full button
+     labels; it only fits from about 580px up. Below that it is dropped
+     deliberately rather than letting the ellipsis chew a word in half. */
+  @media(max-width:580px){ .hdr .sub .lg{display:none} }
+  /* Narrow phone: shorten the button labels to "Save"/"New" and drop the
+     "· NFC Services" tail off the subtitle — a deliberate breakpoint rather
+     than letting the ellipsis chew a word in half. Full text returns >430px. */
+  @media(max-width:520px){ .hdr{padding-left:16px;padding-right:16px;gap:10px} .hdrbtns{gap:6px} .newjob{font-size:10px;padding:6px 8px;letter-spacing:.5px} .newjob .lg{display:none} .hdr h1{font-size:23px} .hdr .sub{letter-spacing:1.8px} .hdr.fl-collapsed h1{font-size:18px} #nfc-theme-toggle{width:28px;height:28px} #nfc-theme-toggle svg{width:14px;height:14px} }
+  /* below any real handset, but keep it from ever colliding */
+  @media(max-width:330px){ .hdr{padding-left:12px;padding-right:12px;gap:8px} .hdr h1{font-size:19px} .hdr .sub{font-size:8.5px;letter-spacing:1px} .newjob{padding:6px 6px;font-size:9.5px} }
+  /* collapsing header in landscape (mirrors API Flange slide rule) */
+  .hdr{transition:padding .2s ease}
+  .hdr h1{transition:font-size .2s ease}
+  .hdr .sub{transition:opacity .15s ease,max-height .2s ease,margin .2s ease;overflow:hidden;max-height:40px}
+  .hdr.fl-collapsed{padding-top:8px;padding-bottom:8px}
+  .hdr.fl-collapsed h1{font-size:20px}
+  .hdr.fl-collapsed .sub{opacity:0;max-height:0;margin-top:0}
+  @media(orientation:landscape){.hdr{padding-top:8px;padding-bottom:10px}.hdr h1{font-size:24px}.hdr .sub{font-size:11px}.hdr.fl-collapsed{padding-top:6px;padding-bottom:6px}.hdr.fl-collapsed h1{font-size:19px}}
+  /* double-tap the graphic to fit it to the screen height */
+  .profsvg{touch-action:manipulation}
+  .profwrap .profsvg.fit svg{width:auto;height:auto;max-width:100%;max-height:82vh;max-height:82dvh;display:block;margin:0 auto}
+</style>
+</head>
+<body>
+  <header class="hdr"><div class="hdrtxt"><div class="titlerow"><h1>Bottoms-Up</h1><img class="brandmark lt" alt="NFC" src="data:image/png;base64,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"><img class="brandmark dk" alt="NFC" src="data:image/png;base64,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"></div><div class="sub">Circulation Timing<span class="lg"> &middot; NFC Services</span></div></div><div class="hdrbtns"><button id="nfc-theme-toggle" type="button" aria-label="Toggle light or dark theme"></button><button id="saveWell" class="newjob" type="button" aria-label="Save well">Save<span class="lg"> well</span></button><button id="newJob" class="newjob" type="button" aria-label="New job">New<span class="lg"> job</span></button></div></header>
+  <div class="modal" id="modal" hidden><div class="modalcard" role="dialog" aria-modal="true" aria-labelledby="modalTtl"><div class="modalttl" id="modalTtl"></div><div class="modalsub" id="modalSub"></div><div id="modalBody"></div></div></div>
+  <main class="wrap">
+
+    <div class="seg modetabs" id="modeSeg">
+      <button type="button" data-mode="coil" class="on">Coil</button>
+      <button type="button" data-mode="stick">Stick</button>
+      <button type="button" data-mode="none">Open</button>
+    </div>
+
+    <section>
+      <div class="sech" data-target="csgCard"><span>Casing Design</span><span class="ln"></span><span class="chip" id="csgChip"></span><span class="caret" id="csgCaret">&#9662;</span></div>
+      <div class="card" id="csgCard">
+        <div class="fld" style="margin-bottom:12px">
+          <label>How many casing strings?</label>
+          <!-- Separated tiles, not a joined 1|2|3 bar: the bar read as a step wizard
+               ("click 1, fill it in, then click 2"). Glyph = telescoping casing,
+               same visual language as the well-profile graphic below. -->
+          <div class="csgpick" id="csgCountSeg" role="radiogroup" aria-label="How many casing strings?">
+            <button type="button" data-n="1" class="on" role="radio" aria-checked="true"><svg width="40" height="26" viewBox="0 0 40 26" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><line x1="3" y1="3" x2="37" y2="3" stroke-width="1.2" opacity=".55"/><line x1="5" y1="3" x2="5" y2="24"/><line x1="35" y1="3" x2="35" y2="24"/></svg><span class="w">1 String</span></button>
+            <button type="button" data-n="2" role="radio" aria-checked="false"><svg width="40" height="26" viewBox="0 0 40 26" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><line x1="3" y1="3" x2="37" y2="3" stroke-width="1.2" opacity=".55"/><line x1="5" y1="3" x2="5" y2="24"/><line x1="35" y1="3" x2="35" y2="24"/><line x1="9.5" y1="9" x2="9.5" y2="24"/><line x1="30.5" y1="9" x2="30.5" y2="24"/></svg><span class="w">2 Strings</span></button>
+            <button type="button" data-n="3" role="radio" aria-checked="false"><svg width="40" height="26" viewBox="0 0 40 26" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><line x1="3" y1="3" x2="37" y2="3" stroke-width="1.2" opacity=".55"/><line x1="5" y1="3" x2="5" y2="24"/><line x1="35" y1="3" x2="35" y2="24"/><line x1="9.5" y1="9" x2="9.5" y2="24"/><line x1="30.5" y1="9" x2="30.5" y2="24"/><line x1="14" y1="15" x2="14" y2="24"/><line x1="26" y1="15" x2="26" y2="24"/></svg><span class="w">3 Strings</span></button>
+          </div>
+        </div>
+        <div class="csgblk" id="csgBlk1">
+          <div class="row">
+            <div class="fld"><label for="csgSize1" id="csgSizeLbl1">Casing</label><div class="selbox"><select id="csgSize1"></select></div></div>
+            <div class="fld" id="csgWtWrap1"><label for="csgWt1">Weight <span class="u">lb/ft</span></label><div class="selbox"><select id="csgWt1"></select></div></div>
+            <div class="fld" id="csgCustomWrap1" style="display:none"><label for="csgCustom1">Casing ID <span class="u">in</span></label><div class="ibox"><input id="csgCustom1" type="text" inputmode="decimal" placeholder="6.184"></div></div>
+          </div>
+          <div class="idnote" id="csgIdNote1"></div>
+          <div class="row" id="csgDepthRow1" style="display:none;margin-top:10px">
+            <div class="fld" id="csgToWrap1"><label for="csgTo1" id="csgToLbl1">TD <span class="u">ft</span></label><div class="ibox"><input id="csgTo1" type="text" inputmode="numeric" placeholder="9300"></div></div>
+            <div class="fld"><label>Section vol <span class="u">bbl</span></label><div class="roval"><span id="csgVol1">&mdash;</span></div></div>
+          </div>
+        </div>
+        <div class="csgblk" id="csgBlk2" style="display:none">
+          <div class="row">
+            <div class="fld"><label for="csgSize2">Casing 2</label><div class="selbox"><select id="csgSize2"></select></div></div>
+            <div class="fld" id="csgWtWrap2"><label for="csgWt2">Weight <span class="u">lb/ft</span></label><div class="selbox"><select id="csgWt2"></select></div></div>
+            <div class="fld" id="csgCustomWrap2" style="display:none"><label for="csgCustom2">Casing ID <span class="u">in</span></label><div class="ibox"><input id="csgCustom2" type="text" inputmode="decimal" placeholder="4.000"></div></div>
+          </div>
+          <div class="idnote" id="csgIdNote2"></div>
+          <div class="row" id="csgDepthRow2" style="display:none;margin-top:10px">
+            <div class="fld" id="csgToWrap2"><label for="csgTo2" id="csgToLbl2">TD <span class="u">ft</span></label><div class="ibox"><input id="csgTo2" type="text" inputmode="numeric" placeholder="9300"></div></div>
+            <div class="fld"><label>Section vol <span class="u">bbl</span></label><div class="roval"><span id="csgVol2">&mdash;</span></div></div>
+          </div>
+        </div>
+        <div class="csgblk" id="csgBlk3" style="display:none">
+          <div class="row">
+            <div class="fld"><label for="csgSize3">Casing 3</label><div class="selbox"><select id="csgSize3"></select></div></div>
+            <div class="fld" id="csgWtWrap3"><label for="csgWt3">Weight <span class="u">lb/ft</span></label><div class="selbox"><select id="csgWt3"></select></div></div>
+            <div class="fld" id="csgCustomWrap3" style="display:none"><label for="csgCustom3">Casing ID <span class="u">in</span></label><div class="ibox"><input id="csgCustom3" type="text" inputmode="decimal"></div></div>
+          </div>
+          <div class="idnote" id="csgIdNote3"></div>
+          <div class="row" id="csgDepthRow3" style="display:none;margin-top:10px">
+            <div class="fld" id="csgToWrap3"><label for="csgTo3" id="csgToLbl3">TD <span class="u">ft</span></label><div class="ibox"><input id="csgTo3" type="text" inputmode="numeric" placeholder="10380"></div></div>
+            <div class="fld"><label>Section vol <span class="u">bbl</span></label><div class="roval"><span id="csgVol3">&mdash;</span></div></div>
+          </div>
+        </div>
+        <button type="button" class="collapse-btn" data-target="csgCard">&#9650; Collapse</button>
+      </div>
+    </section>
+
+    <section>
+      <div class="sech" data-target="profCard"><span>Well Profile</span><span class="ln"></span><span class="chip" id="profChip"></span><span class="caret col" id="profCaret">&#9662;</span></div>
+      <div class="card col" id="profCard">
+        <div class="row">
+          <div class="fld"><label for="tvd">TVD <span class="u">ft</span></label><div class="ibox"><input id="tvd" type="text" inputmode="numeric" placeholder="optional"></div></div>
+          <div class="fld"><label for="kop">Kickoff (KOP) <span class="u">ft</span></label><div class="ibox"><input id="kop" type="text" inputmode="numeric" placeholder="optional"></div></div>
+        </div>
+        <div class="disc"><b>Optional &mdash; for the side-profile view.</b> TVD = true vertical depth to the lateral; KOP = where the hole kicks off vertical. Every number still works without these; only the profile graphic needs them. The side-profile draws below the Returns readout; on a phone, rotate to landscape for a larger view.</div>
+        <button type="button" class="collapse-btn" data-target="profCard">&#9650; Collapse</button>
+      </div>
+    </section>
+
+    <section id="workBox">
+      <div class="sech" data-target="wsCard"><span>Work String</span><span class="ln"></span><span class="chip" id="wsChip"></span><span class="caret" id="wsCaret">&#9662;</span></div>
+      <div class="card" id="wsCard">
+        <div class="row">
+          <div class="fld" id="coilWrap"><label for="coilOD">Coil OD</label><div class="selbox"><select id="coilOD"></select></div></div>
+          <div class="fld" id="reelWrap"><label for="reel">Reel capacity <span class="u">bbl</span></label><div class="ibox"><input id="reel" type="text" inputmode="decimal"></div></div>
+          <div class="fld" id="stickWrap" style="display:none"><label for="stickSize">Work string <span class="u">size &middot; wt</span></label><div class="row"><div class="selbox" style="flex:1"><select id="stickSize"></select></div><div class="selbox" style="flex:1"><select id="stickWt"></select></div></div></div>
+          <div class="fld" id="stickVolWrap" style="display:none"><label>String volume <span class="u">est. &lowast;</span></label><div class="roval"><span id="stickVol">&mdash;</span></div></div>
+        </div>
+        <button class="check-toggle" id="checkToggle" type="button">+ check capacity</button>
+        <div class="check" id="checkBox">
+          <div class="row">
+            <div class="fld"><label for="coilID">Coil ID <span class="u">in</span></label><div class="ibox"><input id="coilID" type="text" inputmode="decimal" placeholder="e.g. 2.0"></div></div>
+            <div class="fld"><label for="coilLen">Length in hole <span class="u">ft</span></label><div class="ibox"><input id="coilLen" type="text" inputmode="numeric" placeholder="= depth"></div></div>
+          </div>
+          <div class="delta" id="checkOut">Enter coil ID and length to check the operator's number.</div>
+        </div>
+        <div class="disc" id="stickNote" style="display:none"><b>&lowast; Estimated</b> from current depth &times; tubing ID. True volume needs the pipe tally.</div>
+        <button type="button" class="collapse-btn" data-target="wsCard">&#9650; Collapse</button>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec">Depth &amp; Time</div>
+      <div class="card">
+        <div class="row">
+          <div class="fld"><label for="depth">Current depth <span class="u">ft</span></label><div class="ibox"><input id="depth" type="text" inputmode="numeric" placeholder="9300"></div></div>
+          <div class="fld"><label>Time sent <span class="u">now</span></label>
+            <!-- The <input type=time> stays as the value store so compute, save and
+                 restore are unchanged; the drum drives it. -->
+            <div class="dgroup hasfmt" id="timeDrum" role="group" aria-label="Time sent">
+              <input id="sent" type="time" hidden aria-hidden="true">
+              <span class="dspin" aria-hidden="true"><i></i><i></i></span>
+              <button type="button" id="fmtBtn" class="fmtbtn" title="Switch between 12-hour and 24-hour clock">12h</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec">Rates</div>
+      <div class="card">
+        <div class="row">
+          <!-- Was a −/+ stepper at 0.1 a press: 2.1 to 4.5 cost 24 presses. -->
+          <div class="fld" id="pumpWrap"><label>Pump rate <span class="u">bbl/min</span></label>
+            <div class="dgroup" id="pumpDrum" role="group" aria-label="Pump rate">
+              <input id="pump" type="text" hidden aria-hidden="true">
+              <span class="dspin" aria-hidden="true"><i></i><i></i></span>
+            </div>
+          </div>
+          <div class="fld"><label>Return rate <span class="u">bbl/min</span></label>
+            <div class="dgroup" id="retDrum" role="group" aria-label="Return rate">
+              <input id="ret" type="text" hidden aria-hidden="true">
+              <span class="dspin" aria-hidden="true"><i></i><i></i></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec">Returns</div>
+      <div class="outwrap">
+        <div class="warnbox" id="warn"></div>
+        <div class="hilite">
+          <div><div class="lbl">Returns at surface</div><div class="hsub" id="hSub">enter rate &amp; depth</div></div>
+          <div class="hbig" id="hBig">&mdash;</div>
+        </div>
+        <div class="outrow">
+          <div class="out inline"><div class="lbl">To bottom</div><div class="val" id="downVal">&mdash;</div><div class="subv" id="downVol">&mdash;</div></div>
+          <div class="out inline"><div class="lbl">Bottoms up</div><div class="val" id="upVal">&mdash;</div><div class="subv" id="upVol">&mdash;</div></div>
+        </div>
+        <div class="outrow">
+          <div class="out side"><div class="lbl">Surface to surface</div><div class="val" id="stsVal">&mdash;</div><div class="subv"><span>string</span><span>+</span><span>annulus</span></div></div>
+          <div class="out"><div class="lbl">Gain / Loss</div><div class="val" id="glVal">&mdash;</div></div>
+        </div>
+        <!-- Annular velocity sits ABOVE the graphic. The graphic is optional (it needs
+             TVD/KOP), so anchoring AV to it would make the last readout on screen move
+             depending on whether the profile was filled in. Fixed position, always here. -->
+        <!-- Fallback readout: shown ONLY when the graphic isn't drawn (no TD).
+             When the graphic is up it carries the AVs, and printing them twice
+             would just be noise. -->
+        <div class="out" id="avBlock"><div class="lbl">Annular velocity <span style="color:var(--txt-m)">&middot; per casing</span></div><div class="val avwrap" id="avVal">&mdash;</div><div class="avkey" id="avKey"></div></div>
+        <div class="profwrap" id="profWrap">
+          <!-- The toggle rides the rotate-hint line, which already exists, so the
+               explainers cost no extra height in the main view. -->
+          <div class="hintrow">
+            <div class="profhint"><span class="rot">&#8635;</span> Rotate for a larger view</div>
+            <button class="check-toggle" id="legToggle" type="button">+ about these numbers</button>
+          </div>
+          <div class="check" id="legMoreBox">
+          <div class="proflegend" id="profLegendMore"></div>
+          <div class="note" style="margin-top:10px">Times run from the time sent. Coil uses reel volume; Stick estimates from depth &times; ID; Open flows the cased hole with no string. Annular velocity is per casing string. Gain/Loss = (pump &minus; return rate) &times; 60. Surface lines not included.</div>
+          <div class="disc" style="margin-top:10px"><b>Annular velocity &amp; slip</b> &mdash; the figure above is how fast fluid travels up the annulus (rate &divide; capacity). Cuttings don't ride it for free: each chip settles back at its own slip velocity, so what lifts debris is the net &mdash; annular velocity minus slip. Bigger, denser cuttings slip faster; turbulent flow lifts better than laminar; and a wide upper casing is where returns slow and solids linger. This tool shows the fluid velocity, not the slip &mdash; actual slip depends on cutting size, density, and fluid properties.</div>
+          </div>
+          <div class="profsvg" id="profSvg"></div>
+          <div class="proflegend" id="profLegend"></div>
+        </div>
+        <button class="check-toggle" id="avThToggle" type="button">+ adjust velocity thresholds</button>
+        <div class="check" id="avThBox">
+          <div class="row">
+            <div class="fld"><label for="avLo">Red below <span class="u">fpm</span></label><div class="ibox"><input id="avLo" type="text" inputmode="numeric" placeholder="80"></div></div>
+            <div class="fld"><label for="avHi">Green above <span class="u">fpm</span></label><div class="ibox"><input id="avHi" type="text" inputmode="numeric" placeholder="120"></div></div>
+          </div>
+          <div class="delta" id="avThNote"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <section>
+      <div class="sech" data-target="spotCard"><span>Spot Chemical</span><span class="ln"></span><span class="chip" id="spotChip"></span><span class="caret" id="spotCaret">&#9662;</span></div>
+      <div class="card" id="spotCard">
+        <div class="row">
+          <div class="fld"><label for="spotDepth">Spot depth <span class="u">ft</span></label><div class="ibox"><input id="spotDepth" type="text" inputmode="numeric" placeholder="e.g. 9000"></div></div>
+          <div class="fld"><label for="chemVol">Chem Vol <span class="u">bbl</span></label><div class="ibox"><input id="chemVol" type="text" inputmode="decimal" placeholder="optional"></div></div>
+        </div>
+        <div class="row">
+          <div class="fld"><label>Bbls to pump <span class="u">bbl</span></label><div class="roval"><span id="spotVol">&mdash;</span></div></div>
+        </div>
+        <div class="disc"><b>Bbls to pump</b> = string fill to the work-string depth (Current depth, above) + annulus up to the spot depth. Enter a chemical volume to center the middle of the slug on the spot depth (blank = leading edge). Spot depth must be at or above the work-string depth.</div>
+      </div>
+    </section>
+
+
+
+    <div class="ftr">
+      API 5CT casing &amp; tubing dimensions &middot; capacity factor 1029.4 (in&sup2; &rarr; bbl/ft) &middot; v1.3.0 &middot; Rev. 2026-08-20<br>
+      NFC Services &middot; <a href="https://nfcservices.com">nfcservices.com</a>
+    </div>
+  </main>
+<script>
+  var C = 1029.4, PUMP_DEFAULT = 4.0;
+  var COIL_OD = [["1",1],["1¼",1.25],["1½",1.5],["1¾",1.75],["2",2],["2⅜",2.375],["2⅝",2.625],["2⅞",2.875]];
+  var COIL_DEFAULT = 2.375;
+  var STICK_SIZES = ["2⅜","2⅞","3½","4½"];
+  var STICK_OD = {"2⅜":2.375,"2⅞":2.875,"3½":3.5,"4½":4.5};
+  var TUBING = {"2⅜":[[4.7,1.995],[5.95,1.867]],"2⅞":[[6.5,2.441],[7.9,2.323],[8.7,2.259]],"3½":[[9.3,2.992],[10.2,2.922],[12.95,2.750]],"4½":[[12.75,3.958],[15.1,3.826]]};
+  var STICK_DEFAULT = {size:"2⅞", id:2.441};
+  var CASING = {
+    "4½":[[9.5,4.090],[10.5,4.052],[11.6,4.000],[13.5,3.920],[15.1,3.826]],
+    "5":[[11.5,4.560],[13,4.494],[15,4.408],[18,4.276],[20.3,4.184],[21.4,4.126],[23.2,4.044]],
+    "5½":[[13,5.044],[14,5.012],[15.5,4.950],[17,4.892],[20,4.778],[23,4.670],[26,4.548]],
+    "7":[[17,6.538],[20,6.456],[23,6.366],[26,6.276],[29,6.184],[32,6.094],[35,6.004],[38,5.920]],
+    "7⅝":[[26.4,6.969],[29.7,6.875],[33.7,6.765],[39,6.625]],
+    "9⅝":[[36,8.921],[40,8.835],[43.5,8.755],[47,8.681],[53.5,8.535]]
+  };
+  var CSG_ORDER = ["4½","5","5½","7","7⅝","9⅝"];
+  var CSG_DEFAULT = { 1:{size:"7",id:6.184}, 2:{size:"4½",id:4.000}, 3:{size:"4½",id:null} };
+  var mode = "coil", casingCount = 1, clockFmt = "12";
+
+  function num(id){ var el=document.getElementById(id); if(!el) return NaN; var v=parseFloat(el.value); return isFinite(v)?v:NaN; }
+  function fmtHM(x){ if(!isFinite(x)) return "—"; var m=Math.round(x); if(m<60) return m+"m"; return Math.floor(m/60)+"h "+(m%60)+"m"; }
+  // Button shows the format currently in use; tapping switches to the other.
+  function setFmtBtn(){ var b=document.getElementById('fmtBtn'); if(!b) return;
+    b.textContent=(clockFmt==='24')?'24h':'12h';
+    b.setAttribute('aria-label','Clock format '+((clockFmt==='24')?'24 hour':'12 hour')+' — tap to switch'); }
+  function fmtClock(h,mm){ if(clockFmt==="24") return (h<10?"0":"")+h+":"+(mm<10?"0":"")+mm; var ap=h<12?"AM":"PM",h12=(h%12)||12; return h12+":"+(mm<10?"0":"")+mm+" "+ap; }
+  function addClock(hhmm,mins){ if(!hhmm||!isFinite(mins)) return null; var p=hhmm.split(":"); if(p.length<2) return null; var t=(parseInt(p[0],10)*60+parseInt(p[1],10)+Math.round(mins))%1440; if(t<0)t+=1440; return fmtClock(Math.floor(t/60),t%60); }
+  /* ---- flick-in-place drums --------------------------------------------
+     A drum is a UI layer over a hidden <input>. It never owns the value:
+     it writes to the input and fires 'input', so compute / save / restore /
+     chips all keep working exactly as they did with the old controls.
+     Item height is 40px; the scroller is always 3 items tall with 40px pads,
+     so scrollTop = index*40 centres an item in every state.
+  --------------------------------------------------------------------- */
+  var DITEM=42, DRUMS={};   // must equal .drum .it height in CSS
+  function makeDrum(hostId, cols, onSet){
+    var host=document.getElementById(hostId); if(!host) return null;
+    var ready=false, state=[];
+    var anchor=host.querySelector('.dspin') || host.firstChild;
+    cols.forEach(function(c,ci){
+      if(ci && c.sep!==undefined){ var sp=document.createElement('span'); sp.className='dsep'; sp.textContent=c.sep; host.insertBefore(sp,anchor); }
+      var win=document.createElement('div'); win.className='dwin';
+      var d=document.createElement('div'); d.className='drum'; d.tabIndex=0;
+      d.setAttribute('role','listbox'); d.setAttribute('aria-label',c.name);
+      var h='<div class="pad"></div>';
+      for(var i=0;i<c.vals.length;i++) h+='<div class="it" data-i="'+i+'">'+c.fmt(c.vals[i])+'</div>';
+      d.innerHTML=h+'<div class="pad"></div>';
+      win.appendChild(d); host.insertBefore(win,anchor);
+      state.push({d:d,c:c,i:0,lock:0,t:null});
+    });
+    function mark(s){ var its=s.d.querySelectorAll('.it[data-i]'); for(var k=0;k<its.length;k++) its[k].classList.toggle('sel',k===s.i);
+      s.d.setAttribute('aria-valuetext', String(s.c.vals[s.i])); }
+    function place(s,i,smooth){ s.i=Math.max(0,Math.min(s.c.vals.length-1,i)); s.lock++;
+      try{ s.d.scrollTo({top:s.i*DITEM,behavior:smooth?'smooth':'auto'}); }catch(e){ s.d.scrollTop=s.i*DITEM; }
+      mark(s); setTimeout(function(){ s.lock=Math.max(0,s.lock-1); }, smooth?340:70); }
+    function vals(){ return state.map(function(s){ return s.c.vals[s.i]; }); }
+    function fire(){ if(ready && onSet) onSet(vals()); }
+    state.forEach(function(s){
+      s.d.addEventListener('scroll',function(){ if(s.lock) return; clearTimeout(s.t);
+        s.t=setTimeout(function(){ var i=Math.max(0,Math.min(s.c.vals.length-1,Math.round(s.d.scrollTop/DITEM)));
+          if(i!==s.i){ s.i=i; mark(s); fire(); } else mark(s); },90); },{passive:true});
+      /* Keyboard parity with the text inputs these drums replaced: a laptop user
+         tabs in and types "4 . 5" exactly as before. "." ":" and space advance to
+         the next column; letters pick AM/PM; digits type-ahead with a 900ms
+         buffer, the way a native <select> does. Arrows / PageUp / Home / End too. */
+      s.buf=''; s.bufT=null;
+      function findPrefix(col,q){
+        q=q.toLowerCase();
+        for(var i=0;i<col.vals.length;i++){
+          var shown=String(col.fmt(col.vals[i])).toLowerCase(), raw=String(col.vals[i]).toLowerCase();
+          if(shown.indexOf(q)===0 || raw.indexOf(q)===0) return i;
+        }
+        return -1;
+      }
+      function nextCol(){ var k=state.indexOf(s); return (k>-1 && state[k+1]) ? state[k+1].d : null; }
+      s.d.addEventListener('keydown',function(e){
+        var to=s.i;
+        if(e.key==='ArrowDown') to=s.i+1;
+        else if(e.key==='ArrowUp') to=s.i-1;
+        else if(e.key==='PageDown') to=s.i+5;
+        else if(e.key==='PageUp') to=s.i-5;
+        else if(e.key==='Home') to=0;
+        else if(e.key==='End') to=s.c.vals.length-1;
+        else {
+          if(e.key==='Backspace'){ e.preventDefault(); s.buf=''; return; }
+          if(e.key==='.'||e.key===':'||e.key===' '){ e.preventDefault(); s.buf=''; var n=nextCol(); if(n) n.focus(); return; }
+          if(e.key && e.key.length===1 && /[0-9a-z]/i.test(e.key)){
+            e.preventDefault();
+            clearTimeout(s.bufT); s.buf+=e.key; s.bufT=setTimeout(function(){ s.buf=''; },900);
+            var t=findPrefix(s.c,s.buf);
+            if(t<0){ s.buf=e.key; t=findPrefix(s.c,s.buf); }   // restart the buffer on a miss
+            if(t>=0){ place(s,t,false); fire(); }
+            return;
+          }
+          return;
+        }
+        e.preventDefault(); s.buf=''; place(s,to,true); setTimeout(fire,60); });
+    });
+    var api={ set:function(v){ (v||[]).forEach(function(want,k){ var s=state[k]; if(!s) return;
+                var best=0,dist=Infinity;
+                for(var i=0;i<s.c.vals.length;i++){ var dd=Math.abs(s.c.vals[i]-want); if(dd<dist){dist=dd;best=i;} }
+                place(s,best,false); }); },
+              vals:vals, arm:function(){ ready=true; }, rebuild:null };
+    DRUMS[hostId]=api; return api;
+  }
+
+  var RATE_WHOLE=[], RATE_TENTH=[], MINS=[], H12=[], H24=[];
+  for(var rw=0; rw<=20; rw++) RATE_WHOLE.push(rw);
+  for(var rt=0; rt<=9;  rt++) RATE_TENTH.push(rt);
+  for(var mn=0; mn<60;  mn++) MINS.push(mn);
+  for(var hh=1; hh<=12; hh++) H12.push(hh);
+  for(var h2=0; h2<=23; h2++) H24.push(h2);
+  function pad2(n){ return ("0"+n).slice(-2); }
+
+  function rateCols(){ return [ {name:'whole',vals:RATE_WHOLE,fmt:function(v){return v;}},
+                                {name:'tenths',vals:RATE_TENTH,fmt:function(v){return v;},sep:'.'} ]; }
+  function timeCols(){
+    if(clockFmt==='24') return [ {name:'hour',vals:H24,fmt:pad2},
+                                 {name:'minute',vals:MINS,fmt:pad2,sep:':'} ];
+    return [ {name:'hour',vals:H12,fmt:function(v){return v;}},
+             {name:'minute',vals:MINS,fmt:pad2,sep:':'},
+             {name:'AM or PM',vals:[0,1],fmt:function(v){return v?'PM':'AM';},sep:' '} ];
+  }
+  function rateDrum(hostId,inputId){
+    var el=document.getElementById(inputId);
+    var d=makeDrum(hostId, rateCols(), function(v){
+      el.value=(v[0]+v[1]/10).toFixed(1);
+      el.dispatchEvent(new Event('input',{bubbles:true}));
+      recalc(); recheck();
+    });
+    // A drum has no placeholder: whatever it shows IS the value. So if the input
+    // is blank we write the default in rather than displaying a number the model
+    // does not hold. Numerically identical — compute already fell back to these.
+    if(d) d.syncFrom=function(){
+      var n=parseFloat(el.value);
+      if(!isFinite(n)){
+        n=(inputId==='ret') ? (parseFloat(document.getElementById('pump').value)||PUMP_DEFAULT) : PUMP_DEFAULT;
+        el.value=n.toFixed(1);
+      }
+      n=Math.max(0,Math.min(20.9,n));
+      d.set([Math.floor(n), Math.round((n-Math.floor(n))*10)]); };
+    return d;
+  }
+  function buildTimeDrum(){
+    var host=document.getElementById('timeDrum'); if(!host) return;
+    Array.prototype.slice.call(host.querySelectorAll('.dwin,.dsep')).forEach(function(n){ n.parentNode.removeChild(n); });
+    var el=document.getElementById('sent');
+    var d=makeDrum('timeDrum', timeCols(), function(v){
+      var h=(clockFmt==='24') ? v[0] : ((v[0]%12) + (v[2]?12:0));
+      el.value=pad2(h)+':'+pad2(v[1]);
+      el.dispatchEvent(new Event('input',{bubbles:true}));
+      recalc();
+    });
+    d.syncFrom=function(){ var p=(el.value||'').split(':'); var h=parseInt(p[0],10), m=parseInt(p[1],10);
+      if(!isFinite(h)){ var n=new Date(); h=n.getHours(); m=n.getMinutes(); }
+      if(!isFinite(m)) m=0;
+      d.set(clockFmt==='24' ? [h,m] : [((h%12)||12), m, h>=12?1:0]); };
+    d.syncFrom(); setTimeout(function(){ d.arm(); },420);
+  }
+  function syncDrums(){ ['pumpDrum','retDrum','timeDrum'].forEach(function(k){ var d=DRUMS[k]; if(d&&d.syncFrom) d.syncFrom(); }); }
+
+  // The drum itself displays the time now; this keeps the value normalised and
+  // re-seats the drum after anything else writes to #sent.
+  function renderSent(){ var d=DRUMS['timeDrum']; if(d&&d.syncFrom) d.syncFrom(); }
+
+  function populateCoilOD(){ var s=document.getElementById('coilOD'); s.innerHTML=""; COIL_OD.forEach(function(o){ var op=document.createElement('option'); op.value=o[1]; op.textContent=o[0]+'″'; if(Math.abs(o[1]-COIL_DEFAULT)<1e-9)op.selected=true; s.appendChild(op); }); }
+  function populateStickSize(){ var s=document.getElementById('stickSize'); s.innerHTML=""; STICK_SIZES.forEach(function(sz){ var op=document.createElement('option'); op.value=sz; op.textContent=sz+'″'; if(sz===STICK_DEFAULT.size)op.selected=true; s.appendChild(op); }); }
+  function populateStickWt(presetID){ var s=document.getElementById('stickWt'); s.innerHTML=""; var size=document.getElementById('stickSize').value; (TUBING[size]||[]).forEach(function(w){ var op=document.createElement('option'); op.value=w[1]; op.textContent=w[0]+" lb/ft"; if(presetID&&Math.abs(w[1]-presetID)<1e-6)op.selected=true; s.appendChild(op); }); }
+
+  function populateCsgSize(i){ var s=document.getElementById('csgSize'+i); s.innerHTML=""; CSG_ORDER.forEach(function(sz){ var op=document.createElement('option'); op.value=sz; op.textContent=sz+'″'; if(sz===CSG_DEFAULT[i].size)op.selected=true; s.appendChild(op); }); var c=document.createElement('option'); c.value="__custom"; c.textContent="Custom"; s.appendChild(c); }
+  function populateCsgWt(i,presetID){ var s=document.getElementById('csgWt'+i); s.innerHTML=""; var size=document.getElementById('csgSize'+i).value; (CASING[size]||[]).forEach(function(w){ var op=document.createElement('option'); op.value=w[1]; op.textContent=w[0]+" lb/ft"; if(presetID&&Math.abs(w[1]-presetID)<1e-6)op.selected=true; s.appendChild(op); }); }
+  function syncCsg(i,presetID){ var custom=(document.getElementById('csgSize'+i).value==="__custom"); document.getElementById('csgWtWrap'+i).style.display=custom?"none":""; document.getElementById('csgCustomWrap'+i).style.display=custom?"":"none"; if(!custom)populateCsgWt(i,presetID); }
+  function getCsgID(i){ if(document.getElementById('csgSize'+i).value==="__custom") return num('csgCustom'+i); return num('csgWt'+i); }
+
+  function applyCount(n){ casingCount=n; for(var i=1;i<=3;i++){ document.getElementById('csgBlk'+i).style.display=(i<=n)?"":"none"; var t=document.getElementById('csgDepthRow'+i); var lbl=document.getElementById('csgToLbl'+i); if(t)t.style.display=(i<=n)?"":"none"; if(lbl)lbl.innerHTML=(i<n)?('Casing '+i+' shoe <span class="u">ft</span>'):('TD <span class="u">ft</span>'); } document.getElementById('csgSizeLbl1').textContent=(n===1)?"Casing":"Casing 1"; }
+
+  function applyMode(m){
+    mode=m;
+    document.getElementById('workBox').style.display = (m==='none')?"none":"";
+    document.getElementById('pumpWrap').style.display = (m==='none')?"none":"";
+    document.getElementById('coilWrap').style.display = (m==='coil')?"":"none";
+    document.getElementById('reelWrap').style.display = (m==='coil')?"":"none";
+    document.getElementById('checkToggle').style.display = (m==='coil')?"":"none";
+    if(m!=='coil') document.getElementById('checkBox').classList.remove('open');
+    document.getElementById('stickWrap').style.display = (m==='stick')?"":"none";
+    document.getElementById('stickVolWrap').style.display = (m==='stick')?"":"none";
+    document.getElementById('stickNote').style.display = (m==='stick')?"":"none";
+  }
+
+  function getStringOD(){ if(mode==='coil') return num('coilOD'); if(mode==='stick'){ var v=STICK_OD[document.getElementById('stickSize').value]; return isFinite(v)?v:NaN; } return 0; }
+
+  function getSections(){ var ids=[null,getCsgID(1),getCsgID(2),getCsgID(3)]; var depths=[null,num('csgTo1'),num('csgTo2'),num('csgTo3')]; var sections=[],prev=0,orderBad=false; for(var i=1;i<=casingCount;i++){ var bottom=depths[i]; var len=isFinite(bottom)?(bottom-prev):NaN; if(isFinite(len)&&len<0)orderBad=true; sections.push({id:ids[i],length:len}); prev=bottom; } return {sections:sections,orderBad:orderBad,td:depths[casingCount]}; }
+
+  function compute(){
+    var pump=isFinite(num('pump'))?num('pump'):PUMP_DEFAULT;
+    var retRaw=num('ret'), ret=(retRaw>0)?retRaw:pump, depth=num('depth');
+    var stringOD=getStringOD(), od2=isFinite(stringOD)?stringOD*stringOD:0;
+    var s=getSections();
+    var annVol=0,neg=false,allLen=true,avList=[],secVols=[];
+    s.sections.forEach(function(sec){ if(!isFinite(sec.id)||!isFinite(sec.length)){ allLen=false; secVols.push(NaN); avList.push(NaN); return; } var cap=(sec.id*sec.id-od2)/C; if(cap<=0){ neg=true; secVols.push(NaN); avList.push(NaN); return; } var v=Math.max(cap*sec.length,0); annVol+=v; secVols.push(v); avList.push(ret/cap); });
+    var down, stickVol=NaN;
+    if(mode==='coil'){ var reel=num('reel'); down=(pump>0&&isFinite(reel))?reel/pump:NaN; }
+    else if(mode==='stick'){ var id=num('stickWt'); stickVol=(isFinite(id)&&isFinite(depth))?(id*id/C)*depth:NaN; down=(pump>0&&isFinite(stickVol))?stickVol/pump:NaN; }
+    else { down=NaN; }
+    var up=(ret>0&&annVol>0&&allLen)?annVol/ret:NaN;
+    var headline=isFinite(up)?((isFinite(down)?down:0)+up):NaN;
+    var gainLoss=(mode!=='none'&&isFinite(pump)&&isFinite(ret))?(pump-ret)*60:NaN;
+    var downVol=(mode==='coil')?num('reel'):((mode==='stick')?stickVol:NaN);
+    var sts=(allLen&&annVol>0)?(annVol+(isFinite(downVol)?downVol:0)):NaN;
+    var spotDepth=num('spotDepth'), chemVol=num('chemVol'), stringEnd=num('depth'), spotVol=NaN;
+    var spotStringVol=downVol;
+    if(mode!=='none'&&isFinite(spotDepth)&&isFinite(stringEnd)&&spotDepth>0&&spotDepth<=stringEnd&&isFinite(spotStringVol)){
+      var annUp=0, okSpot=true, topD=0;
+      for(var j=0;j<s.sections.length;j++){ if(topD>=stringEnd) break; var sc=s.sections[j]; if(!isFinite(sc.id)){ okSpot=false; break; } var capj=(sc.id*sc.id-od2)/C; if(capj<=0){ okSpot=false; break; } var rawBot=topD+sc.length; var botCap=isFinite(rawBot)?Math.min(rawBot,stringEnd):stringEnd; annUp+=capj*Math.max(0, botCap-Math.max(topD,spotDepth)); topD=isFinite(rawBot)?rawBot:stringEnd; }
+      if(okSpot) spotVol=spotStringVol+annUp+(isFinite(chemVol)?chemVol/2:0);
+    }
+    return {down:down,up:up,headline:headline,neg:neg,orderBad:s.orderBad,stickVol:stickVol,avList:avList,secVols:secVols,gainLoss:gainLoss,pump:pump,ret:ret,downVol:downVol,annVol:annVol,sts:sts,allLen:allLen,spotVol:spotVol};
+  }
+
+  /* ---- annular-velocity bands -------------------------------------------
+     Defaults (80 / 120 fpm) are a field rule of thumb from one source
+     (K. Malnar), not a published spec — so they are editable, and the pair
+     travels with a saved well so a crew or operator with a different standard
+     keeps their own. Invalid or inverted entries fall back to the defaults
+     rather than silently mis-colouring the numbers.
+  --------------------------------------------------------------------- */
+  var AV_LO_DEF=80, AV_HI_DEF=120;
+  function avBounds(){
+    var lo=num('avLo'), hi=num('avHi');
+    if(!isFinite(lo)||lo<=0) lo=AV_LO_DEF;
+    if(!isFinite(hi)||hi<=0) hi=AV_HI_DEF;
+    if(hi<=lo) return {lo:AV_LO_DEF,hi:AV_HI_DEF,bad:true};
+    return {lo:lo,hi:hi,bad:false};
+  }
+  function avBand(v,b){ b=b||avBounds(); return (v<b.lo)?'av-lo':((v<=b.hi)?'av-mid':'av-hi'); }
+  function avKeyText(b){ b=b||avBounds(); return 'Rule of thumb &mdash; <i class="av-lo">under '+b.lo+'</i> too slow &middot; <i class="av-mid">'+b.lo+'&ndash;'+b.hi+'</i> marginal &middot; <i class="av-hi">over '+b.hi+'</i> good'; }
+  function setChip(id,state,txt){ var c=document.getElementById(id); if(!c)return; c.className='chip '+state; c.textContent=txt; }
+  function updateChips(r){
+    var csgOk=true; for(var i=1;i<=casingCount;i++){ if(!isFinite(getCsgID(i))||!isFinite(num('csgTo'+i))) csgOk=false; }
+    // Green chip reads "Set" everywhere — it was "Complete" on some sections and
+    // "Set" on others, which read as two different states rather than one.
+    setChip('csgChip', csgOk?'ok':'warn', csgOk?'Set':'Incomplete');
+    var wsS,wsT; if(mode==='coil'){ var okc=isFinite(num('reel')); wsS=okc?'ok':'warn'; wsT=okc?'Set':'Incomplete'; } else if(mode==='stick'){ wsS='ok'; wsT='Set'; } else { wsS='opt'; wsT='Open hole'; }
+    setChip('wsChip', wsS, wsT);
+    var hasT=isFinite(num('tvd')), hasK=isFinite(num('kop'));
+    setChip('profChip', (hasT&&hasK)?'ok':((hasT||hasK)?'warn':'opt'), (hasT&&hasK)?'Set':((hasT||hasK)?'Partial':'Optional'));
+    var sd=num('spotDepth');
+    setChip('spotChip', !isFinite(sd)?'opt':((r&&isFinite(r.spotVol))?'ok':'warn'), !isFinite(sd)?'Optional':((r&&isFinite(r.spotVol))?'Set':'Check'));
+  }
+  // ---- Well-profile graphic (Tier 3): true-scale schematic, theme-aware, reads live calc inputs. Graphic-only; not survey-accurate. ----
+  window._lblOn = window._lblOn || {};
+  function profFmt(n){ return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+  function profGeom(){
+    var tvd=num('tvd'), kop=num('kop'), td=num('csgTo'+casingCount);
+    var vertical = !(isFinite(tvd)&&isFinite(kop)&&kop>0&&kop<tvd&&tvd<td);
+    if(vertical){ return {vertical:true, td:td, tvd:isFinite(tvd)?Math.min(tvd,td):td, pos:function(md){return {x:0,y:Math.min(md,td)};}, buildMD:0, R:0, kop:isFinite(kop)?kop:td}; }
+    var R=tvd-kop, buildMD=(Math.PI/2)*R, latMD=td-kop-buildMD; if(latMD<0)latMD=0;
+    function pos(md){ if(md<=kop)return{x:0,y:md}; if(md<=kop+buildMD){var a=((md-kop)/buildMD)*(Math.PI/2);return{x:R*(1-Math.cos(a)),y:kop+R*Math.sin(a)};} return {x:R+(md-kop-buildMD),y:tvd}; }
+    return {vertical:false, td:td, tvd:tvd, kop:kop, R:R, buildMD:buildMD, latMD:latMD, pos:pos};
+  }
+  function profColors(){
+    var FB={ // fallbacks = the dark values, used if getComputedStyle is unavailable (e.g. jsdom)
+      '--surface':'#141414','--rule':'#2A2A2A','--text':'#F0F0F0','--text-mid':'#8A8A8A',
+      '--text-dim':'#5A5A5A','--accent':'#C00000','--casing':'#565C64','--string':'#3DDC84','--spot':'#E8B400'
+    };
+    var cs=null; try{ cs=getComputedStyle(document.documentElement); }catch(e){}
+    function t(n){ var v=cs?cs.getPropertyValue(n):''; v=(v&&v.trim()); return v||FB[n]; }
+    FB['--warn']='#DBC44A'; FB['--ok']='#7CC47C';
+    return {surf:t('--surface'),rule:t('--rule'),txt:t('--text'),mid:t('--text-mid'),
+            dim:t('--text-dim'),acc:t('--accent'),csg:t('--casing'),str:t('--string'),spot:t('--spot'),
+            lo:t('--accent'),md:t('--warn'),hi:t('--ok')};
+  }
+  function renderProfile(){
+    var host=document.getElementById('profSvg'); if(!host) return;
+    var legEl=document.getElementById('profLegend');
+    var tdv=num('csgTo'+casingCount);
+    // avBlock is the fallback readout — visible only when the graphic is not.
+    function _avFallback(show){ var e=document.getElementById('avBlock'); if(e) e.style.display=show?'':'none'; }
+    if(!isFinite(tdv)||tdv<=0){ host.innerHTML=''; if(legEl)legEl.innerHTML=''; var _pw0=document.getElementById('profWrap'); if(_pw0)_pw0.style.display='none'; _avFallback(true); return; }
+    var _pw=document.getElementById('profWrap'); if(_pw)_pw.style.display='';
+    _avFallback(false);
+    // Colours are read from the live theme tokens and injected as LITERAL HEX.
+    // Never put var(--x) inside SVG presentation attributes — it does not paint in every
+    // renderer. Resolving here keeps the graphic theme-aware because renderProfile()
+    // re-runs on every recalc and on every theme toggle.
+    var COL=profColors();
+    function getID(i){ return getCsgID(i); }
+    function getShoe(i){ return num('csgTo'+i); }
+    var g=profGeom();
+    var N=240, pts=[]; for(var k=0;k<=N;k++){ var md=g.td*k/N; pts.push(g.pos(md)); }
+    var maxX=0,maxY=0; pts.forEach(function(p){ if(p.x>maxX)maxX=p.x; if(p.y>maxY)maxY=p.y; });
+    if(maxX<=0)maxX=1; if(maxY<=0)maxY=1;
+    var W=720,H=440,padL=70,padR=40,padT=46,padB=64;
+    var availW=W-padL-padR, availH=H-padT-padB;
+    var sxFit=availW/maxX, syFit=availH/maxY;
+    var base=Math.min(sxFit,syFit), sx=base, sy=Math.min(syFit, base*1.0); // true scale (cap 1.0)
+    var offX=padL+(availW-maxX*sx)/2, offY=padT+(availH-maxY*sy)/2;
+    function X(p){ return offX+p.x*sx; } function Y(p){ return offY+p.y*sy; }
+    var ids=[]; for(var i=1;i<=casingCount;i++)ids.push(getID(i));
+    var deepID=ids[casingCount-1]; if(!isFinite(deepID)) deepID=Math.max.apply(null,ids.filter(isFinite).concat([1]));
+    var basePx=14, pxPerInch=basePx/(deepID||1), stepF=0.15;
+    var wArr=new Array(casingCount); wArr[casingCount-1]=basePx;
+    for(var wi=casingCount-2; wi>=0; wi--){ var trueW=basePx*((isFinite(ids[wi])?ids[wi]:deepID)/deepID); wArr[wi]=Math.max(trueW, wArr[wi+1]*(1+stepF)); }
+    function csgIndexAt(md){ for(var i=1;i<=casingCount;i++){ if(md<=getShoe(i)+0.001) return i-1; } return casingCount-1; }
+    function widthAt(md){ return wArr[csgIndexAt(md)]; }
+    var segs=[], prevShoe=0;
+    for(var i=1;i<=casingCount;i++){ var shoe=getShoe(i); if(!isFinite(shoe))shoe=g.td; var d='',steps=60; for(var k2=0;k2<=steps;k2++){ var md=prevShoe+(shoe-prevShoe)*k2/steps; var p=g.pos(md); d+=(k2===0?'M':'L')+X(p).toFixed(1)+','+Y(p).toFixed(1)+' '; } segs.push({d:d,w:widthAt((prevShoe+shoe)/2)}); prevShoe=shoe; }
+    var svg='';
+    svg+='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" font-family="\'Barlow\',sans-serif">';
+    svg+='<rect x="0" y="0" width="'+W+'" height="'+H+'" rx="8" fill="'+COL.surf+'" stroke="'+COL.rule+'"/>';
+    svg+='<text x="22" y="32" fill="'+COL.txt+'" font-family="\'Bebas Neue\',sans-serif" font-size="20" letter-spacing="1.2">WELL PROFILE</text>';
+    segs.forEach(function(s){ svg+='<path d="'+s.d+'" fill="none" stroke="'+COL.csg+'" stroke-width="'+s.w.toFixed(1)+'" stroke-linecap="butt" stroke-linejoin="round"/>'; });
+    var sOD=getStringOD(), wsd=num('depth');
+    /* Work string, drawn one segment per casing section and coloured by that
+       section's annular velocity. The colour is on the pipe but describes the
+       GAP around it — see the legend. Sections are also collected here for the
+       AV panel so the panel and the pipe can never disagree. */
+    var AVROWS=[], _bnd=avBounds();
+    if(isFinite(sOD)&&sOD>0&&isFinite(wsd)&&wsd>0){
+      var sEnd=Math.min(wsd,g.td), strPx=Math.max(2.5,sOD*pxPerInch);
+      var _pm=isFinite(num('pump'))?num('pump'):4.0, _rr=num('ret'), flowS=(_rr>0)?_rr:_pm;
+      var BANDC={'av-lo':COL.lo,'av-mid':COL.md,'av-hi':COL.hi};
+      var segTopMD=0;
+      for(var ci2=1;ci2<=casingCount;ci2++){
+        var shoe2=getShoe(ci2); if(!isFinite(shoe2)) shoe2=g.td;
+        var segA=segTopMD, segB=Math.min(sEnd,shoe2);
+        if(segB>segA){
+          var id2=getID(ci2), den2=id2*id2-sOD*sOD;
+          var av2=(isFinite(id2)&&den2>0&&isFinite(flowS))?Math.round(flowS*1029.4/den2):NaN;
+          var colS=COL.str;
+          if(isFinite(av2)){ colS=BANDC[avBand(av2,_bnd)]; AVROWS.push({i:ci2,v:av2,c:colS}); }
+          var sp='', nn=Math.max(8,Math.round(120*(segB-segA)/sEnd));
+          for(var k2=0;k2<=nn;k2++){ var md2=segA+(segB-segA)*k2/nn, pp=g.pos(md2); sp+=(k2===0?'M':'L')+X(pp).toFixed(1)+','+Y(pp).toFixed(1)+' '; }
+          svg+='<path d="'+sp+'" fill="none" stroke="'+colS+'" stroke-width="'+strPx.toFixed(1)+'" stroke-linecap="butt" stroke-linejoin="round"/>';
+        }
+        segTopMD=shoe2; if(segTopMD>=sEnd) break;
+      }
+    }
+    if(!g.vertical){
+      var vx=X({x:0,y:0})-(wArr[0]/2)-16, vyT=Y({x:0,y:0}), vyB=Y({x:0,y:g.tvd});
+      svg+='<line x1="'+vx.toFixed(1)+'" y1="'+vyT.toFixed(1)+'" x2="'+vx.toFixed(1)+'" y2="'+vyB.toFixed(1)+'" stroke="'+COL.acc+'" stroke-width="1.3" stroke-dasharray="2 4"/>';
+      for(var dv=100; dv<g.tvd-1; dv+=100){ var yy=Y({x:0,y:dv}), maj=(dv%1000===0), mnr=(dv%500===0); var ln=maj?10:(mnr?6:3), cw=maj?1.2:(mnr?1:0.5), op=maj?1:(mnr?0.8:0.45); var cc=maj?COL.mid:(mnr?COL.mid:COL.dim); svg+='<line x1="'+vx.toFixed(1)+'" y1="'+yy.toFixed(1)+'" x2="'+(vx-ln).toFixed(1)+'" y2="'+yy.toFixed(1)+'" stroke="'+cc+'" stroke-width="'+cw+'" opacity="'+op+'"/>'; if(maj){ var lx=vx-14; svg+='<text x="'+lx.toFixed(1)+'" y="'+yy.toFixed(1)+'" fill="'+COL.mid+'" font-size="8.5" text-anchor="middle" transform="rotate(-90 '+lx.toFixed(1)+' '+yy.toFixed(1)+')">'+(dv/1000)+'k</text>'; } }
+      svg+='<line x1="'+vx.toFixed(1)+'" y1="'+vyB.toFixed(1)+'" x2="'+(vx-12).toFixed(1)+'" y2="'+vyB.toFixed(1)+'" stroke="'+COL.acc+'" stroke-width="1.5"/>';
+      svg+='<text x="'+(vx-27).toFixed(1)+'" y="'+((vyT+vyB)/2).toFixed(1)+'" fill="'+COL.acc+'" font-size="10.5" text-anchor="middle" transform="rotate(-90 '+(vx-27).toFixed(1)+' '+((vyT+vyB)/2).toFixed(1)+')">TVD '+profFmt(g.tvd)+'</text>';
+      var baseY=Y({x:0,y:g.tvd})+(wArr[casingCount-1]/2)+15, xCtr=X({x:0,y:g.tvd}), xTD=X(g.pos(g.td));
+      svg+='<line x1="'+xCtr.toFixed(1)+'" y1="'+baseY.toFixed(1)+'" x2="'+xTD.toFixed(1)+'" y2="'+baseY.toFixed(1)+'" stroke="'+COL.acc+'" stroke-width="1.3" stroke-dasharray="2 4"/>';
+      var heelMD=g.kop+g.buildMD;
+      for(var mv=Math.ceil(heelMD/100)*100; mv<g.td-1; mv+=100){ var xt=X(g.pos(mv)), majL=(mv%1000===0), mnrL=(mv%500===0); var lnL=majL?10:(mnrL?6:3), cwL=majL?1.2:(mnrL?1:0.5), opL=majL?1:(mnrL?0.8:0.45); var ccL=majL?COL.mid:(mnrL?COL.mid:COL.dim); svg+='<line x1="'+xt.toFixed(1)+'" y1="'+baseY.toFixed(1)+'" x2="'+xt.toFixed(1)+'" y2="'+(baseY+lnL).toFixed(1)+'" stroke="'+ccL+'" stroke-width="'+cwL+'" opacity="'+opL+'"/>'; if(majL){ svg+='<text x="'+xt.toFixed(1)+'" y="'+(baseY+20).toFixed(1)+'" fill="'+COL.mid+'" font-size="9" text-anchor="middle">'+(mv/1000)+'k</text>'; } }
+      var xtd=X(g.pos(g.td)); svg+='<line x1="'+xtd.toFixed(1)+'" y1="'+baseY.toFixed(1)+'" x2="'+xtd.toFixed(1)+'" y2="'+(baseY+12).toFixed(1)+'" stroke="'+COL.acc+'" stroke-width="1.5"/>'; svg+='<text x="'+(xtd+7).toFixed(1)+'" y="'+(baseY+20).toFixed(1)+'" fill="'+COL.acc+'" font-size="9.5" text-anchor="start">TD '+profFmt(g.td)+'</text>';
+    }
+    function onLat(md){ return !g.vertical && md>g.kop; }
+    function bar(md,color){ var p=g.pos(md), e=Math.max(1,g.td*0.002); var ax=X(g.pos(md-e)),ay=Y(g.pos(md-e)),bx2=X(g.pos(md+e)),by=Y(g.pos(md+e)); var dx=bx2-ax,dy=by-ay,L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L,w=widthAt(md)/2+1.5,cx=X(p),cy=Y(p); return '<line x1="'+(cx-nx*w).toFixed(1)+'" y1="'+(cy-ny*w).toFixed(1)+'" x2="'+(cx+nx*w).toFixed(1)+'" y2="'+(cy+ny*w).toFixed(1)+'" stroke="'+color+'" stroke-width="2.5"/>'; }
+    function normalUp(md,dist){ var p=g.pos(md), e=Math.max(1,g.td*0.002); var ax=X(g.pos(md-e)),ay=Y(g.pos(md-e)),bx=X(g.pos(md+e)),by=Y(g.pos(md+e)); var dx=bx-ax,dy=by-ay,L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L; if(ny>0){nx=-nx;ny=-ny;} return {x:X(p)+nx*dist, y:Y(p)+ny*dist}; }
+    var LBL=[];
+    function addLabel(md,text,color,extra){ var p=g.pos(md), w=widthAt(md)/2, side,x,y,mY; if(onLat(md)){ side='above'; var o=normalUp(md,w+8+(extra||0)); x=o.x; y=o.y; mY=o.y; } else { side='right'; x=X(p)+w+9+(extra||0); y=Y(p)+4; mY=1e9; } LBL.push({ax:X(p),ay:Y(p),side:side,x:x,y:y,maxY:mY,text:text,color:color}); }
+    var hot='';
+    function hotspot(md,key){ var p=g.pos(md), r=widthAt(md)/2+10; return '<rect data-lbl="'+key+'" x="'+(X(p)-r).toFixed(1)+'" y="'+(Y(p)-r).toFixed(1)+'" width="'+(2*r).toFixed(1)+'" height="'+(2*r).toFixed(1)+'" fill="transparent" style="cursor:pointer"/>'; }
+    function dot(md){ var p=g.pos(md), w=widthAt(md)/2; if(onLat(md)){ var o=normalUp(md,w+5); return '<circle cx="'+o.x.toFixed(1)+'" cy="'+o.y.toFixed(1)+'" r="2.2" fill="'+COL.mid+'"/>'; } return '<circle cx="'+(X(p)+w+5).toFixed(1)+'" cy="'+Y(p).toFixed(1)+'" r="2.2" fill="'+COL.mid+'"/>'; }
+    function staticMarker(md,key,text,color){ svg+=bar(md,(key==='kop')?COL.acc:COL.txt); if(window._lblOn[key]) addLabel(md,text,color); else svg+=dot(md); hot+=hotspot(md,key); }
+    staticMarker(0,'surface','Surface',COL.mid);
+    for(var i2=1;i2<=casingCount;i2++){ var shoe=getShoe(i2); if(!isFinite(shoe))continue; staticMarker(shoe,(i2<casingCount)?('csg'+i2):'TD',(i2<casingCount)?('Csg '+i2+' shoe'):'TD',(i2<casingCount)?COL.mid:COL.txt); }
+    if(!g.vertical) staticMarker(g.kop,'kop','KOP',COL.acc);
+    var spot=num('spotDepth');
+    if(isFinite(spot)&&spot>=0&&spot<=g.td){ var mp=g.pos(spot); svg+='<circle cx="'+X(mp).toFixed(1)+'" cy="'+Y(mp).toFixed(1)+'" r="7" fill="none" stroke="'+COL.spot+'" stroke-width="2.5"/>'; svg+='<circle cx="'+X(mp).toFixed(1)+'" cy="'+Y(mp).toFixed(1)+'" r="2.5" fill="'+COL.spot+'"/>'; if(window._lblOn['spot']) addLabel(spot,'Spot',COL.spot); hot+=hotspot(spot,'spot'); }
+    var ws=num('depth');
+    if(isFinite(ws)&&ws>=0&&ws<=g.td){ if(window._lblOn['string']) addLabel(ws,'String',COL.str); else svg+=dot(ws); hot+=hotspot(ws,'string'); }
+    /* AV panel, top-right. Replaces the old inline "AV nnn fpm" labels on the
+       bore. Stacked shallowest-to-deepest so the list reads like the well.
+       Type is 38 SVG units: the graphic renders at roughly half scale on a
+       390px phone, so that lands near 19px on glass — bigger than the 16px
+       HTML row it replaces. */
+    /* Park the panel clear of whatever the bore actually occupies in the top
+       half — a vertical hole draws down the middle, a boot hugs the left. */
+    var _boreR=0;
+    pts.forEach(function(pp){ if(Y(pp)<H*0.55){ var xx=X(pp); if(xx>_boreR) _boreR=xx; } });
+    var PW=250, PX=Math.max(430,_boreR+34);
+    if(PX+PW>W-padR) PX=Math.max(padL, W-padR-PW);
+    var PY=96, PGAP=62, PR=PX+PW, panelEnd=PY-30;
+    if(AVROWS.length){
+      /* Plain stack: label left, number right-aligned to the rule. No spine,
+         no ticks — the ordering alone carries shallow-to-deep. */
+      svg+='<text x="'+PX+'" y="'+(PY-38)+'" fill="'+COL.mid+'" font-size="12.5" letter-spacing="1.8" font-family="\'Barlow\',sans-serif">ANNULAR VELOCITY &#183; FPM</text>';
+      svg+='<line x1="'+PX+'" y1="'+(PY-28)+'" x2="'+PR+'" y2="'+(PY-28)+'" stroke="'+COL.rule+'" stroke-width="1"/>';
+      AVROWS.forEach(function(rw,ix){
+        var yy=PY+ix*PGAP;
+        svg+='<text x="'+PX+'" y="'+yy+'" fill="'+COL.mid+'" font-size="13" letter-spacing=".6" font-family="\'Barlow\',sans-serif">CSG '+rw.i+'</text>';
+        svg+='<text x="'+PR+'" y="'+(yy+5)+'" fill="'+rw.c+'" font-size="38" font-weight="600" text-anchor="end" font-family="\'JetBrains Mono\',monospace">'+rw.v+'</text>';
+      });
+      panelEnd=PY+(AVROWS.length-1)*PGAP+20;
+    }
+    /* Current depth, read straight off the input. Shown against TD so a depth
+       left over from the last stand is obvious at a glance — that is the whole
+       point of it being here. Turns red if it is deeper than the well. */
+    var _cd=num('depth');
+    if(isFinite(_cd)&&_cd>=0){
+      /* Stacked, not inline like the AV rows — "CURRENT DEPTH" is a long label
+         and it collided with the number at every width. Stacking also sets the
+         block apart from the velocities above it, which is what it should be. */
+      var _over=(isFinite(g.td)&&_cd>g.td+0.5), cy=panelEnd+38;
+      svg+='<line x1="'+PX+'" y1="'+(cy-26)+'" x2="'+PR+'" y2="'+(cy-26)+'" stroke="'+COL.rule+'" stroke-width="1"/>';
+      svg+='<text x="'+PX+'" y="'+cy+'" fill="'+COL.mid+'" font-size="12.5" letter-spacing="1.6" font-family="\'Barlow\',sans-serif">CURRENT DEPTH</text>';
+      svg+='<text x="'+PR+'" y="'+(cy+42)+'" fill="'+(_over?COL.lo:COL.txt)+'" font-size="34" font-weight="600" text-anchor="end" font-family="\'JetBrains Mono\',monospace">'+profFmt(_cd)+'</text>';
+      svg+='<text x="'+PR+'" y="'+(cy+64)+'" fill="'+(_over?COL.lo:COL.mid)+'" font-size="11.5" text-anchor="end" font-family="\'Barlow\',sans-serif">'+
+           (_over?('deeper than TD '+profFmt(g.td)):('of '+profFmt(g.td)+' ft TD'))+'</text>';
+    }
+    function lbox(L){ var tw=L.text.length*6.0+8, left=(L.side==='above')?L.x-tw/2:L.x-4; return {l:left,r:left+tw,t:L.y-11,b:L.y+4}; }
+    function lhit(a,b){ var A=lbox(a),B=lbox(b); return !(A.r<B.l-2||A.l>B.r+2||A.b<B.t-1||A.t>B.b+1); }
+    var pipePts=[]; for(var pk=0;pk<=120;pk++){ var pmd=g.td*pk/120, pp=g.pos(pmd); pipePts.push({x:X(pp),y:Y(pp),r:widthAt(pmd)/2+2}); }
+    function hitsPipe(L){ var b=lbox(L); for(var q=0;q<pipePts.length;q++){ var pt=pipePts[q]; var qx=Math.max(b.l,Math.min(pt.x,b.r)), qy=Math.max(b.t,Math.min(pt.y,b.b)); if((pt.x-qx)*(pt.x-qx)+(pt.y-qy)*(pt.y-qy) < pt.r*pt.r) return true; } return false; }
+    for(var it=0; it<140; it++){ var moved=false;
+      for(var a=0;a<LBL.length;a++) for(var b3=a+1;b3<LBL.length;b3++){ if(lhit(LBL[a],LBL[b3])){ var A=lbox(LBL[a]),B=lbox(LBL[b3]); var push=(Math.min(A.b,B.b)-Math.max(A.t,B.t))/2+0.7; if(LBL[a].y<=LBL[b3].y){ LBL[a].y-=push; LBL[b3].y+=push; } else { LBL[a].y+=push; LBL[b3].y-=push; } moved=true; } }
+      for(var c=0;c<LBL.length;c++){ var Lc=LBL[c]; if(Lc.side==='above' && hitsPipe(Lc)){ var bb=lbox(Lc), bcx=(bb.l+bb.r)/2, bcy=(bb.t+bb.b)/2, bd=1e9, bpx=bcx, bpy=bcy; for(var pj=0;pj<pipePts.length;pj++){ var pt2=pipePts[pj], dd=(pt2.x-bcx)*(pt2.x-bcx)+(pt2.y-bcy)*(pt2.y-bcy); if(dd<bd){bd=dd;bpx=pt2.x;bpy=pt2.y;} } var nvx=bcx-bpx, nvy=bcy-bpy, vl=Math.hypot(nvx,nvy)||1; Lc.x+=(nvx/vl)*2; Lc.y+=(nvy/vl)*2; moved=true; } if(Lc.y>Lc.maxY) Lc.y=Lc.maxY; }
+      if(!moved) break; }
+    LBL.forEach(function(L){ var tw=L.text.length*6.0+8, anc=(L.side==='above')?'middle':'start', cx=(L.side==='above')?L.x-tw/2:L.x-4; var yy=Math.max(46,Math.min(L.y,H-22)); if(L.side==='above' && Math.hypot(L.x-L.ax,yy-L.ay)>26){ svg+='<line x1="'+L.ax.toFixed(1)+'" y1="'+L.ay.toFixed(1)+'" x2="'+L.x.toFixed(1)+'" y2="'+(yy-3).toFixed(1)+'" stroke="'+L.color+'" stroke-width="0.8" opacity="0.45" pointer-events="none"/>'; } svg+='<rect x="'+cx.toFixed(1)+'" y="'+(yy-11).toFixed(1)+'" width="'+tw.toFixed(1)+'" height="15" rx="3" fill="'+COL.surf+'" opacity="0.94" pointer-events="none"/>'; svg+='<text x="'+L.x.toFixed(1)+'" y="'+yy.toFixed(1)+'" fill="'+L.color+'" font-size="11" text-anchor="'+anc+'" pointer-events="none">'+L.text+'</text>'; });
+    svg+=hot; svg+='</svg>';
+    host.innerHTML=svg;
+    Array.prototype.forEach.call(host.querySelectorAll('[data-lbl]'),function(el){ el.addEventListener('click',function(){ var key=this.getAttribute('data-lbl'); window._lblOn[key]=!window._lblOn[key]; renderProfile(); }); });
+    /* The legend is split. The colour decoder is the only part you must read to
+       understand the picture, so it stays visible. The rest is reference and
+       folds away — the full text ran 188px on a phone, taller than the 235px
+       graphic it was explaining, and it pushed the graphic off the screen. */
+    if(legEl){ legEl.innerHTML=
+      'Work string coloured by its section&rsquo;s annular velocity &mdash; '+
+      '<b style="color:'+COL.lo+'">under '+_bnd.lo+'</b> too slow &middot; '+
+      '<b style="color:'+COL.md+'">'+_bnd.lo+'&ndash;'+_bnd.hi+'</b> marginal &middot; '+
+      '<b style="color:'+COL.hi+'">over '+_bnd.hi+'</b> good.'; }
+    var legMore=document.getElementById('profLegendMore');
+    if(legMore){ legMore.innerHTML=
+      '<b style="color:'+COL.csg+'">Grey</b> = casing. The inner line is the work string; the gap between them is the annulus &mdash; so the colour sits on the pipe but describes the gap around it. '+
+      'The panel lists the same velocities, shallowest at the top, and only for sections the string actually reaches. '+
+      'Those thresholds are a field rule of thumb, not a published spec &mdash; change them under the graphic. '+
+      'Markers: the <b>ring</b> is the spot depth, the <b>short bar across the bore</b> is the KOP. Dotted scales are TVD and lateral MD '+
+      '(ticks: major 1,000 ft &middot; minor 500 &middot; subdivision 100). '+
+      'Tap any marker to label it; <b>double-tap</b> the graphic to fit it to the screen. '+
+      'Schematic &mdash; not survey-accurate; the lateral stays neutral by design.'; }
+  }
+
+  // ---- Auto-restore: persist the whole job setup to localStorage so a swiped-closed PWA resumes where it left off ----
+  var SAVE_KEY='nfc-bottomsup-v1';
+  function _val(id){ var e=document.getElementById(id); return e?e.value:''; }
+  function _setVal(id,v){ var e=document.getElementById(id); if(e&&v!==undefined&&v!==null) e.value=v; }
+  function _setSeg(segId,attr,v){ var seg=document.getElementById(segId); if(!seg)return; Array.prototype.forEach.call(seg.querySelectorAll('button'),function(b){ var on=b.getAttribute(attr)===String(v); b.classList.toggle('on', on); if(b.getAttribute('role')==='radio') b.setAttribute('aria-checked', on?'true':'false'); }); }
+  function saveState(){ try{ var st={mode:mode,casingCount:casingCount,clockFmt:clockFmt,coilOD:_val('coilOD'),reel:_val('reel'),coilID:_val('coilID'),coilLen:_val('coilLen'),stickSize:_val('stickSize'),stickWt:_val('stickWt'),tvd:_val('tvd'),kop:_val('kop'),depth:_val('depth'),pump:_val('pump'),ret:_val('ret'),spotDepth:_val('spotDepth'),chemVol:_val('chemVol'),sent:_val('sent'),avLo:_val('avLo'),avHi:_val('avHi'),csg:[]}; for(var i=1;i<=3;i++){ st.csg.push({size:_val('csgSize'+i),wt:_val('csgWt'+i),custom:_val('csgCustom'+i),to:_val('csgTo'+i)}); } localStorage.setItem(SAVE_KEY,JSON.stringify(st)); }catch(e){} }
+  function restoreState(){ var st; try{ st=JSON.parse(localStorage.getItem(SAVE_KEY)||'null'); }catch(e){ st=null; } if(!st) return false;
+    if(st.clockFmt){ clockFmt=st.clockFmt; setFmtBtn(); }
+    if(st.casingCount){ applyCount(st.casingCount); _setSeg('csgCountSeg','data-n',st.casingCount); }
+    if(st.csg){ for(var i=1;i<=3;i++){ var c=st.csg[i-1]; if(!c)continue; if(c.size){ _setVal('csgSize'+i,c.size); syncCsg(i); } if(c.size==='__custom'){ _setVal('csgCustom'+i,c.custom); } else { _setVal('csgWt'+i,c.wt); } _setVal('csgTo'+i,c.to); } }
+    if(st.mode){ applyMode(st.mode); _setSeg('modeSeg','data-mode',st.mode); }
+    _setVal('coilOD',st.coilOD);
+    if(st.stickSize){ _setVal('stickSize',st.stickSize); populateStickWt(); _setVal('stickWt',st.stickWt); }
+    ['reel','coilID','coilLen','tvd','kop','depth','pump','ret','spotDepth','chemVol','avLo','avHi'].forEach(function(id){ _setVal(id,st[id]); });
+    if(st.sent){ _setVal('sent',st.sent); }
+    return true;
+  }
+  function clearJob(){ try{ localStorage.removeItem(SAVE_KEY); }catch(e){} if(window.location&&window.location.reload) window.location.reload(); }
+
+  /* ---- saved wells ------------------------------------------------------
+     A saved well is the SETUP that repeats from job to job on the same
+     program: mode, casing count, casing sizes/weights/IDs and their depths,
+     TVD/KOP, and the work-string setup. Deliberately NOT saved, because they
+     move during a job and a stale value is worse than a blank one:
+     current depth, time sent, pump rate, return rate, spot depth, chem volume.
+     Separate from SAVE_KEY, which is the "where I left off" auto-restore.
+  --------------------------------------------------------------------- */
+  var WELLS_KEY='nfc-bottomsup-wells', WELLS_MAX=25;
+  function loadWells(){ try{ var a=JSON.parse(localStorage.getItem(WELLS_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function storeWells(a){ try{ localStorage.setItem(WELLS_KEY, JSON.stringify(a.slice(0,WELLS_MAX))); return true; }catch(e){ return false; } }
+  function collectSetup(){
+    var st={mode:mode,casingCount:casingCount,coilOD:_val('coilOD'),reel:_val('reel'),coilID:_val('coilID'),coilLen:_val('coilLen'),
+            stickSize:_val('stickSize'),stickWt:_val('stickWt'),tvd:_val('tvd'),kop:_val('kop'),avLo:_val('avLo'),avHi:_val('avHi'),csg:[]};
+    for(var i=1;i<=3;i++){ st.csg.push({size:_val('csgSize'+i),wt:_val('csgWt'+i),custom:_val('csgCustom'+i),to:_val('csgTo'+i)}); }
+    return st;
+  }
+  function applySetup(st){
+    if(!st) return;
+    if(st.casingCount){ applyCount(st.casingCount); _setSeg('csgCountSeg','data-n',st.casingCount); }
+    if(st.csg){ for(var i=1;i<=3;i++){ var c=st.csg[i-1]; if(!c)continue; if(c.size){ _setVal('csgSize'+i,c.size); syncCsg(i); } if(c.size==='__custom'){ _setVal('csgCustom'+i,c.custom); } else { _setVal('csgWt'+i,c.wt); } _setVal('csgTo'+i,c.to); } }
+    if(st.mode){ applyMode(st.mode); _setSeg('modeSeg','data-mode',st.mode); }
+    _setVal('coilOD',st.coilOD);
+    if(st.stickSize){ _setVal('stickSize',st.stickSize); populateStickWt(); _setVal('stickWt',st.stickWt); }
+    ['reel','coilID','coilLen','tvd','kop','avLo','avHi'].forEach(function(id){ _setVal(id,st[id]); });
+    recalc();
+  }
+  // "7″ × 5½″ · TD 20,000 ft" — the line under a saved well's name, and the
+  // default name offered when saving.
+  function setupSummary(st){
+    var sizes=[], n=st.casingCount||1;
+    for(var i=0;i<n;i++){ var c=st.csg&&st.csg[i]; if(!c)continue; var s=c.size; if(!s) continue;
+      if(s==='__custom'){ sizes.push(c.custom?(c.custom+'″ ID'):'custom'); }
+      else { var o=document.querySelector('#csgSize'+(i+1)+' option[value="'+s+'"]'); sizes.push(o?o.textContent:(s+'″')); } }
+    var td=st.csg&&st.csg[n-1]?parseFloat(String(st.csg[n-1].to).replace(/,/g,'')):NaN;
+    var parts=[]; if(sizes.length) parts.push(sizes.join(' × '));
+    if(isFinite(td)&&td>0) parts.push('TD '+Math.round(td).toLocaleString());
+    return parts.join('  ·  ') || 'no casing entered yet';
+  }
+
+  /* ---- modal ---- */
+  var _modal=document.getElementById('modal');
+  function closeModal(){ if(_modal) _modal.hidden=true; }
+  function openModal(title,sub,build){
+    if(!_modal) return;
+    document.getElementById('modalTtl').textContent=title;
+    document.getElementById('modalSub').textContent=sub||'';
+    var body=document.getElementById('modalBody'); body.innerHTML=''; build(body);
+    _modal.hidden=false;
+  }
+  if(_modal){
+    _modal.addEventListener('click',function(e){ if(e.target===_modal) closeModal(); });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!_modal.hidden) closeModal(); });
+  }
+  function mkBtn(label,cls,fn){ var b=document.createElement('button'); b.type='button'; b.className='mbtn'+(cls?(' '+cls):''); b.textContent=label; b.addEventListener('click',fn); return b; }
+
+  function openSaveWell(){
+    var wells=loadWells(), setup=collectSetup();
+    openModal('Save this well','Saves the casing program, well profile and work string so the next job on this well only needs its depths and rates.',function(body){
+      var wrap=document.createElement('div'); wrap.className='fld';
+      wrap.innerHTML='<label for="wellName">Label</label><div class="ibox"><input id="wellName" type="text" maxlength="40" placeholder="e.g. Chevron Loco Hills 7×5½"></div>';
+      body.appendChild(wrap);
+      var msg=document.createElement('div'); msg.className='modalnote'; msg.textContent=setupSummary(setup); body.appendChild(msg);
+      var foot=document.createElement('div'); foot.className='mfoot';
+      var save=mkBtn('Save','prim',function(){
+        var el=document.getElementById('wellName'), nm=(el.value||'').trim() || setupSummary(setup);
+        var list=loadWells(), hit=-1;
+        for(var i=0;i<list.length;i++){ if(list[i].name.toLowerCase()===nm.toLowerCase()){ hit=i; break; } }
+        if(hit>-1){ list.splice(hit,1); msg.textContent='Replaced the saved well with the same label.'; }
+        list.unshift({name:nm,when:new Date().toISOString(),data:setup});
+        if(!storeWells(list)){ msg.textContent='Could not save — this browser is blocking storage.'; return; }
+        closeModal();
+      });
+      foot.appendChild(save); foot.appendChild(mkBtn('Cancel','',closeModal)); body.appendChild(foot);
+      if(wells.length>=WELLS_MAX){ var w=document.createElement('div'); w.className='modalnote'; w.textContent='You have '+WELLS_MAX+' saved wells — the oldest will drop off.'; body.appendChild(w); }
+      var inp=document.getElementById('wellName'); if(inp&&inp.focus) try{ inp.focus(); }catch(e){}
+    });
+  }
+
+  function openNewJob(){
+    openModal('New job','',function(body){
+      body.appendChild(mkBtn('Start from scratch','prim',function(){ closeModal(); clearJob(); }));
+      var wells=loadWells();
+      var h=document.createElement('div'); h.className='modalsub'; h.style.margin='18px 0 0';
+      h.textContent = wells.length ? 'Or start from a saved well:' : 'No saved wells yet — set one up and tap “Save well”.';
+      body.appendChild(h);
+      if(wells.length){
+        var list=document.createElement('div'); list.className='wells';
+        wells.forEach(function(rec,idx){
+          var row=document.createElement('div'); row.className='wellrow';
+          var nm=document.createElement('div'); nm.className='nm';
+          var b=document.createElement('b'); b.textContent=rec.name;
+          var s=document.createElement('span'); s.textContent=setupSummary(rec.data||{});
+          nm.appendChild(b); nm.appendChild(s); row.appendChild(nm);
+          var op=document.createElement('button'); op.type='button'; op.className='op'; op.textContent='Open';
+          op.addEventListener('click',function(){ closeModal(); applySetup(rec.data); if(window.scrollTo) window.scrollTo({top:0,behavior:STILL?'auto':'smooth'}); });
+          row.appendChild(op);
+          var del=document.createElement('button'); del.type='button'; del.className='del'; del.setAttribute('aria-label','Delete '+rec.name); del.innerHTML='&times;';
+          del.addEventListener('click',function(){ var a=loadWells(); a.splice(idx,1); storeWells(a); openNewJob(); });
+          row.appendChild(del);
+          list.appendChild(row);
+        });
+        body.appendChild(list);
+      }
+      var note=document.createElement('div'); note.className='modalnote';
+      note.textContent='Saved wells live on this device only — they are not synced, and clearing this browser’s site data removes them.';
+      body.appendChild(note);
+      var foot=document.createElement('div'); foot.className='mfoot'; foot.appendChild(mkBtn('Cancel','',closeModal)); body.appendChild(foot);
+    });
+  }
+  if(typeof window!=="undefined"){ window.__openSaveWell=openSaveWell; window.__openNewJob=openNewJob; window.__loadWells=loadWells; window.__collectSetup=collectSetup; window.__applySetup=applySetup; }
+
+  function recalc(){
+    for(var i=1;i<=3;i++){ var note=document.getElementById('csgIdNote'+i); if(i<=casingCount){ var id=getCsgID(i); note.textContent=isFinite(id)?("ID "+id.toFixed(3)+"″"):""; } else note.textContent=""; }
+    var r=compute(); var sent=document.getElementById('sent').value;
+    for(var k=1;k<=3;k++){ var ve=document.getElementById('csgVol'+k); if(ve){ var vv=(k<=casingCount)?r.secVols[k-1]:NaN; ve.textContent=isFinite(vv)?vv.toFixed(1):"—"; } }
+    if(mode==='stick'){ var sv=document.getElementById('stickVol'); sv.textContent=isFinite(r.stickVol)?(r.stickVol.toFixed(1)+" bbl"):"—"; }
+    var warn=document.getElementById('warn');
+    if(r.neg){ warn.className="warnbox show"; warn.textContent="A casing ID is not larger than the string OD — check those."; }
+    else if(r.orderBad){ warn.className="warnbox show"; warn.textContent="Shoe and TD depths must increase top-down."; }
+    else if(isFinite(num('tvd'))&&isFinite(num('csgTo'+casingCount))&&num('tvd')>num('csgTo'+casingCount)){ warn.className="warnbox show"; warn.textContent="TVD can't be deeper than TD."; }
+    else if(isFinite(num('kop'))&&isFinite(num('tvd'))&&num('kop')>num('tvd')){ warn.className="warnbox show"; warn.textContent="Kickoff can't be below TVD."; }
+    // Current depth deeper than the hole — almost always a depth left over from a previous run.
+    else if(isFinite(num('depth'))&&isFinite(num('csgTo'+casingCount))&&num('depth')>num('csgTo'+casingCount)){ warn.className="warnbox show"; warn.textContent="Current depth is deeper than TD — check the depth."; }
+    else { warn.className="warnbox"; }
+    var hBig=document.getElementById('hBig'), hSub=document.getElementById('hSub');
+    var arr=addClock(sent,r.headline);
+    if(arr){ hBig.textContent=arr; hSub.textContent=fmtHM(r.headline)+(isFinite(r.headline)?(" · "+r.headline.toFixed(1)+" min"):""); }
+    else { hBig.textContent=fmtHM(r.headline); hSub.textContent=isFinite(r.headline)?"set time sent for arrival":"enter rate & depth"; }
+    document.getElementById('downVal').textContent=isFinite(r.down)?fmtHM(r.down):"—";
+    document.getElementById('upVal').textContent=isFinite(r.up)?fmtHM(r.up):"—";
+    document.getElementById('downVol').textContent=isFinite(r.downVol)?(r.downVol.toFixed(1)+" bbl"):"—";
+    document.getElementById('upVol').textContent=(isFinite(r.annVol)&&r.allLen&&r.annVol>0)?(r.annVol.toFixed(1)+" bbl"):"—";
+    document.getElementById('stsVal').textContent=isFinite(r.sts)?(r.sts.toFixed(1)+" bbl"):"—";
+    var _b=avBounds();
+    var avParts=[]; for(var a=0;a<r.avList.length;a++){ if(isFinite(r.avList[a])){ var vv=Math.round(r.avList[a]); avParts.push('<span class="cpfx">csg'+(a+1)+'</span> <span class="'+avBand(vv,_b)+'">'+vv+'</span>'); } }
+    document.getElementById('avVal').innerHTML = avParts.length ? (avParts.join(" · ")+' <span class="cpfx">fpm</span>') : "—";
+    var avk=document.getElementById('avKey');
+    if(avk) avk.innerHTML = avParts.length ? avKeyText(_b) : '';
+    var thn=document.getElementById('avThNote');
+    if(thn) thn.innerHTML = _b.bad
+      ? '<span style="color:var(--warn)">“Green above” must be higher than “Red below” — using the '+AV_LO_DEF+' / '+AV_HI_DEF+' defaults until that is fixed.</span>'
+      : 'Under '+_b.lo+' red &middot; '+_b.lo+'&ndash;'+_b.hi+' amber &middot; over '+_b.hi+' green. Defaults are '+AV_LO_DEF+' / '+AV_HI_DEF+' fpm — a field rule of thumb, not a published spec. Saved with the well.';
+    var spe=document.getElementById('spotVol'); if(spe) spe.textContent=isFinite(r.spotVol)?(r.spotVol.toFixed(1)+" bbl"):"—";
+    var glEl=document.getElementById('glVal');
+    if(isFinite(r.gainLoss)){ var g=r.gainLoss, word=(g>0.5)?"loss":((g<-0.5)?"gain":"even"); glEl.textContent=Math.abs(g).toFixed(0)+" bbl/hr"+(word==="even"?"":(" "+word)); glEl.style.color=(word==="gain")?"var(--accent)":((word==="loss")?"var(--warn)":"var(--txt-out)"); }
+    else { glEl.textContent="—"; glEl.style.color="var(--txt-out)"; }
+    updateChips(r);
+    renderProfile();
+    saveState();
+  }
+
+  function recheck(){ var id=num('coilID'); var len=num('coilLen'); if(!isFinite(len)) len=num('depth'); var entered=num('reel'); var out=document.getElementById('checkOut'); if(!isFinite(id)||!isFinite(len)){ out.className="delta"; out.textContent="Enter coil ID and length to check the operator's number."; return; } var calc=(id*id/C)*len; var txt="Geometry says "+calc.toFixed(1)+" bbl for "+id+"″ ID × "+Math.round(len)+" ft."; if(isFinite(entered)){ var d=entered-calc,pct=calc>0?Math.abs(d)/calc*100:0,off=pct>10; txt+=" Operator gave "+entered.toFixed(1)+" — "+(d>=0?"+":"")+d.toFixed(1)+" bbl ("+pct.toFixed(0)+"%)."; out.className=off?"delta warn":"delta"; if(off)txt+=" Worth a second look."; } else { out.className="delta"; } out.textContent=txt; }
+
+
+  function segWire(sel, cb){ Array.prototype.forEach.call(document.querySelectorAll(sel+' button'), function(btn){ btn.addEventListener('click', function(){ Array.prototype.forEach.call(document.querySelectorAll(sel+' button'), function(b){ b.classList.remove('on'); if(b.getAttribute('role')==='radio') b.setAttribute('aria-checked','false'); }); btn.classList.add('on'); if(btn.getAttribute('role')==='radio') btn.setAttribute('aria-checked','true'); cb(btn); }); }); }
+  segWire('#modeSeg', function(b){ applyMode(b.getAttribute('data-mode')); recalc(); recheck(); });
+  segWire('#csgCountSeg', function(b){ applyCount(parseInt(b.getAttribute('data-n'),10)); recalc(); });
+  (function(){ var fb=document.getElementById('fmtBtn'); if(!fb) return;
+    fb.addEventListener('click', function(e){ e.stopPropagation(); clockFmt=(clockFmt==='12')?'24':'12'; setFmtBtn(); buildTimeDrum(); recalc(); saveState(); });
+  })();
+  // (the -/+ stepper buttons were replaced by the rate drums)
+  (function(){
+    var t=document.getElementById('avThToggle'), box=document.getElementById('avThBox');
+    if(t&&box) t.addEventListener('click', function(){ var open=box.classList.toggle('open'); t.textContent=(open?"−":"+")+" adjust velocity thresholds"; });
+    var lt=document.getElementById('legToggle'), lb=document.getElementById('legMoreBox');
+    if(lt&&lb) lt.addEventListener('click', function(){ var open=lb.classList.toggle('open'); lt.textContent=(open?"−":"+")+" about these numbers"; });
+    ['avLo','avHi'].forEach(function(id){ var el=document.getElementById(id); if(el) el.addEventListener('input', recalc); });
+  })();
+  document.getElementById('checkToggle').addEventListener('click', function(){ var b=document.getElementById('checkBox'); var open=b.classList.toggle('open'); this.textContent=(open?"−":"+")+" check capacity"; if(open) recheck(); });
+  document.getElementById('coilOD').addEventListener('change', function(){ recalc(); recheck(); });
+  document.getElementById('stickSize').addEventListener('change', function(){ populateStickWt(); recalc(); });
+  document.getElementById('stickWt').addEventListener('change', recalc);
+  [1,2,3].forEach(function(i){ document.getElementById('csgSize'+i).addEventListener('change', function(){ syncCsg(i); recalc(); }); document.getElementById('csgWt'+i).addEventListener('change', recalc); document.getElementById('csgCustom'+i).addEventListener('input', recalc); var to=document.getElementById('csgTo'+i); if(to) to.addEventListener('input', recalc); });
+  ['pump','ret','reel','depth'].forEach(function(id){ document.getElementById(id).addEventListener('input', function(){ recalc(); recheck(); }); });
+  document.getElementById('sent').addEventListener('input', function(){ renderSent(); recalc(); });
+  ['coilID','coilLen'].forEach(function(id){ document.getElementById(id).addEventListener('input', recheck); });
+  (function(){ ['spotDepth','chemVol','tvd','kop'].forEach(function(id){ var el=document.getElementById(id); if(el) el.addEventListener('input', recalc); }); })();
+  /* ---- section collapse ------------------------------------------------
+     Was an instant display:none, which made the page jump. Now the card's
+     real height is measured and animated to/from 0 along with its padding,
+     borders and opacity, so nothing has to be guessed and any card height
+     works. .col (display:none) is still the resting collapsed state, so the
+     layout and the saved-job restore path are unchanged.
+     Honours prefers-reduced-motion: reduce -> instant, as before.
+  --------------------------------------------------------------------- */
+  var STILL = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var SLIDE_MS = 220;
+  function setCollapsed(t,c,quiet){
+    var card=document.getElementById(t); if(!card) return;
+    var h=document.querySelector('.sech[data-target="'+t+'"]');
+    if(h){ var car=h.querySelector('.caret'); if(car) car.classList.toggle('col',c); }
+    var already = card.classList.contains('col');
+    if(already===c) return;
+    if(STILL || quiet || !card.style){ card.classList.toggle('col',c); return; }
+    if(card._slide){ clearTimeout(card._slide); card._slide=null; }
+    var s=card.style;
+    function clear(){ s.transition=''; s.height=''; s.overflow=''; s.opacity=''; s.paddingTop=''; s.paddingBottom=''; s.borderTopWidth=''; s.borderBottomWidth=''; }
+    var TR='height '+SLIDE_MS+'ms ease, padding '+SLIDE_MS+'ms ease, border-width '+SLIDE_MS+'ms ease, opacity '+(SLIDE_MS-40)+'ms ease';
+    if(c){
+      var start=card.scrollHeight;
+      s.transition='none'; s.overflow='hidden'; s.height=start+'px';
+      void card.offsetHeight;
+      s.transition=TR;
+      s.height='0px'; s.paddingTop='0px'; s.paddingBottom='0px'; s.borderTopWidth='0px'; s.borderBottomWidth='0px'; s.opacity='0';
+    } else {
+      card.classList.remove('col');
+      s.transition='none'; s.overflow='hidden'; s.height='auto';
+      var target=card.scrollHeight;
+      s.height='0px'; s.paddingTop='0px'; s.paddingBottom='0px'; s.borderTopWidth='0px'; s.borderBottomWidth='0px'; s.opacity='0';
+      void card.offsetHeight;
+      s.transition=TR;
+      s.height=target+'px'; s.paddingTop=''; s.paddingBottom=''; s.borderTopWidth=''; s.borderBottomWidth=''; s.opacity='1';
+    }
+    card._slide=setTimeout(function(){ clear(); if(c) card.classList.add('col'); card._slide=null; }, SLIDE_MS+30);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.sech'), function(h){ h.addEventListener('click', function(){ var t=h.getAttribute('data-target'); var card=document.getElementById(t); setCollapsed(t, !card.classList.contains('col')); }); });
+  Array.prototype.forEach.call(document.querySelectorAll('.collapse-btn'), function(b){ b.addEventListener('click', function(){ var t=b.getAttribute('data-target'); setCollapsed(t,true); var h=document.querySelector('.sech[data-target="'+t+'"]'); if(h&&h.scrollIntoView) h.scrollIntoView({block:'start',behavior:STILL?'auto':'smooth'}); }); });
+
+  (function(){ var nj=document.getElementById('newJob'); if(nj) nj.addEventListener('click', openNewJob);
+               var sw=document.getElementById('saveWell'); if(sw) sw.addEventListener('click', openSaveWell); })();
+
+  // ---- Light / dark theme ----------------------------------------------------------
+  // Matches the live deploy exactly: data-theme on <html>, persisted under the shared
+  // 'nfc-theme' key so the choice carries across every tool on tools.nfcservices.com.
+  // The icon shows the theme you will GET on tap (sun in dark, moon in light).
+  // Baked in here on purpose so publishing needs no external theme.css / theme.js.
+  (function(){
+    var SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+    var MOON='<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+    var BAR={dark:'#0A0A0A',light:'#F4F3F1'};
+    var KEY='nfc-theme', root=document.documentElement, btn=document.getElementById('nfc-theme-toggle');
+    function apply(t){
+      root.setAttribute('data-theme',t);
+      try{ localStorage.setItem(KEY,t); }catch(e){}
+      if(btn) btn.innerHTML=(t==='dark')?SUN:MOON;
+      var m=document.getElementById('themeColorMeta'); if(m) m.setAttribute('content',BAR[t]||BAR.dark);
+      try{ renderProfile(); }catch(e){}   // graphic colours are baked in at render time
+    }
+    var saved=null; try{ saved=localStorage.getItem(KEY); }catch(e){}
+    apply(saved==='light'?'light':'dark');
+    if(btn) btn.addEventListener('click',function(){ apply(root.getAttribute('data-theme')==='dark'?'light':'dark'); });
+    if(typeof window!=="undefined") window.__applyTheme=apply;
+  })();
+  /* ---- collapsing header ------------------------------------------------
+     Was a single threshold (scrollY > 12), which oscillates: collapsing
+     shortens the header, the browser's scroll anchoring lowers scrollY to
+     compensate, that falls back under the threshold, the header expands,
+     and it flaps forever. Fixed with hysteresis — collapse at 64, expand
+     only below 24 — plus overflow-anchor:none on body and a rAF gate so the
+     class is written once per frame and only when the state actually changes.
+     Ported verbatim from staffing-program-guide.html (commit 3703fa3).
+  --------------------------------------------------------------------- */
+  (function(){
+    var h = document.querySelector('.hdr');
+    if (!h) return;
+    var DOWN = 64, UP = 24, collapsed = false, ticking = false;
+    function apply(){
+      ticking = false;
+      var y = window.scrollY || window.pageYOffset || 0;
+      var next = collapsed ? (y > UP) : (y > DOWN);
+      if (next === collapsed) return;
+      collapsed = next;
+      h.classList.toggle('fl-collapsed', collapsed);
+    }
+    window.addEventListener('scroll', function(){
+      if (ticking) return;
+      ticking = true;
+      (window.requestAnimationFrame || function(f){ setTimeout(f, 16); })(apply);
+    }, { passive:true });
+    apply();
+  })();
+  (function(){ var host=document.getElementById('profSvg'); if(host){ var lt=0; host.addEventListener('click',function(){ var now=Date.now(); if(now-lt<350){ host.classList.toggle('fit'); lt=0; } else lt=now; }); } })();
+  if(typeof window!=="undefined"){ window.__compute=compute; window.__applyMode=applyMode; window.__getStringOD=getStringOD; window.__renderSent=renderSent; window.__saveState=saveState; window.__restoreState=restoreState; }
+
+  populateCoilOD(); populateStickSize(); populateStickWt(STICK_DEFAULT.id);
+  [1,2,3].forEach(function(i){ populateCsgSize(i); syncCsg(i, CSG_DEFAULT[i].id); });
+  applyCount(1); applyMode('coil');
+  (function(){ var n=new Date(); function p(x){return (x<10?"0":"")+x;} document.getElementById('sent').value=p(n.getHours())+":"+p(n.getMinutes()); })();
+  restoreState();
+  setFmtBtn();
+  rateDrum('pumpDrum','pump'); rateDrum('retDrum','ret');
+  DRUMS['pumpDrum'].syncFrom(); DRUMS['retDrum'].syncFrom();
+  setTimeout(function(){ DRUMS['pumpDrum'].arm(); DRUMS['retDrum'].arm(); },420);
+  buildTimeDrum();
+  recalc();
+
+</script>
+</body>
+</html>

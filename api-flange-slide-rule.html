@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Flange Slide Rule">
+<meta name="theme-color" content="#0D0D0D">
+<title>API Flange Slide Rule</title>
+<!-- theme.css inlined from tools.nfcservices.com for the test repo -->
+<style>
+:root[data-theme="dark"]{
+  --bg:#0A0A0A; --surface:#141414; --surface-2:#1B1B1B;
+  --text:#F0F0F0; --text-mid:#8A8A8A; --text-dim:#5A5A5A;
+  --rule:#2A2A2A; --rule-strong:#3A3A3A;
+  --accent:#C00000; --accent-bright:#E10600;
+}
+:root[data-theme="light"]{
+  --bg:#F4F3F1; --surface:#FFFFFF; --surface-2:#FAFAF8;
+  --text:#1A1A1A; --text-mid:#6A6A6A; --text-dim:#9A9A9A;
+  --rule:#DCDCDC; --rule-strong:#C5C5C5;
+  --accent:#C00000; --accent-bright:#C00000;
+}
+html,body{transition:background-color .25s ease,color .25s ease;}
+#nfc-theme-toggle{
+  position:fixed;top:14px;right:14px;z-index:9999;
+  width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+  border-radius:8px;border:1px solid var(--rule-strong,#3A3A3A);
+  background:var(--surface,#141414);color:var(--text,#F0F0F0);
+  cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.18);
+  transition:background .2s,border-color .2s,color .2s,transform .15s;
+  -webkit-tap-highlight-color:transparent;font:inherit;padding:0;
+}
+#nfc-theme-toggle:hover{border-color:var(--accent,#C00000);color:var(--accent,#C00000);transform:translateY(-1px);}
+#nfc-theme-toggle svg{width:20px;height:20px;display:block;}
+@media print{#nfc-theme-toggle{display:none !important;}}
+
+</style>
+<!-- theme.js inlined from tools.nfcservices.com for the test repo -->
+<script>
+(function(){
+  var KEY='nfc-theme';
+  function pref(){
+    try{var s=localStorage.getItem(KEY);if(s==='light'||s==='dark')return s;}catch(e){}
+    return location.pathname.indexOf('/internal')===0 ? 'light' : 'dark';
+  }
+  function apply(t){document.documentElement.setAttribute('data-theme',t);}
+  apply(pref());
+  var SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+  var MOON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+  var btn;
+  function paint(){
+    if(!btn)return;
+    var dark=document.documentElement.getAttribute('data-theme')!=='light';
+    btn.innerHTML=dark?SUN:MOON;
+    btn.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');
+    btn.setAttribute('title',dark?'Light mode':'Dark mode');
+  }
+  function toggle(){
+    var next=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
+    apply(next);
+    try{localStorage.setItem(KEY,next);}catch(e){}
+    paint();
+  }
+  function mount(){
+    btn=document.createElement('button');
+    btn.id='nfc-theme-toggle';
+    btn.type='button';
+    btn.addEventListener('click',toggle);
+    document.body.appendChild(btn);
+    paint();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
+})();
+
+</script>
+  <script src="/analytics.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --fl-bg: var(--bg, #0D0D0D);
+  --fl-surface: var(--surface, #161616);
+  --fl-card: var(--surface-2, #1C1C1C);
+  --fl-border: var(--rule, #282828);
+  --fl-border-active: var(--accent, #D42B2B);
+  --fl-accent: var(--accent, #D42B2B);
+  --fl-accent-dim: rgba(192, 0, 0, 0.08);
+  --fl-text: var(--text, #F0F0F0);
+  --fl-text-mid: var(--text-mid, #999);
+  --fl-text-dim: var(--text-dim, #3A3A3A);
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body: 'Barlow', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: var(--font-body);
+  background: var(--fl-bg);
+  color: var(--fl-text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+h1 { font-family: var(--font-display); font-weight: 400; letter-spacing: 0.04em; }
+.mono { font-family: var(--font-mono); }
+
+/* Layout */
+.app { max-width: 680px; margin: 0 auto; padding: 0 14px 80px; display: flex; flex-direction: column; gap: 22px; }
+.header { background: var(--fl-surface); border-bottom: 1px solid var(--fl-border); padding: 18px 20px 14px; text-align: left; position: sticky; top: 0; z-index: 100; margin: 0 -14px; }
+.header h1 { font-size: 30px; color: var(--fl-text); line-height: 1; letter-spacing: 1.5px; }
+.header .sub { font-size: 10px; color: var(--fl-accent); margin-top: 5px; font-weight: 500; text-transform: uppercase; letter-spacing: 2.5px; }
+
+/* Tabs */
+.tabs { display: flex; gap: 0; overflow: hidden; border: 1px solid var(--fl-border); }
+.tab {
+  flex: 1; padding: 12px 8px; text-align: center;
+  background: var(--fl-surface); color: var(--fl-text-mid);
+  border: none; font-family: var(--font-body); font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+.tab.active { background: var(--fl-accent-dim); color: var(--fl-accent); border-bottom: 2px solid var(--fl-accent); }
+.tab:not(.active):hover { background: var(--fl-card); }
+
+/* Section card containers */
+.section-card { background: var(--fl-card); border: 1px solid var(--fl-border); padding: 18px; }
+
+/* Section labels with extending line */
+.selector-group + .selector-group { margin-top: 22px; }
+.selector-label {
+  font-family: var(--font-display); font-size: 11px; text-transform: uppercase;
+  letter-spacing: 3.5px; color: var(--fl-text-mid); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.selector-label::after { content: ''; flex: 1; height: 1px; background: var(--fl-border); }
+/* Vertical size list */
+.size-list {
+  display: flex; flex-direction: column; gap: 4px; padding: 4px 0;
+}
+.size-list.collapsed { display: none; }
+.size-list-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px;
+  background: var(--fl-surface); border: 1px solid var(--fl-border);
+  cursor: pointer; transition: all 0.15s;
+}
+.size-list-item:active { transform: scale(0.99); }
+.size-list-item.active {
+  background: var(--fl-accent-dim); border-color: var(--fl-accent);
+}
+.size-list-item .size-name {
+  font-family: var(--font-mono); font-size: 20px; font-weight: 600;
+  color: var(--fl-text);
+}
+.size-list-item.active .size-name { color: var(--fl-text); }
+.size-list-item .size-pressures {
+  font-family: var(--font-body); font-size: 11px; color: var(--fl-text-mid);
+  letter-spacing: 0.02em;
+}
+.size-list-item.active .size-pressures { color: var(--fl-accent); opacity: 0.7; }
+
+/* Collapsed size summary bar */
+.size-summary {
+  display: none; padding: 12px 16px;
+  background: var(--fl-accent-dim); border: 1px solid var(--fl-accent);
+  cursor: pointer; transition: all 0.15s;
+  margin-bottom: 4px;
+}
+.size-summary.visible { display: flex; justify-content: space-between; align-items: center; }
+.size-summary:active { transform: scale(0.99); }
+.size-summary .summary-size {
+  font-family: var(--font-mono); font-size: 20px; font-weight: 600;
+  color: var(--fl-text);
+}
+.size-summary .summary-hint {
+  font-family: var(--font-body); font-size: 12px; color: var(--fl-text);
+  opacity: 0.6;
+}
+
+/* Horizontal scroll selectors (pressure, ring numbers) */
+.scroll-selector {
+  display: flex; gap: 6px; overflow-x: auto; padding: 8px 0;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.scroll-selector::-webkit-scrollbar { display: none; }
+.scroll-chip {
+  flex: 1 1 0; text-align: center; padding: 10px 12px;
+  background: var(--fl-surface); border: 1px solid var(--fl-border);
+  color: var(--fl-text); font-family: var(--font-mono); font-size: 20px;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap; font-weight: 600;
+}
+.scroll-chip.active {
+  background: var(--fl-accent-dim); border-color: var(--fl-accent);
+  color: var(--fl-text); box-shadow: 0 0 12px rgba(212,43,43,0.15);
+}
+.scroll-chip:not(.active):active { transform: scale(0.97); }
+
+/* Ring search for reverse lookup */
+.ring-search { position: relative; margin-bottom: 16px; }
+.ring-type-tabs { display: flex; gap: 0; margin-bottom: 8px; overflow: hidden; border: 1px solid var(--fl-border); }
+.ring-type-tab {
+  flex: 1; padding: 8px; text-align: center;
+  background: var(--fl-surface); color: var(--fl-text-mid);
+  border: none; font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+}
+.ring-type-tab.active { background: var(--fl-accent-dim); color: var(--fl-accent); }
+
+/* Multi-match panel */
+.multi-match {
+  background: var(--fl-surface); border: 1px solid var(--fl-border);
+  padding: 12px; margin-bottom: 12px;
+}
+.multi-match .label { font-size: 11px; color: var(--fl-text-mid); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.match-option {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 12px; margin-bottom: 4px;
+  background: var(--fl-surface); border: 1px solid var(--fl-border);
+  cursor: pointer; transition: all 0.15s;
+}
+.match-option.active { border-color: var(--fl-accent); background: var(--fl-accent-dim); }
+.match-option .size { font-family: var(--font-mono); font-weight: 600; font-size: 15px; }
+.match-option .press { font-family: var(--font-mono); font-size: 13px; color: var(--fl-text-mid); }
+
+/* Integrated diagram spec */
+.diagram-spec {
+  background: var(--fl-surface); border: 1px solid var(--fl-border);
+  overflow: hidden;
+}
+.diagram-spec-header {
+  padding: 16px; text-align: center;
+  border-bottom: 1px solid var(--fl-border);
+}
+.diagram-spec-header .ds-context { margin-bottom: 12px; }
+.diagram-spec-header .ds-ctx-val {
+  font-family: var(--font-display); font-size: 26px; color: var(--fl-text); letter-spacing: 1.5px;
+}
+.diagram-spec-header .ds-ctx-sep {
+  font-size: 20px; color: var(--fl-border); margin: 0 12px; vertical-align: middle;
+}
+.diagram-spec-header .ds-notation { font-size: 12px; color: var(--fl-accent); margin-left: 6px; }
+.diagram-spec-header .ds-hero {
+  background: var(--fl-accent-dim); border: 1px solid rgba(212,43,43,0.22);
+  padding: 12px 20px; display: inline-block;
+}
+.diagram-spec-header .ds-hero-ring {
+  font-family: var(--font-mono); font-size: 22px; font-weight: 600; color: var(--fl-text);
+}
+.diagram-spec-header .ds-hero-type {
+  font-family: var(--font-body); font-size: 11px; letter-spacing: 1.5px;
+  color: var(--fl-accent); margin-top: 2px; text-transform: uppercase;
+}
+.diagram-spec-body {
+  padding: 8px; text-align: center;
+}
+.diagram-spec-body svg {
+  width: 100%; max-width: 640px; height: auto;
+}
+
+/* Notes inside the diagram box (sleeve text) */
+.diagram-notes {
+  display: grid; grid-template-columns: 1fr 1.4fr; gap: 12px 14px;
+  border-top: 1px solid var(--fl-border); padding: 12px 16px 14px;
+  text-align: left; font-size: 10px; line-height: 1.45; color: var(--fl-text-mid);
+}
+.diagram-notes .dn-title {
+  font-family: var(--font-display); font-size: 11px; letter-spacing: 1.5px;
+  color: var(--fl-text); margin-bottom: 6px;
+}
+.diagram-notes .thread-row { display: flex; justify-content: space-between; padding: 2px 0; max-width: 170px; }
+.diagram-notes .thread-row .dia { color: var(--fl-text-mid); }
+.diagram-notes .thread-row .spec { font-family: var(--font-mono); color: #AAAAAA; }
+.diagram-notes p { margin: 0 0 8px; }
+.diagram-notes p:last-child { margin-bottom: 0; }
+.diagram-notes .sect { color: var(--fl-accent); font-weight: 600; }
+@media (max-width: 419px) {
+  .diagram-notes { grid-template-columns: 1fr; }
+}
+
+/* Decimal equivalents */
+.dec-panel {
+  background: var(--fl-surface); border: 1px solid var(--fl-border);
+  overflow: hidden;
+}
+.dec-header {
+  padding: 12px 16px; border-bottom: 1px solid var(--fl-border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.dec-header h3 { font-family: var(--font-display); font-size: 18px; letter-spacing: 0.04em; }
+.dec-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+  max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+}
+.dec-grid.open { max-height: 600px; }
+.dec-item {
+  display: flex; justify-content: space-between; padding: 6px 16px;
+  border-bottom: 1px solid var(--fl-border); font-size: 13px;
+}
+.dec-item:nth-child(odd) { border-right: 1px solid var(--fl-border); }
+.dec-frac { color: var(--fl-text-mid); }
+.dec-val { font-family: var(--font-mono); color: #AAAAAA; }
+
+/* Fine print */
+.fine-print {
+  font-size: 11px; color: var(--fl-text-mid); line-height: 1.5;
+  padding: 12px 16px; background: var(--fl-surface);
+  border: 1px solid var(--fl-border);
+}
+.fine-print strong { color: var(--fl-text); font-weight: 500; }
+
+/* Empty state */
+.empty-state {
+  text-align: center; padding: 60px 20px; color: var(--fl-text-dim);
+}
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.3; }
+.empty-state p { font-size: 14px; line-height: 1.5; }
+
+/* Footer */
+.footer {
+  text-align: center; padding: 24px 0; font-size: 12px; color: var(--fl-text-mid); line-height: 1.7;
+}
+.footer a { color: var(--fl-accent); text-decoration: none; font-weight: 600; }
+.footer a:hover { text-decoration: underline; }
+
+/* Hidden */
+.hidden { display: none !important; }
+
+@media (max-width: 360px) {
+  .spec-size { font-size: 24px; }
+  .tab { font-size: 12px; padding: 12px 4px; }
+  .scroll-chip { padding: 8px 12px; font-size: 17px; }
+  .size-list-item { padding: 10px 12px; }
+  .size-list-item .size-name { font-size: 17px; }
+}
+</style>
+<style id="nfc-fieldfix">
+#ds-svg [fill="#0D0D0D"]{fill:var(--fl-card)}
+#ds-svg [fill="#666"]{fill:var(--fl-text-mid)}
+#ds-svg [fill="#D42B2B"]{fill:var(--fl-accent)}
+#ds-svg [stroke="#555"]{stroke:var(--fl-border)}
+#ds-svg [stroke="#666"]{stroke:var(--fl-text-mid)}
+#ds-svg [stroke="#888"]{stroke:var(--fl-text-mid)}
+#ds-svg [stroke="#D42B2B"]{stroke:var(--fl-accent)}
+.header{transition:padding .2s ease;}
+.header h1{transition:font-size .2s ease;margin:0;}
+.header .sub{transition:opacity .15s ease,max-height .2s ease,margin .2s ease;overflow:hidden;max-height:40px;}
+.header.fl-collapsed{padding-top:8px;padding-bottom:8px;}
+.header.fl-collapsed h1{font-size:20px;}
+.header.fl-collapsed .sub{opacity:0;max-height:0;margin-top:0;}
+@media (orientation:landscape){.header{padding-top:8px;padding-bottom:10px;}.header h1{font-size:24px;}.header .sub{font-size:11px;}.header.fl-collapsed{padding-top:6px;padding-bottom:6px;}.header.fl-collapsed h1{font-size:19px;}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <a href="/" style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fl-text-mid);text-decoration:none;display:inline-block;margin-bottom:8px;transition:color 0.2s" onmouseover="this.style.color='var(--fl-accent)'" onmouseout="this.style.color='var(--fl-text-mid)'">&larr; All Tools</a>
+    <h1>API FLANGE SLIDE RULE</h1>
+    <div class="sub">Flange &amp; Ring Gasket Reference &middot; NFC Services</div>
+  </div>
+
+  <!-- Main tabs: Flange lookup vs Ring lookup -->
+  <div class="tabs">
+    <button class="tab active" data-tab="flange" onclick="switchTab('flange')">FLANGE &rarr; RING</button>
+    <button class="tab" data-tab="ring" onclick="switchTab('ring')">RING &rarr; FLANGE</button>
+    <button class="tab" data-tab="decimals" onclick="switchTab('decimals')">DECIMALS</button>
+  </div>
+
+  <!-- FLANGE LOOKUP -->
+  <div id="panel-flange">
+    <div class="selector-group">
+      <div class="selector-label">Flange Size (Nominal)</div>
+      <div class="section-card">
+        <div class="size-summary" id="size-summary" onclick="expandSizeList()">
+          <span class="summary-size" id="summary-size-text"></span>
+          <span class="summary-hint">tap to change</span>
+        </div>
+        <div class="size-list" id="size-scroll"></div>
+      </div>
+    </div>
+    <div class="selector-group">
+      <div class="selector-label">Pressure Rating</div>
+      <div class="section-card">
+        <div class="scroll-selector" id="pressure-scroll"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RING LOOKUP -->
+  <div id="panel-ring" class="hidden">
+    <div class="ring-search">
+      <div class="selector-group">
+        <div class="selector-label">Ring Type</div>
+        <div class="section-card">
+          <div class="ring-type-tabs">
+            <button class="ring-type-tab active" data-type="BX" onclick="switchRingType('BX')">BX</button>
+            <button class="ring-type-tab" data-type="RX" onclick="switchRingType('RX')">RX</button>
+            <button class="ring-type-tab" data-type="R" onclick="switchRingType('R')">R</button>
+          </div>
+        </div>
+      </div>
+      <div class="selector-group">
+        <div class="selector-label">Ring Number</div>
+        <div class="section-card">
+          <div class="size-summary" id="ring-summary" onclick="expandRingList()">
+            <span class="summary-size" id="summary-ring-text"></span>
+            <span class="summary-hint">tap to change</span>
+          </div>
+          <div class="size-list" id="ring-scroll"></div>
+        </div>
+      </div>
+    </div>
+    <div id="multi-match" class="multi-match hidden">
+      <div class="label">Multiple matches &mdash; select configuration</div>
+      <div id="match-options"></div>
+    </div>
+  </div>
+
+  <!-- DECIMAL EQUIVALENTS (third tab) -->
+  <div id="panel-decimals" class="hidden">
+    <div class="dec-panel">
+      <div class="dec-header"><h3>DECIMAL EQUIVALENTS</h3></div>
+      <div class="dec-grid open" id="dec-grid"></div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="empty-state" id="empty-state">
+      <div class="icon">&#9670;</div>
+      <p>Select a flange size and pressure class,<br>or search by ring gasket number</p>
+    </div>
+  </div>
+
+  <!-- INTEGRATED DIAGRAM SPEC (populated by JS) -->
+  <div id="diagram-spec" class="diagram-spec hidden"></div>
+
+
+  <!-- NOTATION LEGEND -->
+  <div class="fine-print">
+    BX ring gaskets are pressure-energized and used with Type 6BX flanges (10M, 15M, 20M). 
+    R and RX rings are used with Type 6B flanges (2M, 3M, 5M). 
+    RX gaskets provide a pressure-energized seal; R gaskets do not.<br>
+    Groove pitch diameters are sourced from metric API 6A tables and converted to inches; minor rounding differences from fractional equivalents may occur.<br>
+    Stud bolt and tap end stud lengths assume RX-gasket service on Type 6B flanges (API 6A Annex I, Tables I.1/I.3, matching the PE ring numbers shown) and BX service on Type 6BX flanges. Plain R-gasket service uses Tables I.5/I.6 &mdash; bolt lengths may differ. Verify before ordering for R-gasket assemblies.
+  </div>
+
+  <div class="footer">
+    API 6A / 6BX &bull; ISO 10423 &bull; Rev. 2026-06-18<br>
+    NFC Services &bull; <a href="https://www.nfcservices.com" target="_blank" rel="noopener">nfcservices.com</a>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const FLANGE_DATA = [{"nominal_size":"2-1/16\"","pressure_class":"2M","std_ring_no":"R-23","pe_ring_no":"RX-23","mss_series":null,"flange_od":"6-1/2\"","raised_face_dia":"4-1/4\"","groove_od":"4.25\"","groove_pitch_dia":"3.250\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"2.09\"","t_min":"1\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"3/4\"","bolt_circle":"5\"","tap_end_stud_dia":"5/8\"","tap_end_stud_length":"3-5/8\"","stud_bolt_dia":"5/8\"","stud_bolt_length":"5\"","hex_nut_size":"1-1/16\"","notation":""},{"nominal_size":"2-9/16\"","pressure_class":"2M","std_ring_no":"R-26","pe_ring_no":"RX-26","mss_series":null,"flange_od":"7-1/2\"","raised_face_dia":"5\"","groove_od":"5.00\"","groove_pitch_dia":"4.000\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"2.59\"","t_min":"1-1/8\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"7/8\"","bolt_circle":"5-7/8\"","tap_end_stud_dia":"3/4\"","tap_end_stud_length":"4\"","stud_bolt_dia":"3/4\"","stud_bolt_length":"5-1/2\"","hex_nut_size":"1-1/4\"","notation":""},{"nominal_size":"3-1/8\"","pressure_class":"2M","std_ring_no":"R-31","pe_ring_no":"RX-31","mss_series":null,"flange_od":"8-1/4\"","raised_face_dia":"5-3/4\"","groove_od":"5.75\"","groove_pitch_dia":"4.875\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"3.22\"","t_min":"1-1/4\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"7/8\"","bolt_circle":"6-5/8\"","tap_end_stud_dia":"3/4\"","tap_end_stud_length":"4-1/8\"","stud_bolt_dia":"3/4\"","stud_bolt_length":"5-3/4\"","hex_nut_size":"1-1/4\"","notation":""},{"nominal_size":"4-1/16\"","pressure_class":"2M","std_ring_no":"R-37","pe_ring_no":"RX-37","mss_series":null,"flange_od":"10-3/4\"","raised_face_dia":"6-7/8\"","groove_od":"6.875\"","groove_pitch_dia":"5.875\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"4.28\"","t_min":"1-1/2\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1\"","bolt_circle":"8-1/2\"","tap_end_stud_dia":"7/8\"","tap_end_stud_length":"4-5/8\"","stud_bolt_dia":"7/8\"","stud_bolt_length":"6-1/2\"","hex_nut_size":"1-7/16\"","notation":""},{"nominal_size":"5-1/8\"","pressure_class":"2M","std_ring_no":"R-41","pe_ring_no":"RX-41","mss_series":null,"flange_od":"13\"","raised_face_dia":"8-1/4\"","groove_od":"8.25\"","groove_pitch_dia":"7.125\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"5.16\"","t_min":"1-3/4\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-1/8\"","bolt_circle":"10-1/2\"","tap_end_stud_dia":"1\"","tap_end_stud_length":"5-1/4\"","stud_bolt_dia":"1\"","stud_bolt_length":"7-1/4\"","hex_nut_size":"1-5/8\"","notation":""},{"nominal_size":"7-1/16\"","pressure_class":"2M","std_ring_no":"R-45","pe_ring_no":"RX-45","mss_series":null,"flange_od":"14\"","raised_face_dia":"9-1/2\"","groove_od":"9.50\"","groove_pitch_dia":"8.3125\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"7.16\"","t_min":"1-7/8\"","max":null,"body_od":null,"num_bolts":12,"bolt_hole_size":"1-1/8\"","bolt_circle":"11-1/2\"","tap_end_stud_dia":"1\"","tap_end_stud_length":"5-3/8\"","stud_bolt_dia":"1\"","stud_bolt_length":"7-1/2\"","hex_nut_size":"1-5/8\"","notation":""},{"nominal_size":"9\"","pressure_class":"2M","std_ring_no":"R-49","pe_ring_no":"RX-49","mss_series":null,"flange_od":"16-1/2\"","raised_face_dia":"11-7/8\"","groove_od":"11.875\"","groove_pitch_dia":"10.625\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"9.03\"","t_min":"2-3/16\"","max":null,"body_od":null,"num_bolts":12,"bolt_hole_size":"1-1/4\"","bolt_circle":"13-3/4\"","tap_end_stud_dia":"1-1/8\"","tap_end_stud_length":"5-7/8\"","stud_bolt_dia":"1-1/8\"","stud_bolt_length":"8-1/2\"","hex_nut_size":"1-13/16\"","notation":""},{"nominal_size":"11\"","pressure_class":"2M","std_ring_no":"R-53","pe_ring_no":"RX-53","mss_series":null,"flange_od":"20\"","raised_face_dia":"14\"","groove_od":"14.00\"","groove_pitch_dia":"12.750\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"11.03\"","t_min":"2-1/2\"","max":null,"body_od":null,"num_bolts":16,"bolt_hole_size":"1-3/8\"","bolt_circle":"17\"","tap_end_stud_dia":"1-1/8\"","tap_end_stud_length":"6-1/2\"","stud_bolt_dia":"1-1/4\"","stud_bolt_length":"9-1/4\"","hex_nut_size":"1-13/16\"","notation":""},{"nominal_size":"13-5/8\"","pressure_class":"2M","std_ring_no":"R-57","pe_ring_no":"RX-57","mss_series":null,"flange_od":"22\"","raised_face_dia":"16-1/4\"","groove_od":"16.25\"","groove_pitch_dia":"15.000\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"13.66\"","t_min":"2-5/8\"","max":null,"body_od":null,"num_bolts":20,"bolt_hole_size":"1-3/8\"","bolt_circle":"19-1/4\"","tap_end_stud_dia":"1-1/4\"","tap_end_stud_length":"6-5/8\"","stud_bolt_dia":"1-1/4\"","stud_bolt_length":"9-1/2\"","hex_nut_size":"2\"","notation":""},{"nominal_size":"16-3/4\"","pressure_class":"2M","std_ring_no":"R-65","pe_ring_no":"RX-65","mss_series":null,"flange_od":"27\"","raised_face_dia":"20\"","groove_od":"20.00\"","groove_pitch_dia":"18.500\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"16.78\"","t_min":"3\"","max":null,"body_od":null,"num_bolts":20,"bolt_hole_size":"1-5/8\"","bolt_circle":"23-3/4\"","tap_end_stud_dia":"1-1/2\"","tap_end_stud_length":"7-1/2\"","stud_bolt_dia":"1-1/2\"","stud_bolt_length":"10-3/4\"","hex_nut_size":"2-3/8\"","notation":""},{"nominal_size":"21-1/4\"","pressure_class":"2M","std_ring_no":"R-73","pe_ring_no":"RX-73","mss_series":null,"flange_od":"32\"","raised_face_dia":"25\"","groove_od":"25.00\"","groove_pitch_dia":"23.000\"","groove_id":null,"groove_width":"0.531\"","groove_depth":"3/8","groove_radius":"1/16","bore":"21.28\"","t_min":"3-1/2\"","max":null,"body_od":null,"num_bolts":24,"bolt_hole_size":"1-3/4\"","bolt_circle":"28-1/2\"","tap_end_stud_dia":"1-5/8\"","tap_end_stud_length":"8-3/8\"","stud_bolt_dia":"1-5/8\"","stud_bolt_length":"12-1/4\"","hex_nut_size":"2-9/16\"","notation":""},{"nominal_size":"2-1/16\"","pressure_class":"3M","std_ring_no":"R-24","pe_ring_no":"RX-24","mss_series":null,"flange_od":"8-1/2\"","raised_face_dia":"4-7/8\"","groove_od":"4.875\"","groove_pitch_dia":"3.750\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"2.09\"","t_min":"1-1/2\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1\"","bolt_circle":"6-1/2\"","tap_end_stud_dia":"7/8\"","tap_end_stud_length":"4-5/8\"","stud_bolt_dia":"7/8\"","stud_bolt_length":"6-1/2\"","hex_nut_size":"1-7/16\"","notation":""},{"nominal_size":"2-9/16\"","pressure_class":"3M","std_ring_no":"R-27","pe_ring_no":"RX-27","mss_series":null,"flange_od":"9-5/8\"","raised_face_dia":"5-3/8\"","groove_od":"5.375\"","groove_pitch_dia":"4.250\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"2.59\"","t_min":"1-5/8\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-1/8\"","bolt_circle":"7-1/2\"","tap_end_stud_dia":"1\"","tap_end_stud_length":"5-1/8\"","stud_bolt_dia":"1\"","stud_bolt_length":"7\"","hex_nut_size":"1-5/8\"","notation":""},{"nominal_size":"3-1/8\"","pressure_class":"3M","std_ring_no":"R-31","pe_ring_no":"RX-31","mss_series":null,"flange_od":"9-1/2\"","raised_face_dia":"6-1/8\"","groove_od":"6.125\"","groove_pitch_dia":"4.875\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"3.22\"","t_min":"1-1/2\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1\"","bolt_circle":"7-1/2\"","tap_end_stud_dia":"7/8\"","tap_end_stud_length":"4-5/8\"","stud_bolt_dia":"7/8\"","stud_bolt_length":"6-1/2\"","hex_nut_size":"1-7/16\"","notation":""},{"nominal_size":"4-1/16\"","pressure_class":"3M","std_ring_no":"R-37","pe_ring_no":"RX-37","mss_series":null,"flange_od":"11-1/2\"","raised_face_dia":"7-1/8\"","groove_od":"7.125\"","groove_pitch_dia":"5.875\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"4.28\"","t_min":"1-3/4\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-1/4\"","bolt_circle":"9-1/4\"","tap_end_stud_dia":"1-1/8\"","tap_end_stud_length":"5-1/2\"","stud_bolt_dia":"1-1/8\"","stud_bolt_length":"7-1/2\"","hex_nut_size":"1-13/16\"","notation":""},{"nominal_size":"5-1/8\"","pressure_class":"3M","std_ring_no":"R-41","pe_ring_no":"RX-41","mss_series":null,"flange_od":"13-3/4\"","raised_face_dia":"8-1/2\"","groove_od":"8.50\"","groove_pitch_dia":"7.000\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"5.16\"","t_min":"2\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-3/8\"","bolt_circle":"11\"","tap_end_stud_dia":"1-1/4\"","tap_end_stud_length":"6\"","stud_bolt_dia":"1-1/4\"","stud_bolt_length":"8-1/4\"","hex_nut_size":"2\"","notation":""},{"nominal_size":"7-1/16\"","pressure_class":"3M","std_ring_no":"R-45","pe_ring_no":"RX-45","mss_series":null,"flange_od":"15\"","raised_face_dia":"9-1/2\"","groove_od":"9.50\"","groove_pitch_dia":"8.3125\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"7.16\"","t_min":"2-3/16\"","max":null,"body_od":null,"num_bolts":12,"bolt_hole_size":"1-1/4\"","bolt_circle":"12-1/2\"","tap_end_stud_dia":"1-1/8\"","tap_end_stud_length":"5-7/8\"","stud_bolt_dia":"1-1/8\"","stud_bolt_length":"8-1/2\"","hex_nut_size":"1-13/16\"","notation":""},{"nominal_size":"9\"","pressure_class":"3M","std_ring_no":"R-49","pe_ring_no":"RX-49","mss_series":null,"flange_od":"18-1/2\"","raised_face_dia":"12-1/8\"","groove_od":"12.125\"","groove_pitch_dia":"10.625\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"9.03\"","t_min":"2-1/2\"","max":null,"body_od":null,"num_bolts":12,"bolt_hole_size":"1-1/2\"","bolt_circle":"15-1/2\"","tap_end_stud_dia":"1-3/8\"","tap_end_stud_length":"6-3/4\"","stud_bolt_dia":"1-3/8\"","stud_bolt_length":"9-1/2\"","hex_nut_size":"2-3/16\"","notation":""},{"nominal_size":"11\"","pressure_class":"3M","std_ring_no":"R-53","pe_ring_no":"RX-53","mss_series":null,"flange_od":"21-1/2\"","raised_face_dia":"14-1/4\"","groove_od":"14.25\"","groove_pitch_dia":"12.750\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"11.03\"","t_min":"2-3/4\"","max":null,"body_od":null,"num_bolts":16,"bolt_hole_size":"1-1/2\"","bolt_circle":"18-1/2\"","tap_end_stud_dia":"1-3/8\"","tap_end_stud_length":"7\"","stud_bolt_dia":"1-3/8\"","stud_bolt_length":"10\"","hex_nut_size":"2-3/16\"","notation":""},{"nominal_size":"13-5/8\"","pressure_class":"3M","std_ring_no":"R-57","pe_ring_no":"RX-57","mss_series":null,"flange_od":"24\"","raised_face_dia":"16-1/2\"","groove_od":"16.50\"","groove_pitch_dia":"15.000\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"13.66\"","t_min":"3-1/8\"","max":null,"body_od":null,"num_bolts":20,"bolt_hole_size":"1-1/2\"","bolt_circle":"21\"","tap_end_stud_dia":"1-3/8\"","tap_end_stud_length":"7-3/8\"","stud_bolt_dia":"1-3/8\"","stud_bolt_length":"10-3/4\"","hex_nut_size":"2-3/16\"","notation":""},{"nominal_size":"16-3/4\"","pressure_class":"3M","std_ring_no":null,"pe_ring_no":"RX-66","mss_series":null,"flange_od":"27-3/4\"","raised_face_dia":"20-5/8\"","groove_od":"20.625\"","groove_pitch_dia":"18.500\"","groove_id":null,"groove_width":"0.656\"","groove_depth":"7/16","groove_radius":"1/16","bore":"16.78\"","t_min":"3-1/2\"","max":null,"body_od":null,"num_bolts":20,"bolt_hole_size":"1-3/4\"","bolt_circle":"24-1/4\"","tap_end_stud_dia":"1-5/8\"","tap_end_stud_length":"8-3/8\"","stud_bolt_dia":"1-5/8\"","stud_bolt_length":"12-1/4\"","hex_nut_size":"2-9/16\"","notation":""},{"nominal_size":"20-3/4\"","pressure_class":"3M","std_ring_no":null,"pe_ring_no":"RX-74","mss_series":null,"flange_od":"33-3/4\"","raised_face_dia":"25-1/2\"","groove_od":"25.50\"","groove_pitch_dia":"23.000\"","groove_id":null,"groove_width":"0.781\"","groove_depth":"1/2","groove_radius":"1/16","bore":"20.78\"","t_min":"4-1/4\"","max":null,"body_od":null,"num_bolts":20,"bolt_hole_size":"2-1/8\"","bolt_circle":"29-1/2\"","tap_end_stud_dia":"2\"","tap_end_stud_length":"10-1/8\"","stud_bolt_dia":"2\"","stud_bolt_length":"15\"","hex_nut_size":"3-1/8\"","notation":""},{"nominal_size":"2-1/16\"","pressure_class":"5M","std_ring_no":"R-24","pe_ring_no":"RX-24","mss_series":null,"flange_od":"8-1/2\"","raised_face_dia":"4-7/8\"","groove_od":"4.875\"","groove_pitch_dia":"3.750\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"2.09\"","t_min":"1-1/2\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1\"","bolt_circle":"6-1/2\"","tap_end_stud_dia":"7/8\"","tap_end_stud_length":"4-5/8\"","stud_bolt_dia":"7/8\"","stud_bolt_length":"6-1/2\"","hex_nut_size":"1-7/16\"","notation":""},{"nominal_size":"2-9/16\"","pressure_class":"5M","std_ring_no":"R-27","pe_ring_no":"RX-27","mss_series":null,"flange_od":"9-5/8\"","raised_face_dia":"5-3/8\"","groove_od":"5.375\"","groove_pitch_dia":"4.250\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"2.59\"","t_min":"1-5/8\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-1/8\"","bolt_circle":"7-1/2\"","tap_end_stud_dia":"1\"","tap_end_stud_length":"5-1/8\"","stud_bolt_dia":"1\"","stud_bolt_length":"7\"","hex_nut_size":"1-5/8\"","notation":""},{"nominal_size":"3-1/8\"","pressure_class":"5M","std_ring_no":"R-35","pe_ring_no":"RX-35","mss_series":null,"flange_od":"10-1/2\"","raised_face_dia":"6-5/8\"","groove_od":"6.625\"","groove_pitch_dia":"5.375\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"3.22\"","t_min":"1-7/8\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-1/4\"","bolt_circle":"8\"","tap_end_stud_dia":"1-1/8\"","tap_end_stud_length":"5-5/8\"","stud_bolt_dia":"1-1/8\"","stud_bolt_length":"7-3/4\"","hex_nut_size":"1-13/16\"","notation":""},{"nominal_size":"4-1/16\"","pressure_class":"5M","std_ring_no":"R-39","pe_ring_no":"RX-39","mss_series":null,"flange_od":"12-1/4\"","raised_face_dia":"7-5/8\"","groove_od":"7.625\"","groove_pitch_dia":"6.375\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"4.28\"","t_min":"2-1/8\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-3/8\"","bolt_circle":"9-1/2\"","tap_end_stud_dia":"1-1/4\"","tap_end_stud_length":"6-1/8\"","stud_bolt_dia":"1-1/4\"","stud_bolt_length":"8-1/2\"","hex_nut_size":"2\"","notation":""},{"nominal_size":"5-1/8\"","pressure_class":"5M","std_ring_no":"R-44","pe_ring_no":"RX-44","mss_series":null,"flange_od":"14-3/4\"","raised_face_dia":"9\"","groove_od":"9.00\"","groove_pitch_dia":"7.625\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"5/16","groove_radius":"1/32","bore":"5.16\"","t_min":"2-7/8\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-5/8\"","bolt_circle":"11-1/2\"","tap_end_stud_dia":"1-1/2\"","tap_end_stud_length":"7-3/8\"","stud_bolt_dia":"1-1/2\"","stud_bolt_length":"10-1/2\"","hex_nut_size":"2-3/8\"","notation":""},{"nominal_size":"7-1/16\"","pressure_class":"5M","std_ring_no":"R-46","pe_ring_no":"RX-46","mss_series":null,"flange_od":"15-1/2\"","raised_face_dia":"9-3/4\"","groove_od":"9.75\"","groove_pitch_dia":"8.3125\"","groove_id":null,"groove_width":"0.531\"","groove_depth":"3/8","groove_radius":"1/16","bore":"7.16\"","t_min":"3-1/4\"","max":null,"body_od":null,"num_bolts":12,"bolt_hole_size":"1-1/2\"","bolt_circle":"12-1/2\"","tap_end_stud_dia":"1-3/8\"","tap_end_stud_length":"7-1/2\"","stud_bolt_dia":"1-3/8\"","stud_bolt_length":"11-1/4\"","hex_nut_size":"2-3/16\"","notation":""},{"nominal_size":"9\"","pressure_class":"5M","std_ring_no":"R-50","pe_ring_no":"RX-50","mss_series":null,"flange_od":"19\"","raised_face_dia":"12-1/2\"","groove_od":"12.50\"","groove_pitch_dia":"10.625\"","groove_id":null,"groove_width":"0.656\"","groove_depth":"7/16","groove_radius":"1/16","bore":"9.03\"","t_min":"3-5/8\"","max":null,"body_od":null,"num_bolts":12,"bolt_hole_size":"1-3/4\"","bolt_circle":"15-1/2\"","tap_end_stud_dia":"1-5/8\"","tap_end_stud_length":"8-1/2\"","stud_bolt_dia":"1-5/8\"","stud_bolt_length":"12-1/2\"","hex_nut_size":"2-9/16\"","notation":""},{"nominal_size":"11\"","pressure_class":"5M","std_ring_no":"R-54","pe_ring_no":"RX-54","mss_series":null,"flange_od":"23\"","raised_face_dia":"14-5/8\"","groove_od":"14.625\"","groove_pitch_dia":"12.750\"","groove_id":null,"groove_width":"0.656\"","groove_depth":"7/16","groove_radius":"1/16","bore":"11.03\"","t_min":"4-1/4\"","max":null,"body_od":null,"num_bolts":12,"bolt_hole_size":"2\"","bolt_circle":"19\"","tap_end_stud_dia":"1-7/8\"","tap_end_stud_length":"9-5/8\"","stud_bolt_dia":"1-7/8\"","stud_bolt_length":"14-1/4\"","hex_nut_size":"2-15/16\"","notation":""},{"nominal_size":"1-13/16\"","pressure_class":"10M","std_ring_no":"","pe_ring_no":"BX-151","mss_series":null,"flange_od":"7-3/8\"","raised_face_dia":"4-1/8\"","groove_od":"3.009\"","groove_pitch_dia":"2.750\"","groove_id":null,"groove_width":"0.375\"","groove_depth":"0.379\"","groove_radius":"0.031\"","bore":"1.84\"","t_min":"1.66\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"7/8\"","bolt_circle":"5-3/4\"","tap_end_stud_dia":"3/4\"","tap_end_stud_length":"3-3/4\"","stud_bolt_dia":"3/4\"","stud_bolt_length":"5-1/2\"","hex_nut_size":"1-1/4\"","notation":""},{"nominal_size":"2-1/16\"","pressure_class":"10M","std_ring_no":"","pe_ring_no":"BX-152","mss_series":null,"flange_od":"7-7/8\"","raised_face_dia":"4-3/8\"","groove_od":"3.334\"","groove_pitch_dia":"3.000\"","groove_id":null,"groove_width":"0.375\"","groove_depth":"0.403\"","groove_radius":"0.031\"","bore":"2.09\"","t_min":"1.73\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"7/8\"","bolt_circle":"6-1/4\"","tap_end_stud_dia":"3/4\"","tap_end_stud_length":"3-7/8\"","stud_bolt_dia":"3/4\"","stud_bolt_length":"5-1/2\"","hex_nut_size":"1-1/4\"","notation":""},{"nominal_size":"2-9/16\"","pressure_class":"10M","std_ring_no":"","pe_ring_no":"BX-153","mss_series":null,"flange_od":"9-1/8\"","raised_face_dia":"5-3/16\"","groove_od":"3.974\"","groove_pitch_dia":"3.625\"","groove_id":null,"groove_width":"0.438\"","groove_depth":"0.448\"","groove_radius":"0.035\"","bore":"2.59\"","t_min":"2.02\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1\"","bolt_circle":"7-1/4\"","tap_end_stud_dia":"7/8\"","tap_end_stud_length":"4-3/8\"","stud_bolt_dia":"7/8\"","stud_bolt_length":"6-1/2\"","hex_nut_size":"1-7/16\"","notation":""},{"nominal_size":"3-1/16\"","pressure_class":"10M","std_ring_no":"","pe_ring_no":"BX-154","mss_series":null,"flange_od":"10-5/8\"","raised_face_dia":"6\"","groove_od":"4.600\"","groove_pitch_dia":"4.250\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"0.488\"","groove_radius":"0.039\"","bore":"3.09\"","t_min":"2-5/16\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-1/8\"","bolt_circle":"8-1/2\"","tap_end_stud_dia":"1\"","tap_end_stud_length":"5\"","stud_bolt_dia":"1\"","stud_bolt_length":"7-1/4\"","hex_nut_size":"1-5/8\"","notation":""},{"nominal_size":"4-1/16\"","pressure_class":"10M","std_ring_no":"","pe_ring_no":"BX-155","mss_series":null,"flange_od":"12-7/16\"","raised_face_dia":"7.28\"","groove_od":"5.825\"","groove_pitch_dia":"5.375\"","groove_id":null,"groove_width":"0.563\"","groove_depth":"0.560\"","groove_radius":"0.043\"","bore":"4.09\"","t_min":"2.77\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-1/4\"","bolt_circle":"10-3/16\"","tap_end_stud_dia":"1-1/8\"","tap_end_stud_length":"5-3/4\"","stud_bolt_dia":"1-1/8\"","stud_bolt_length":"8-1/2\"","hex_nut_size":"1-13/16\"","notation":""},{"nominal_size":"5-1/8\"","pressure_class":"10M","std_ring_no":"","pe_ring_no":"BX-169","mss_series":null,"flange_od":"14-1/16\"","raised_face_dia":"8-11/16\"","groove_od":"6.831\"","groove_pitch_dia":"6.375\"","groove_id":null,"groove_width":"0.500\"","groove_depth":"0.509\"","groove_radius":"0.051\"","bore":"5.16\"","t_min":"3-1/8\"","max":null,"body_od":null,"num_bolts":12,"bolt_hole_size":"1-1/4\"","bolt_circle":"11-13/16\"","tap_end_stud_dia":"1-1/8\"","tap_end_stud_length":"6\"","stud_bolt_dia":"1-1/8\"","stud_bolt_length":"9-1/4\"","hex_nut_size":"1-13/16\"","notation":""},{"nominal_size":"7-1/16\"","pressure_class":"10M","std_ring_no":"","pe_ring_no":"BX-156","mss_series":null,"flange_od":"18-7/8\"","raised_face_dia":"11-7/8\"","groove_od":"9.367\"","groove_pitch_dia":"8.750\"","groove_id":null,"groove_width":"0.719\"","groove_depth":"0.733\"","groove_radius":"0.059\"","bore":"7.09\"","t_min":"4-1/16\"","max":null,"body_od":null,"num_bolts":12,"bolt_hole_size":"1-5/8\"","bolt_circle":"15-7/8\"","tap_end_stud_dia":"1-1/2\"","tap_end_stud_length":"7-3/4\"","stud_bolt_dia":"1-1/2\"","stud_bolt_length":"11-3/4\"","hex_nut_size":"2-3/8\"","notation":""},{"nominal_size":"9\"","pressure_class":"10M","std_ring_no":"","pe_ring_no":"BX-157","mss_series":null,"flange_od":"21-3/4\"","raised_face_dia":"14-1/8\"","groove_od":"11.593\"","groove_pitch_dia":"10.875\"","groove_id":null,"groove_width":"0.813\"","groove_depth":"0.826\"","groove_radius":"0.067\"","bore":"9.03\"","t_min":"4-7/8\"","max":null,"body_od":null,"num_bolts":16,"bolt_hole_size":"1-5/8\"","bolt_circle":"18-3/4\"","tap_end_stud_dia":"1-1/2\"","tap_end_stud_length":"8-1/2\"","stud_bolt_dia":"1-1/2\"","stud_bolt_length":"13-1/2\"","hex_nut_size":"2-3/8\"","notation":""},{"nominal_size":"11\"","pressure_class":"10M","std_ring_no":"","pe_ring_no":"BX-158","mss_series":null,"flange_od":"25-3/4\"","raised_face_dia":"16-7/8\"","groove_od":"13.860\"","groove_pitch_dia":"13.000\"","groove_id":null,"groove_width":"0.906\"","groove_depth":"0.911\"","groove_radius":"0.075\"","bore":"11.03\"","t_min":"5-9/16\"","max":null,"body_od":null,"num_bolts":16,"bolt_hole_size":"1-7/8\"","bolt_circle":"22-1/4\"","tap_end_stud_dia":"1-3/4\"","tap_end_stud_length":"9-3/4\"","stud_bolt_dia":"1-3/4\"","stud_bolt_length":"15-1/4\"","hex_nut_size":"2-3/4\"","notation":""},{"nominal_size":"13-5/8\"","pressure_class":"10M","std_ring_no":"","pe_ring_no":"BX-159","mss_series":null,"flange_od":"30-1/4\"","raised_face_dia":"20-3/8\"","groove_od":"16.800\"","groove_pitch_dia":"15.750\"","groove_id":null,"groove_width":"1.000\"","groove_depth":"1.012\"","groove_radius":"0.083\"","bore":"13.66\"","t_min":"6-5/8\"","max":null,"body_od":null,"num_bolts":20,"bolt_hole_size":"2\"","bolt_circle":"26-1/2\"","tap_end_stud_dia":"1-7/8\"","tap_end_stud_length":"11\"","stud_bolt_dia":"1-7/8\"","stud_bolt_length":"17-3/4\"","hex_nut_size":"2-15/16\"","notation":""},{"nominal_size":"16-3/4\"","pressure_class":"10M","std_ring_no":"","pe_ring_no":"BX-162","mss_series":null,"flange_od":"34-5/16\"","raised_face_dia":"22-11/16\"","groove_od":"18.720\"","groove_pitch_dia":"18.500\"","groove_id":null,"groove_width":"0.563\"","groove_depth":"0.560\"","groove_radius":"0.043\"","bore":"16.78\"","t_min":"6-5/8\"","max":null,"body_od":null,"num_bolts":24,"bolt_hole_size":"2\"","bolt_circle":"30-9/16\"","tap_end_stud_dia":"1-7/8\"","tap_end_stud_length":"11\"","stud_bolt_dia":"1-7/8\"","stud_bolt_length":"17-3/4\"","hex_nut_size":"2-15/16\"","notation":""},{"nominal_size":"18-3/4\"","pressure_class":"10M","std_ring_no":"","pe_ring_no":"BX-164","mss_series":null,"flange_od":"40-15/16\"","raised_face_dia":"27-7/16\"","groove_od":"22.462\"","groove_pitch_dia":"21.125\"","groove_id":null,"groove_width":"0.969\"","groove_depth":"0.968\"","groove_radius":"0.094\"","bore":"18.78\"","t_min":"8.78\"","max":null,"body_od":null,"num_bolts":24,"bolt_hole_size":"2-3/8\"","bolt_circle":"36-7/16\"","tap_end_stud_dia":"2-1/4\"","tap_end_stud_length":"14\"","stud_bolt_dia":"2-1/4\"","stud_bolt_length":"22-3/4\"","hex_nut_size":"3-1/2\"","notation":""},{"nominal_size":"21-1/4\"","pressure_class":"10M","std_ring_no":"","pe_ring_no":"BX-166","mss_series":null,"flange_od":"45\"","raised_face_dia":"30-3/4\"","groove_od":"25.198\"","groove_pitch_dia":"23.625\"","groove_id":null,"groove_width":"1.031\"","groove_depth":"1.029\"","groove_radius":"0.102\"","bore":"21.28\"","t_min":"9-1/2\"","max":null,"body_od":null,"num_bolts":24,"bolt_hole_size":"2-5/8\"","bolt_circle":"40-1/4\"","tap_end_stud_dia":"2-1/2\"","tap_end_stud_length":"15-1/8\"","stud_bolt_dia":"2-1/2\"","stud_bolt_length":"24-3/4\"","hex_nut_size":"3-7/8\"","notation":""},{"nominal_size":"1-13/16\"","pressure_class":"15M","std_ring_no":"","pe_ring_no":"BX-151","mss_series":null,"flange_od":"8-3/16\"","raised_face_dia":"4-3/16\"","groove_od":"3.009\"","groove_pitch_dia":"2.750\"","groove_id":null,"groove_width":"0.375\"","groove_depth":"0.379\"","groove_radius":"0.031\"","bore":"1.84\"","t_min":"1.78\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1\"","bolt_circle":"6-5/16\"","tap_end_stud_dia":"7/8\"","tap_end_stud_length":"4-1/8\"","stud_bolt_dia":"7/8\"","stud_bolt_length":"6\"","hex_nut_size":"1-7/16\"","notation":""},{"nominal_size":"2-1/16\"","pressure_class":"15M","std_ring_no":"","pe_ring_no":"BX-152","mss_series":null,"flange_od":"8-3/4\"","raised_face_dia":"4-1/2\"","groove_od":"3.334\"","groove_pitch_dia":"3.000\"","groove_id":null,"groove_width":"0.375\"","groove_depth":"0.403\"","groove_radius":"0.031\"","bore":"2.09\"","t_min":"2\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1\"","bolt_circle":"6-7/8\"","tap_end_stud_dia":"7/8\"","tap_end_stud_length":"4-3/8\"","stud_bolt_dia":"7/8\"","stud_bolt_length":"6-1/2\"","hex_nut_size":"1-7/16\"","notation":""},{"nominal_size":"2-9/16\"","pressure_class":"15M","std_ring_no":"","pe_ring_no":"BX-153","mss_series":null,"flange_od":"10\"","raised_face_dia":"5-1/4\"","groove_od":"3.974\"","groove_pitch_dia":"3.625\"","groove_id":null,"groove_width":"0.438\"","groove_depth":"0.448\"","groove_radius":"0.035\"","bore":"2.59\"","t_min":"2-1/4\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-1/8\"","bolt_circle":"7-7/8\"","tap_end_stud_dia":"1\"","tap_end_stud_length":"4-7/8\"","stud_bolt_dia":"1\"","stud_bolt_length":"7-1/4\"","hex_nut_size":"1-5/8\"","notation":""},{"nominal_size":"3-1/16\"","pressure_class":"15M","std_ring_no":"","pe_ring_no":"BX-154","mss_series":null,"flange_od":"11-5/16\"","raised_face_dia":"6-1/16\"","groove_od":"4.600\"","groove_pitch_dia":"4.250\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"0.488\"","groove_radius":"0.039\"","bore":"3.09\"","t_min":"2.53\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-1/4\"","bolt_circle":"9-1/16\"","tap_end_stud_dia":"1-1/8\"","tap_end_stud_length":"5-1/2\"","stud_bolt_dia":"1-1/8\"","stud_bolt_length":"8\"","hex_nut_size":"1-13/16\"","notation":""},{"nominal_size":"4-1/16\"","pressure_class":"15M","std_ring_no":"","pe_ring_no":"BX-155","mss_series":null,"flange_od":"14-3/16\"","raised_face_dia":"7-5/8\"","groove_od":"5.825\"","groove_pitch_dia":"5.375\"","groove_id":null,"groove_width":"0.563\"","groove_depth":"0.560\"","groove_radius":"0.043\"","bore":"4.09\"","t_min":"3.09\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-1/2\"","bolt_circle":"11-7/16\"","tap_end_stud_dia":"1-3/8\"","tap_end_stud_length":"6-1/2\"","stud_bolt_dia":"1-3/8\"","stud_bolt_length":"9-3/4\"","hex_nut_size":"2-3/16\"","notation":""},{"nominal_size":"5-1/8\"","pressure_class":"15M","std_ring_no":"","pe_ring_no":"BX-169","mss_series":null,"flange_od":"16-1/2\"","raised_face_dia":"8-7/8\"","groove_od":"6.831\"","groove_pitch_dia":"6.375\"","groove_id":null,"groove_width":"0.500\"","groove_depth":"0.509\"","groove_radius":"0.051\"","bore":"5.16\"","t_min":"3-7/8\"","max":null,"body_od":null,"num_bolts":12,"bolt_hole_size":"1-5/8\"","bolt_circle":"13-1/2\"","tap_end_stud_dia":"1-1/2\"","tap_end_stud_length":"7-5/8\"","stud_bolt_dia":"1-1/2\"","stud_bolt_length":"11-3/4\"","hex_nut_size":"2-3/8\"","notation":""},{"nominal_size":"7-1/16\"","pressure_class":"15M","std_ring_no":"","pe_ring_no":"BX-156","mss_series":null,"flange_od":"19-7/8\"","raised_face_dia":"12\"","groove_od":"9.367\"","groove_pitch_dia":"8.750\"","groove_id":null,"groove_width":"0.719\"","groove_depth":"0.733\"","groove_radius":"0.059\"","bore":"7.09\"","t_min":"4.60\"","max":null,"body_od":null,"num_bolts":16,"bolt_hole_size":"1-5/8\"","bolt_circle":"16-7/8\"","tap_end_stud_dia":"1-1/2\"","tap_end_stud_length":"8-3/8\"","stud_bolt_dia":"1-1/2\"","stud_bolt_length":"13\"","hex_nut_size":"2-3/8\"","notation":""},{"nominal_size":"9\"","pressure_class":"15M","std_ring_no":"","pe_ring_no":"BX-157","mss_series":null,"flange_od":"25-1/2\"","raised_face_dia":"15\"","groove_od":"11.593\"","groove_pitch_dia":"10.875\"","groove_id":null,"groove_width":"0.813\"","groove_depth":"0.826\"","groove_radius":"0.067\"","bore":"9.03\"","t_min":"5-3/4\"","max":null,"body_od":null,"num_bolts":16,"bolt_hole_size":"2\"","bolt_circle":"21-3/4\"","tap_end_stud_dia":"1-7/8\"","tap_end_stud_length":"10-1/8\"","stud_bolt_dia":"1-7/8\"","stud_bolt_length":"16\"","hex_nut_size":"2-15/16\"","notation":""},{"nominal_size":"11\"","pressure_class":"15M","std_ring_no":"","pe_ring_no":"BX-158","mss_series":null,"flange_od":"32\"","raised_face_dia":"17-7/8\"","groove_od":"13.860\"","groove_pitch_dia":"13.000\"","groove_id":null,"groove_width":"0.906\"","groove_depth":"0.911\"","groove_radius":"0.075\"","bore":"11.03\"","t_min":"7-3/8\"","max":null,"body_od":null,"num_bolts":20,"bolt_hole_size":"2-1/8\"","bolt_circle":"28\"","tap_end_stud_dia":"2\"","tap_end_stud_length":"12\"","stud_bolt_dia":"2\"","stud_bolt_length":"19-1/2\"","hex_nut_size":"3-1/8\"","notation":""},{"nominal_size":"13-5/8\"","pressure_class":"15M","std_ring_no":"","pe_ring_no":"BX-159","mss_series":null,"flange_od":"34-7/8\"","raised_face_dia":"21-5/16\"","groove_od":"16.800\"","groove_pitch_dia":"15.750\"","groove_id":null,"groove_width":"1.000\"","groove_depth":"1.012\"","groove_radius":"0.083\"","bore":"13.66\"","t_min":"8-1/16\"","max":null,"body_od":null,"num_bolts":20,"bolt_hole_size":"2-3/8\"","bolt_circle":"30-3/8\"","tap_end_stud_dia":"2-1/4\"","tap_end_stud_length":"13-1/4\"","stud_bolt_dia":"2-1/4\"","stud_bolt_length":"21-1/4\"","hex_nut_size":"3-1/2\"","notation":""},{"nominal_size":"18-3/4\"","pressure_class":"15M","std_ring_no":"","pe_ring_no":"BX-164","mss_series":null,"flange_od":"45-3/4\"","raised_face_dia":"28-7/16\"","groove_od":"22.462\"","groove_pitch_dia":"21.125\"","groove_id":null,"groove_width":"0.969\"","groove_depth":"0.968\"","groove_radius":"0.094\"","bore":"18.78\"","t_min":"10-1/16\"","max":null,"body_od":null,"num_bolts":20,"bolt_hole_size":"3-1/8\"","bolt_circle":"40\"","tap_end_stud_dia":"3\"","tap_end_stud_length":"16-3/4\"","stud_bolt_dia":"3\"","stud_bolt_length":"26-3/4\"","hex_nut_size":"4-5/8\"","notation":""},{"nominal_size":"1-13/16\"","pressure_class":"20M","std_ring_no":"","pe_ring_no":"BX-151","mss_series":null,"flange_od":"10-1/8\"","raised_face_dia":"4-5/8\"","groove_od":"3.009\"","groove_pitch_dia":"2.750\"","groove_id":null,"groove_width":"0.375\"","groove_depth":"0.379\"","groove_radius":"0.031\"","bore":"1.84\"","t_min":"2-1/2\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-1/8\"","bolt_circle":"8\"","tap_end_stud_dia":"1\"","tap_end_stud_length":"5-1/8\"","stud_bolt_dia":"1\"","stud_bolt_length":"7-3/4\"","hex_nut_size":"1-5/8\"","notation":""},{"nominal_size":"2-1/16\"","pressure_class":"20M","std_ring_no":"","pe_ring_no":"BX-152","mss_series":null,"flange_od":"11-5/16\"","raised_face_dia":"5-3/16\"","groove_od":"3.334\"","groove_pitch_dia":"3.000\"","groove_id":null,"groove_width":"0.375\"","groove_depth":"0.403\"","groove_radius":"0.031\"","bore":"2.09\"","t_min":"2-13/16\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-1/4\"","bolt_circle":"9-1/16\"","tap_end_stud_dia":"1-1/8\"","tap_end_stud_length":"5-3/4\"","stud_bolt_dia":"1-1/8\"","stud_bolt_length":"8-1/2\"","hex_nut_size":"1-13/16\"","notation":""},{"nominal_size":"2-9/16\"","pressure_class":"20M","std_ring_no":"","pe_ring_no":"BX-153","mss_series":null,"flange_od":"12-13/16\"","raised_face_dia":"5-15/16\"","groove_od":"3.974\"","groove_pitch_dia":"3.625\"","groove_id":null,"groove_width":"0.438\"","groove_depth":"0.448\"","groove_radius":"0.035\"","bore":"2.59\"","t_min":"3-1/8\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-3/8\"","bolt_circle":"10-5/16\"","tap_end_stud_dia":"1-1/4\"","tap_end_stud_length":"6-1/4\"","stud_bolt_dia":"1-1/4\"","stud_bolt_length":"9-1/2\"","hex_nut_size":"2\"","notation":""},{"nominal_size":"3-1/16\"","pressure_class":"20M","std_ring_no":"","pe_ring_no":"BX-154","mss_series":null,"flange_od":"14-1/16\"","raised_face_dia":"6-3/4\"","groove_od":"4.600\"","groove_pitch_dia":"4.250\"","groove_id":null,"groove_width":"0.469\"","groove_depth":"0.488\"","groove_radius":"0.039\"","bore":"3.09\"","t_min":"3-3/8\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-1/2\"","bolt_circle":"11-5/16\"","tap_end_stud_dia":"1-3/8\"","tap_end_stud_length":"6-3/4\"","stud_bolt_dia":"1-3/8\"","stud_bolt_length":"10-1/4\"","hex_nut_size":"2-3/16\"","notation":""},{"nominal_size":"4-1/16\"","pressure_class":"20M","std_ring_no":"","pe_ring_no":"BX-155","mss_series":null,"flange_od":"17-9/16\"","raised_face_dia":"8-5/8\"","groove_od":"5.825\"","groove_pitch_dia":"5.375\"","groove_id":null,"groove_width":"0.563\"","groove_depth":"0.560\"","groove_radius":"0.043\"","bore":"4.09\"","t_min":"4-3/16\"","max":null,"body_od":null,"num_bolts":8,"bolt_hole_size":"1-7/8\"","bolt_circle":"14-1/16\"","tap_end_stud_dia":"1-3/4\"","tap_end_stud_length":"8-3/8\"","stud_bolt_dia":"1-3/4\"","stud_bolt_length":"12-1/2\"","hex_nut_size":"2-3/4\"","notation":""},{"nominal_size":"7-1/16\"","pressure_class":"20M","std_ring_no":"","pe_ring_no":"BX-156","mss_series":null,"flange_od":"25-13/16\"","raised_face_dia":"13-7/8\"","groove_od":"9.367\"","groove_pitch_dia":"8.750\"","groove_id":null,"groove_width":"0.719\"","groove_depth":"0.733\"","groove_radius":"0.059\"","bore":"7.09\"","t_min":"6-1/2\"","max":null,"body_od":null,"num_bolts":16,"bolt_hole_size":"2-1/8\"","bolt_circle":"21-13/16\"","tap_end_stud_dia":"2\"","tap_end_stud_length":"11-1/8\"","stud_bolt_dia":"2\"","stud_bolt_length":"17-3/4\"","hex_nut_size":"3-1/8\"","notation":""},{"nominal_size":"9\"","pressure_class":"20M","std_ring_no":"","pe_ring_no":"BX-157","mss_series":null,"flange_od":"31-11/16\"","raised_face_dia":"17-3/8\"","groove_od":"11.593\"","groove_pitch_dia":"10.875\"","groove_id":null,"groove_width":"0.813\"","groove_depth":"0.826\"","groove_radius":"0.067\"","bore":"9.03\"","t_min":"8-1/16\"","max":null,"body_od":null,"num_bolts":16,"bolt_hole_size":"2-5/8\"","bolt_circle":"27\"","tap_end_stud_dia":"2-1/2\"","tap_end_stud_length":"13-3/4\"","stud_bolt_dia":"2-1/2\"","stud_bolt_length":"21-3/4\"","hex_nut_size":"3-7/8\"","notation":""},{"nominal_size":"11\"","pressure_class":"20M","std_ring_no":"","pe_ring_no":"BX-158","mss_series":null,"flange_od":"34-3/4\"","raised_face_dia":"19-7/8\"","groove_od":"13.860\"","groove_pitch_dia":"13.000\"","groove_id":null,"groove_width":"0.906\"","groove_depth":"0.911\"","groove_radius":"0.075\"","bore":"11.03\"","t_min":"8-13/16\"","max":null,"body_od":null,"num_bolts":16,"bolt_hole_size":"2-7/8\"","bolt_circle":"29-1/2\"","tap_end_stud_dia":"2-3/4\"","tap_end_stud_length":"15\"","stud_bolt_dia":"2-3/4\"","stud_bolt_length":"23-3/4\"","hex_nut_size":"4-1/4\"","notation":""},{"nominal_size":"13-5/8\"","pressure_class":"20M","std_ring_no":"","pe_ring_no":"BX-159","mss_series":null,"flange_od":"45-3/4\"","raised_face_dia":"24-3/16\"","groove_od":"16.800\"","groove_pitch_dia":"15.750\"","groove_id":null,"groove_width":"1.000\"","groove_depth":"1.012\"","groove_radius":"0.083\"","bore":"13.66\"","t_min":"11-1/2\"","max":null,"body_od":null,"num_bolts":20,"bolt_hole_size":"3-1/8\"","bolt_circle":"40\"","tap_end_stud_dia":"3\"","tap_end_stud_length":"18-1/8\"","stud_bolt_dia":"3-1/8\"","stud_bolt_length":"29-3/4\"","hex_nut_size":"4-5/8\"","notation":""},{"nominal_size":"13-5/8\"","pressure_class":"5M","std_ring_no":null,"pe_ring_no":"BX-160","mss_series":null,"flange_od":"26-1/2\"","raised_face_dia":"18\"","groove_od":"15.850\"","groove_pitch_dia":"15.000\"","groove_id":null,"groove_width":"0.531\"","groove_depth":"0.541\"","groove_radius":"0.075\"","bore":"13.66\"","t_min":"4-7/16\"","max":null,"body_od":null,"num_bolts":16,"bolt_hole_size":"1-3/4\"","bolt_circle":"23-1/4\"","tap_end_stud_dia":"1-5/8\"","tap_end_stud_length":"8-3/8\"","stud_bolt_dia":"1-5/8\"","stud_bolt_length":"12-3/4\"","hex_nut_size":"2-9/16\"","notation":""},{"nominal_size":"16-3/4\"","pressure_class":"5M","std_ring_no":null,"pe_ring_no":"BX-162","mss_series":null,"flange_od":"30-3/8\"","raised_face_dia":"21-1/16\"","groove_od":"18.720\"","groove_pitch_dia":"18.500\"","groove_id":null,"groove_width":"0.563\"","groove_depth":"0.560\"","groove_radius":"0.043\"","bore":"16.78\"","t_min":"5-1/8\"","max":null,"body_od":null,"num_bolts":16,"bolt_hole_size":"2\"","bolt_circle":"26-5/8\"","tap_end_stud_dia":"1-7/8\"","tap_end_stud_length":"9-1/2\"","stud_bolt_dia":"1-7/8\"","stud_bolt_length":"14-3/4\"","hex_nut_size":"2-15/16\"","notation":""},{"nominal_size":"18-3/4\"","pressure_class":"5M","std_ring_no":null,"pe_ring_no":"BX-163","mss_series":null,"flange_od":"35-5/8\"","raised_face_dia":"24-11/16\"","groove_od":"21.889\"","groove_pitch_dia":"20.625\"","groove_id":null,"groove_width":"0.688\"","groove_depth":"0.684\"","groove_radius":"0.094\"","bore":"18.78\"","t_min":"6.53\"","max":null,"body_od":null,"num_bolts":20,"bolt_hole_size":"2-1/8\"","bolt_circle":"31-5/8\"","tap_end_stud_dia":"2\"","tap_end_stud_length":"11-1/4\"","stud_bolt_dia":"2\"","stud_bolt_length":"17-3/4\"","hex_nut_size":"3-1/8\"","notation":""},{"nominal_size":"21-1/4\"","pressure_class":"5M","std_ring_no":null,"pe_ring_no":"BX-165","mss_series":null,"flange_od":"39\"","raised_face_dia":"27-5/8\"","groove_od":"24.595\"","groove_pitch_dia":"23.250\"","groove_id":null,"groove_width":"0.719\"","groove_depth":"0.728\"","groove_radius":"0.102\"","bore":"21.28\"","t_min":"7-1/8\"","max":null,"body_od":null,"num_bolts":24,"bolt_hole_size":"2-1/8\"","bolt_circle":"34-7/8\"","tap_end_stud_dia":"2\"","tap_end_stud_length":"11-3/4\"","stud_bolt_dia":"2\"","stud_bolt_length":"19\"","hex_nut_size":"3-1/8\"","notation":""},{"nominal_size":"26-3/4\"","pressure_class":"2M","std_ring_no":null,"pe_ring_no":"BX-167","mss_series":null,"flange_od":"41\"","raised_face_dia":"31-11/16\"","groove_od":"29.897\"","groove_pitch_dia":"28.875\"","groove_id":null,"groove_width":"0.531\"","groove_depth":"0.516\"","groove_radius":"0.114\"","bore":"26.78\"","t_min":"4.97\"","max":null,"body_od":null,"num_bolts":20,"bolt_hole_size":"1-7/8\"","bolt_circle":"37-1/2\"","tap_end_stud_dia":"1-3/4\"","tap_end_stud_length":"9-1/8\"","stud_bolt_dia":"1-3/4\"","stud_bolt_length":"14-1/4\"","hex_nut_size":"2-3/4\"","notation":""},{"nominal_size":"30\"","pressure_class":"2M","std_ring_no":null,"pe_ring_no":"BX-303","mss_series":null,"flange_od":"44-3/16\"","raised_face_dia":"35-3/4\"","groove_od":"33.570\"","groove_pitch_dia":"32.500\"","groove_id":null,"groove_width":"0.656\"","groove_depth":"0.668\"","groove_radius":"0.118\"","bore":"30.03\"","t_min":"5.28\"","max":null,"body_od":null,"num_bolts":32,"bolt_hole_size":"1-3/4\"","bolt_circle":"40-15/16\"","tap_end_stud_dia":"1-5/8\"","tap_end_stud_length":"9-1/4\"","stud_bolt_dia":"1-5/8\"","stud_bolt_length":"14-1/2\"","hex_nut_size":"2-9/16\"","notation":""},{"nominal_size":"26-3/4\"","pressure_class":"3M","std_ring_no":null,"pe_ring_no":"BX-168","mss_series":null,"flange_od":"43-3/8\"","raised_face_dia":"32-3/4\"","groove_od":"30.128\"","groove_pitch_dia":"28.875\"","groove_id":null,"groove_width":"0.625\"","groove_depth":"0.632\"","groove_radius":"0.114\"","bore":"26.78\"","t_min":"6.34\"","max":null,"body_od":null,"num_bolts":24,"bolt_hole_size":"2-1/8\"","bolt_circle":"39-3/8\"","tap_end_stud_dia":"2\"","tap_end_stud_length":"11\"","stud_bolt_dia":"2\"","stud_bolt_length":"17-1/2\"","hex_nut_size":"3-1/8\"","notation":""},{"nominal_size":"30\"","pressure_class":"3M","std_ring_no":null,"pe_ring_no":"BX-303","mss_series":null,"flange_od":"46-11/16\"","raised_face_dia":"36-5/16\"","groove_od":"33.570\"","groove_pitch_dia":"32.500\"","groove_id":null,"groove_width":"0.656\"","groove_depth":"0.668\"","groove_radius":"0.118\"","bore":"30.03\"","t_min":"6.58\"","max":null,"body_od":null,"num_bolts":32,"bolt_hole_size":"2\"","bolt_circle":"42-15/16\"","tap_end_stud_dia":"1-7/8\"","tap_end_stud_length":"11\"","stud_bolt_dia":"1-7/8\"","stud_bolt_length":"17-3/4\"","hex_nut_size":"2-15/16\"","notation":""}];
+
+// Build indexes
+const sizeMap = {};       // size -> [pressure_classs]
+const configMap = {};     // "size|pressure" -> config object
+const ringMap = {};       // ring_number -> [{size, pressure, config}]
+
+// Ordered sizes (as they appear on the slide rule, small to large)
+const SIZE_ORDER = [
+  '1-13/16"','2-1/16"','2-9/16"','3-1/16"','3-1/8"',
+  '4-1/16"','5-1/8"','7-1/16"','9"','11"',
+  '13-5/8"','16-3/4"','18-3/4"','20-3/4"','21-1/4"',
+  '26-3/4"','30"'
+];
+
+const PRESSURE_ORDER = ['2M','3M','5M','10M','15M','20M'];
+
+FLANGE_DATA.forEach(c => {
+  const key = c.nominal_size + '|' + c.pressure_class;
+  configMap[key] = c;
+  if (!sizeMap[c.nominal_size]) sizeMap[c.nominal_size] = [];
+  sizeMap[c.nominal_size].push(c.pressure_class);
+
+  ['std_ring_no','pe_ring_no'].forEach(f => {
+    const r = c[f];
+    if (r && r.trim()) {
+      if (!ringMap[r]) ringMap[r] = [];
+      ringMap[r].push({ size: c.nominal_size, pressure: c.pressure_class, config: c });
+    }
+  });
+});
+
+// State
+let currentTab = 'flange';
+let selectedSize = null;
+let selectedPressure = null;
+let selectedRingType = 'BX';
+let selectedRing = null;
+let currentConfig = null;
+
+// ============================================================
+// DECIMAL EQUIVALENTS
+// ============================================================
+const DEC_EQUIV = [
+  ['1/64','0.0156'],['1/32','0.0313'],['3/64','0.0469'],['1/16','0.0625'],
+  ['5/64','0.0781'],['3/32','0.0938'],['7/64','0.1094'],['1/8','0.1250'],
+  ['9/64','0.1406'],['5/32','0.1563'],['11/64','0.1719'],['3/16','0.1875'],
+  ['13/64','0.2031'],['7/32','0.2188'],['15/64','0.2344'],['1/4','0.2500'],
+  ['17/64','0.2656'],['9/32','0.2813'],['19/64','0.2969'],['5/16','0.3125'],
+  ['21/64','0.3281'],['11/32','0.3438'],['23/64','0.3594'],['3/8','0.3750'],
+  ['25/64','0.3906'],['13/32','0.4063'],['27/64','0.4219'],['7/16','0.4375'],
+  ['29/64','0.4531'],['15/32','0.4688'],['31/64','0.4844'],['1/2','0.5000'],
+];
+function buildDecPanel() {
+  const g = document.getElementById('dec-grid');
+  g.innerHTML = DEC_EQUIV.map(d =>
+    `<div class="dec-item"><span class="dec-frac">${d[0]}</span><span class="dec-val mono">${d[1]}</span></div>`
+  ).join('');
+}
+
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.getElementById('panel-flange').classList.toggle('hidden', tab !== 'flange');
+  document.getElementById('panel-ring').classList.toggle('hidden', tab !== 'ring');
+  document.getElementById('panel-decimals').classList.toggle('hidden', tab !== 'decimals');
+  clearResults();
+  if (tab === 'decimals') {
+    document.getElementById('empty-state').classList.add('hidden');
+    return;
+  }
+  if (tab === 'flange') {
+    buildSizeScroll();
+    if (selectedSize) {
+      // Restore collapsed state with summary
+      document.getElementById('size-scroll').classList.add('collapsed');
+      const summary = document.getElementById('size-summary');
+      summary.classList.add('visible');
+      document.getElementById('summary-size-text').textContent = selectedSize.replace(/"/g, '″');
+      buildPressureScroll();
+    }
+  } else {
+    buildRingScroll();
+    if (selectedRing) {
+      // Restore collapsed state with summary
+      document.getElementById('ring-scroll').classList.add('collapsed');
+      const summary = document.getElementById('ring-summary');
+      summary.classList.add('visible');
+      document.getElementById('summary-ring-text').textContent = selectedRing;
+    }
+  }
+}
+
+// ============================================================
+// FLANGE LOOKUP
+// ============================================================
+function buildSizeScroll() {
+  const el = document.getElementById('size-scroll');
+  el.innerHTML = SIZE_ORDER.filter(s => sizeMap[s]).map(s => {
+    const pressures = PRESSURE_ORDER.filter(p => sizeMap[s].includes(p)).join(' ');
+    const active = s === selectedSize ? ' active' : '';
+    const display = s.replace(/"/g, '″');
+    const escaped = s.replace(/"/g, '&quot;');
+    return `<div class="size-list-item${active}" onclick="selectSize('${escaped}')">
+      <span class="size-name">${display}</span>
+      <span class="size-pressures">${pressures}</span>
+    </div>`;
+  }).join('');
+}
+
+function selectSize(size) {
+  selectedSize = size;
+  selectedPressure = null;
+  // Collapse size list, show summary bar
+  document.getElementById('size-scroll').classList.add('collapsed');
+  const summary = document.getElementById('size-summary');
+  summary.classList.add('visible');
+  document.getElementById('summary-size-text').textContent = size.replace(/"/g, '″');
+  buildSizeScroll();
+  buildPressureScroll();
+  clearResults();
+  // Scroll pressure into view
+  document.getElementById('pressure-scroll').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function expandSizeList() {
+  document.getElementById('size-summary').classList.remove('visible');
+  document.getElementById('size-scroll').classList.remove('collapsed');
+}
+
+function buildPressureScroll() {
+  const el = document.getElementById('pressure-scroll');
+  if (!selectedSize) { el.innerHTML = ''; return; }
+  const pressures = PRESSURE_ORDER.filter(p => sizeMap[selectedSize].includes(p));
+  el.innerHTML = pressures.map(p =>
+    `<button class="scroll-chip${p===selectedPressure?' active':''}" onclick="selectPressure('${p}')">${p}</button>`
+  ).join('');
+}
+
+function selectPressure(p) {
+  selectedPressure = p;
+  buildPressureScroll();
+  const key = selectedSize + '|' + p;
+  const cfg = configMap[key];
+  if (cfg) showConfig(cfg);
+}
+
+// ============================================================
+// RING LOOKUP
+// ============================================================
+function switchRingType(type) {
+  selectedRingType = type;
+  selectedRing = null;
+  document.querySelectorAll('.ring-type-tab').forEach(t => t.classList.toggle('active', t.dataset.type === type));
+  // Reset collapse state
+  document.getElementById('ring-summary').classList.remove('visible');
+  document.getElementById('ring-scroll').classList.remove('collapsed');
+  buildRingScroll();
+  clearResults();
+}
+
+function buildRingScroll() {
+  const el = document.getElementById('ring-scroll');
+  const prefix = selectedRingType + '-';
+  const rings = Object.keys(ringMap).filter(r => r.startsWith(prefix))
+    .sort((a,b) => {
+      const na = parseInt(a.split('-')[1]);
+      const nb = parseInt(b.split('-')[1]);
+      return na - nb;
+    });
+  el.innerHTML = rings.map(r => {
+    const matches = ringMap[r];
+    const sizes = matches.map(m => m.size.replace(/"/g, '″') + ' ' + m.pressure).join(', ');
+    const active = r === selectedRing ? ' active' : '';
+    return `<div class="size-list-item${active}" onclick="selectRing('${r}')">
+      <span class="size-name">${r}</span>
+      <span class="size-pressures">${sizes}</span>
+    </div>`;
+  }).join('');
+}
+
+function selectRing(ring) {
+  selectedRing = ring;
+  // Collapse ring list, show summary bar
+  document.getElementById('ring-scroll').classList.add('collapsed');
+  const summary = document.getElementById('ring-summary');
+  summary.classList.add('visible');
+  document.getElementById('summary-ring-text').textContent = ring;
+  buildRingScroll();
+  const matches = ringMap[ring];
+  if (!matches || matches.length === 0) { clearResults(); return; }
+  if (matches.length === 1) {
+    showConfig(matches[0].config);
+    document.getElementById('multi-match').classList.add('hidden');
+  } else {
+    const mm = document.getElementById('multi-match');
+    const opts = document.getElementById('match-options');
+    mm.classList.remove('hidden');
+    opts.innerHTML = matches.map((m,i) =>
+      `<div class="match-option" onclick="pickMatch(${i})" id="match-${i}">
+        <span class="size">${m.size.replace(/"/g,'″')}</span>
+        <span class="press">${m.pressure}</span>
+      </div>`
+    ).join('');
+    pickMatch(0);
+  }
+}
+
+function expandRingList() {
+  document.getElementById('ring-summary').classList.remove('visible');
+  document.getElementById('ring-scroll').classList.remove('collapsed');
+}
+
+function pickMatch(idx) {
+  const matches = ringMap[selectedRing];
+  document.querySelectorAll('.match-option').forEach((el,i) => el.classList.toggle('active', i===idx));
+  showConfig(matches[idx].config);
+}
+
+// ============================================================
+// DISPLAY CONFIG
+// ============================================================
+function clearResults() {
+  document.getElementById('empty-state').classList.remove('hidden');
+  document.getElementById('diagram-spec').classList.add('hidden');
+  if (currentTab === 'flange') document.getElementById('multi-match').classList.add('hidden');
+}
+
+function dv(v) {
+  if (v === null || v === undefined || v === '') return '--';
+  return String(v).replace(/"/g, '″');
+}
+
+function showConfig(cfg) {
+  currentConfig = cfg;
+  document.getElementById('empty-state').classList.add('hidden');
+
+  const notation = cfg.notation ? `<span class="ds-notation">${cfg.notation}</span>` : '';
+  const flangeType = ['10M','15M','20M'].includes(cfg.pressure_class) ? '6BX' : '6B';
+  const peLabel = cfg.pe_ring_no || '--';
+  const stdLabel = cfg.std_ring_no || '';
+  const ringLine = stdLabel ? `${peLabel} / ${stdLabel}` : peLabel;
+
+  // Build header
+  let html = `<div class="diagram-spec-header">
+    <div class="ds-context"><span class="ds-ctx-val">${cfg.nominal_size.replace(/"/g,'″')}</span><span class="ds-ctx-sep">|</span><span class="ds-ctx-val">${cfg.pressure_class}</span>${notation}</div>
+    <div class="ds-hero"><div class="ds-hero-ring">${ringLine}</div><div class="ds-hero-type">Type ${flangeType}</div></div>
+  </div>
+  <div class="diagram-spec-body">
+    <svg id="ds-svg" viewBox="0 0 448 374" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="hatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#666" stroke-width="0.4"/></pattern></defs><g id="geo"><path d="M 40.6 107.5 L 70.6 107.5 L 70.6 218.7 L 40.6 218.7 Z" fill="url(#hatch)" stroke="none"/><path d="M 40.6 237.5 L 70.6 237.5 L 70.6 247.5 L 40.6 247.5 Z" fill="url(#hatch)" stroke="none"/><path d="M 90.0 142.5 L 89.4 147.5 L 90.7 147.5 Z" fill="#666" stroke="none"/><path d="M 90.0 218.8 L 90.7 213.8 L 89.4 213.8 Z" fill="#666" stroke="none"/><path d="M 375.0 137.5 L 415.0 137.5 L 415.0 218.7 L 375.0 218.7 Z" fill="none" stroke="#888" stroke-width="1.1"/><path d="M 40.6 107.5 L 70.6 107.5 L 70.6 218.7 L 40.6 218.7 Z" fill="none" stroke="#888" stroke-width="1.1"/><path d="M 40.6 237.5 L 70.6 237.5 L 70.6 247.5 L 40.6 247.5 Z" fill="none" stroke="#888" stroke-width="1.1"/><path d="M 92.7 137.5 L 92.7 140.0 L 90.3 142.5 L 20.0 142.5 L 10.0 152.5" fill="none" stroke="#D42B2B" stroke-width="1.1"/><path d="M 354.8 137.5 L 354.8 140.0 L 357.2 142.5 L 427.5 142.5 L 437.5 152.5" fill="none" stroke="#D42B2B" stroke-width="1.1"/><path d="M 20.0 137.5 L 45.0 137.5 L 100.4 137.5 L 105.4 146.2 L 115.4 146.2 L 120.5 137.5 L 143.1 137.5 L 153.1 147.5 L 153.1 218.8 L 153.1 257.5 L 105.0 257.5 L 105.0 221.2 L 102.5 218.8 L 45.0 218.8 L 20.0 218.8 L 10.0 208.8 L 10.0 147.5 L 20.0 137.5 L 35.0 137.5" fill="none" stroke="#888" stroke-width="1.1"/><path d="M 402.5 137.5 L 427.5 137.5 L 437.5 147.5 L 437.5 208.8 L 427.5 218.8 L 402.5 218.8 L 345.0 218.8 L 342.5 221.2 L 342.5 257.5 L 294.4 257.5 L 294.4 218.8 L 294.4 147.5 L 304.4 137.5 L 327.0 137.5 L 332.1 146.2 L 342.1 146.2 L 347.1 137.5 Z" fill="none" stroke="#888" stroke-width="1.1"/><path d="M 40.6 107.5 L 40.6 218.7 L 31.8 218.7 L 31.8 235.0 L 34.3 237.5 L 40.6 237.5 L 40.6 247.5 L 70.6 247.5 L 70.6 237.5 L 78.2 237.5 L 80.7 235.0 L 80.7 218.7 L 70.6 218.7 L 70.6 107.5 Z" fill="none" stroke="#555" stroke-width="1.1"/><path d="M 90.0 142.5 L 89.4 147.5 L 90.7 147.5 Z" fill="none" stroke="#888" stroke-width="1.1"/><path d="M 90.0 218.8 L 90.7 213.8 L 89.4 213.8 Z" fill="none" stroke="#888" stroke-width="1.1"/><path d="M 270.1 267.4 L 390.1 267.4 L 390.1 327.9 L 270.1 327.9 Z" fill="none" stroke="#888" stroke-width="1.1"/><line x1="153.1" y1="257.5" x2="294.4" y2="257.5" stroke="#888" stroke-width="1"/><line x1="45.0" y1="218.8" x2="52.7" y2="218.8" stroke="#888" stroke-width="1"/><line x1="395.0" y1="117.5" x2="395.0" y2="237.5" stroke="#888" stroke-width="1" stroke-dasharray="6 4"/><line x1="36.7" y1="137.5" x2="74.3" y2="137.5" stroke="#888" stroke-width="1"/><line x1="74.3" y1="137.5" x2="74.3" y2="218.8" stroke="#888" stroke-width="1"/><line x1="74.3" y1="218.8" x2="36.7" y2="218.8" stroke="#888" stroke-width="1"/><line x1="36.7" y1="218.8" x2="36.7" y2="137.5" stroke="#888" stroke-width="1"/><line x1="36.7" y1="137.5" x2="74.3" y2="137.5" stroke="#888" stroke-width="1"/><line x1="294.4" y1="257.5" x2="153.1" y2="257.5" stroke="#888" stroke-width="1"/><line x1="143.1" y1="137.5" x2="304.4" y2="137.5" stroke="#888" stroke-width="1"/><line x1="153.1" y1="147.5" x2="294.4" y2="147.5" stroke="#888" stroke-width="1"/><line x1="40.6" y1="218.7" x2="70.6" y2="218.7" stroke="#555" stroke-width="1"/><line x1="40.6" y1="237.5" x2="70.6" y2="237.5" stroke="#555" stroke-width="1"/><line x1="44.8" y1="218.7" x2="44.8" y2="237.5" stroke="#555" stroke-width="1"/><line x1="66.5" y1="237.5" x2="66.5" y2="218.7" stroke="#555" stroke-width="1"/><line x1="10.0" y1="142.5" x2="10.0" y2="17.5" stroke="#888" stroke-width="1"/><line x1="92.7" y1="132.5" x2="92.7" y2="37.5" stroke="#888" stroke-width="1"/><line x1="100.4" y1="132.5" x2="100.4" y2="57.6" stroke="#888" stroke-width="1"/><line x1="110.4" y1="141.2" x2="110.4" y2="77.5" stroke="#888" stroke-width="1"/><line x1="120.5" y1="132.5" x2="120.5" y2="97.5" stroke="#888" stroke-width="1"/><line x1="195.0" y1="17.5" x2="10.0" y2="17.5" stroke="#888" stroke-width="1"/><line x1="195.0" y1="37.5" x2="92.7" y2="37.5" stroke="#888" stroke-width="1"/><line x1="195.0" y1="57.5" x2="100.4" y2="57.5" stroke="#888" stroke-width="1"/><line x1="195.0" y1="77.5" x2="110.4" y2="77.5" stroke="#888" stroke-width="1"/><line x1="195.0" y1="97.5" x2="120.5" y2="97.5" stroke="#888" stroke-width="1"/><line x1="100.4" y1="141.2" x2="100.4" y2="161.5" stroke="#888" stroke-width="1"/><line x1="120.5" y1="141.2" x2="120.5" y2="161.1" stroke="#888" stroke-width="1"/><line x1="100.4" y1="151.4" x2="120.5" y2="151.4" stroke="#888" stroke-width="1"/><line x1="324.1" y1="146.2" x2="314.6" y2="146.2" stroke="#888" stroke-width="1"/><line x1="319.4" y1="146.2" x2="319.4" y2="137.5" stroke="#888" stroke-width="1"/><line x1="105.0" y1="227.5" x2="110.0" y2="227.5" stroke="#888" stroke-width="1"/><line x1="342.5" y1="227.5" x2="337.5" y2="227.5" stroke="#888" stroke-width="1"/><line x1="90.0" y1="147.5" x2="90.0" y2="213.8" stroke="#888" stroke-width="1"/><line x1="165.0" y1="207.5" x2="90.0" y2="207.5" stroke="#888" stroke-width="1"/><path d="M 437.5 142.5 L 437.5 17.5 L 281.8 17.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 437.5 142.5 L 435.4 135.8 L 439.6 135.8 Z" fill="#666" stroke="none"/><path d="M 369.5 132.5 L 369.5 37.5 L 300.5 37.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 369.5 132.5 L 367.4 125.8 L 371.6 125.8 Z" fill="#666" stroke="none"/><path d="M 347.1 132.5 L 347.1 57.5 L 282.8 57.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 347.1 132.5 L 345.0 125.8 L 349.2 125.8 Z" fill="#666" stroke="none"/><path d="M 337.1 141.2 L 337.1 77.5 L 281.6 77.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 337.1 141.2 L 335.0 134.5 L 339.2 134.5 Z" fill="#666" stroke="none"/><path d="M 327.0 132.5 L 327.0 97.5 L 279.9 97.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 327.0 132.5 L 324.9 125.8 L 329.1 125.8 Z" fill="#666" stroke="none"/><path d="M 110.4 157.5 L 110.4 178.1 L 135.0 178.1 L 135.0 117.5 L 195.0 117.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 110.4 157.5 L 112.5 164.2 L 108.3 164.2 Z" fill="#666" stroke="none"/><path d="M 10.0 142.5 L 10.0 17.5 L 195.0 17.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 10.0 142.5 L 7.9 135.8 L 12.1 135.8 Z" fill="#666" stroke="none"/><path d="M 92.7 132.5 L 92.7 37.5 L 195.0 37.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 92.7 132.5 L 90.6 125.8 L 94.8 125.8 Z" fill="#666" stroke="none"/><path d="M 100.4 132.5 L 100.4 57.6 L 195.0 57.6" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 100.4 132.5 L 98.3 125.8 L 102.5 125.8 Z" fill="#666" stroke="none"/><path d="M 110.4 141.2 L 110.4 77.5 L 195.0 77.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 110.4 141.2 L 108.3 134.5 L 112.5 134.5 Z" fill="#666" stroke="none"/><path d="M 120.5 132.5 L 120.5 97.5 L 195.0 97.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 120.5 132.5 L 118.4 125.8 L 122.6 125.8 Z" fill="#666" stroke="none"/><path d="M 319.4 141.9 L 305.0 141.9 L 305.0 157.5 L 272.5 157.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 319.4 141.9 L 312.7 144.0 L 312.7 139.8 Z" fill="#666" stroke="none"/><path d="M 158.1 177.5 L 195.0 177.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 158.1 177.5 L 164.8 175.4 L 164.8 179.6 Z" fill="#666" stroke="none"/><path d="M 289.4 177.5 L 255.1 177.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 289.4 177.5 L 282.7 179.6 L 282.7 175.4 Z" fill="#666" stroke="none"/><path d="M 110.0 227.5 L 195.0 227.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 110.0 227.5 L 116.7 225.4 L 116.7 229.6 Z" fill="#666" stroke="none"/><path d="M 337.5 227.5 L 248.4 227.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 337.5 227.5 L 330.8 229.6 L 330.8 225.4 Z" fill="#666" stroke="none"/><path d="M 101.1 222.6 L 87.0 236.8 L 87.0 247.5 L 205.0 247.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 101.1 222.6 L 97.9 228.8 L 94.9 225.9 Z" fill="#666" stroke="none"/><path d="M 70.6 247.5 L 85.7 277.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 70.6 247.5 L 75.5 252.5 L 71.8 254.4 Z" fill="#666" stroke="none"/><path d="M 175.0 267.5 L 155.0 277.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 175.0 267.5 L 169.9 272.3 L 168.1 268.6 Z" fill="#666" stroke="none"/><path d="M 175.0 287.5 L 155.0 277.5 L 138.1 277.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 175.0 287.5 L 168.1 286.4 L 169.9 282.7 Z" fill="#666" stroke="none"/><path d="M 175.0 317.5 L 155.0 327.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 175.0 317.5 L 169.9 322.3 L 168.1 318.6 Z" fill="#666" stroke="none"/><path d="M 175.0 337.5 L 155.0 327.5 L 136.2 327.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 175.0 337.5 L 168.1 336.4 L 169.9 332.7 Z" fill="#666" stroke="none"/><path d="M 60.6 247.5 L 95.0 327.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 60.6 247.5 L 65.1 252.8 L 61.3 254.5 Z" fill="#666" stroke="none"/><path d="M 55.6 247.5 L 55.6 357.5 L 330.1 357.5 L 330.1 327.9" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 55.6 247.5 L 57.7 254.2 L 53.5 254.2 Z" fill="#666" stroke="none"/><path d="M 395.0 237.5 L 395.0 357.5 L 330.1 357.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 395.0 237.5 L 397.1 244.2 L 392.9 244.2 Z" fill="#666" stroke="none"/><path d="M 362.5 135.0 L 362.5 123.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 362.5 135.0 L 360.4 128.3 L 364.6 128.3 Z" fill="#666" stroke="none"/><path d="M 362.5 144.9 L 362.5 197.5 L 275.0 197.5" fill="none" stroke="#666" stroke-width="0.8"/><path d="M 362.5 144.9 L 364.6 151.6 L 360.4 151.6 Z" fill="#666" stroke="none"/></g><g id="callouts"><rect x="195.0" y="10.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-flange-od" x="215.0" y="21.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="195.0" y="30.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-raised-face" x="215.0" y="41.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="195.0" y="50.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-groove-od" x="215.0" y="61.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="195.0" y="70.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-groove-pd" x="215.0" y="81.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="195.0" y="90.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-groove-id" x="215.0" y="101.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="195.0" y="110.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-groove-width" x="215.0" y="121.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="175.0" y="150.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-groove-depth" x="195.0" y="161.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="195.0" y="170.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-bore" x="215.0" y="181.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="235.0" y="190.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-max" x="255.0" y="201.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="165.0" y="200.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-min" x="185.0" y="211.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="195.0" y="220.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-body-dia" x="215.0" y="231.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="235.0" y="240.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-groove-radius" x="255.0" y="251.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="175.0" y="260.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-tap-stud-dia" x="195.0" y="271.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="275.0" y="270.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-num-bolts" x="295.0" y="281.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="175.0" y="280.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-tap-stud-len" x="195.0" y="291.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="275.0" y="290.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-bolt-hole" x="295.0" y="301.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="175.0" y="310.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-stud-bolt-dia" x="195.0" y="321.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="275.0" y="310.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-bolt-circle" x="295.0" y="321.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><rect x="175.0" y="330.0" width="40.0" height="15.0" fill="#0D0D0D" stroke="#555" stroke-width="1"/><text id="dim-stud-bolt-len" x="195.0" y="341.5" text-anchor="middle" style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;fill:var(--fl-text)">--</text><text x="315.0" y="280.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:8px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">&#160;NUMBER OF HOLES</text><text x="235.0" y="20.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">&#160;FLANGE DIA.</text><text x="215.0" y="270.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">&#160;DIAMETER</text><text x="215.0" y="290.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">&#160;LENGTH</text><text x="85.0" y="280.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">TAP END STUD</text><text x="95.0" y="330.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">STUD BOLT</text><text x="215.0" y="320.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">&#160;DIAMETER</text><text x="215.0" y="340.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">&#160;LENGTH</text><text x="315.0" y="300.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:8px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">&#160;BOLT HOLE SIZE</text><text x="315.0" y="320.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:8px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">&#160;BOLT CIRCLE</text><text x="235.0" y="40.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">&#160;RAISED FACE DIA.</text><text x="235.0" y="60.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">&#160;GROOVE O.D.</text><text x="235.0" y="80.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">&#160;GROOVE P.D.</text><text x="235.0" y="100.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">&#160;GROOVE I.D.</text><text x="215.0" y="160.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">&#160;GROOVE DEPTH</text><text x="235.0" y="180.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">&#160;BORE</text><text x="217.5" y="199.8" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">MAX<tspan fill="#D42B2B" font-size="8px"> &#167;</tspan></text><text x="235.0" y="120.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">&#160;GROOVE WIDTH</text><text x="205.0" y="210.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">&#160;MIN<tspan fill="#D42B2B" font-size="8px"> &#167;</tspan></text><text x="235.0" y="230.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">&#160;DIA</text><text x="205.0" y="250.0" text-anchor="start" style="font-family:Barlow,sans-serif;font-size:9px;fill:var(--fl-text-mid);paint-order:stroke;stroke:var(--fl-surface);stroke-width:3px;">RADIUS</text></g></svg>
+  </div>
+  <div class="diagram-notes">
+    <div>
+      <div class="dn-title">TAPPED END STUDS &amp; STUD BOLTS</div>
+      <div class="thread-row"><span class="dia">5/8&#8243;</span><span class="spec">11 UNC Thds.</span></div>
+      <div class="thread-row"><span class="dia">3/4&#8243;</span><span class="spec">10 UNC Thds.</span></div>
+      <div class="thread-row"><span class="dia">7/8&#8243;</span><span class="spec">9 UNC Thds.</span></div>
+      <div class="thread-row"><span class="dia">1&#8243;</span><span class="spec">8 UNC Thds.</span></div>
+      <div class="thread-row"><span class="dia">1-1/8&#8243; &amp; larger</span><span class="spec">8 UN Thds.</span></div>
+    </div>
+    <div>
+      <p>Bolt hole size is 1/8&#8243; (3.2mm) larger than the bolt.</p>
+      <p>1/8&#8243; min (3.2mm) raised face on open-faced flanges with BX grooves. Optional RF on 6B flanges. Raised face may be omitted on studded flanges.</p>
+      <p><span class="sect">&sect;</span> MIN &mdash; minimum flange thickness, raised face to back face. MAX &mdash; maximum difference between the top of the raised face and any relief cut into the flange face. MAX values pending API 6A sourcing &mdash; shown as &#8220;--&#8221;.</p>
+    </div>
+  </div>`;
+
+  const container = document.getElementById('diagram-spec');
+  container.innerHTML = html;
+  container.classList.remove('hidden');
+
+  updateDiagram(cfg);
+}
+
+// ============================================================
+// UPDATE CROSS-SECTION DIAGRAM VALUES
+// Static SVG geometry from TurboCAD DXF. JS only sets text values.
+// ============================================================
+function updateDiagram(cfg) {
+  const ids = {
+    'dim-flange-od': cfg.flange_od,
+    'dim-raised-face': cfg.raised_face_dia,
+    'dim-groove-od': cfg.groove_od,
+    'dim-groove-pd': cfg.groove_pitch_dia,
+    'dim-groove-id': cfg.groove_id,          // not yet sourced - 0/71
+    'dim-groove-width': cfg.groove_width,
+    'dim-groove-depth': cfg.groove_depth,
+    'dim-bore': cfg.bore,
+    'dim-max': cfg.max,                      // needs API 6A face tables - 0/71
+    'dim-min': cfg.t_min,                    // T / MIN - flange thickness
+    'dim-body-dia': cfg.body_od,             // not yet sourced - 0/71
+    'dim-groove-radius': cfg.groove_radius,
+    'dim-tap-stud-dia': cfg.tap_end_stud_dia,
+    'dim-tap-stud-len': cfg.tap_end_stud_length,
+    'dim-stud-bolt-dia': cfg.stud_bolt_dia,
+    'dim-stud-bolt-len': cfg.stud_bolt_length,
+    'dim-num-bolts': cfg.num_bolts,
+    'dim-bolt-hole': cfg.bolt_hole_size,
+    'dim-bolt-circle': cfg.bolt_circle
+  };
+  for (const [id, val] of Object.entries(ids)) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    const txt = dv(val);
+    el.textContent = txt;
+    if (txt.length >= 7) {
+      el.setAttribute('textLength', '36');
+      el.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+    } else {
+      el.removeAttribute('textLength');
+      el.removeAttribute('lengthAdjust');
+    }
+  }
+}
+
+// Legacy stub — no longer used
+function drawIntegratedDiagram(cfg) { updateDiagram(cfg); }
+/* ============================================================ */
+/* REPLACED: old drawIntegratedDiagram JS-drawn geometry below  */
+/* Now using static SVG embedded in showConfig() HTML           */
+/* ============================================================ */
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  buildSizeScroll();
+  buildDecPanel();
+  buildRingScroll();
+});
+</script>
+<script>(function(){function init(){var h=document.querySelector('.header');if(!h)return;function on(){h.classList.toggle('fl-collapsed',window.scrollY>12);}window.addEventListener('scroll',on,{passive:true});on();}if(document.readyState!=='loading')init();else document.addEventListener('DOMContentLoaded',init);})();</script>
+</body>
+</html>
