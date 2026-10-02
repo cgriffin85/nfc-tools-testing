@@ -389,24 +389,13 @@ html,body{transition:background-color .25s ease,color .25s ease;}
     .sech[aria-expanded="true"] .chev { transform: rotate(180deg); }
     .chip { font-family: var(--fb); font-size: 9px; font-weight: 600; letter-spacing: 1px; padding: 2px 7px; border: 1px solid var(--vr-border); white-space: nowrap; color: var(--vr-txt-m); }
     .chip.ok   { color: var(--vr-pass); border-color: var(--vr-pass-bd); background: var(--vr-pass-bg); }
+    .chip.act  { color: var(--vr-accent); border-color: var(--vr-accent); background: var(--vr-accent-dim); }
     .chip.warn { color: var(--vr-fail); border-color: var(--vr-fail-bd); background: var(--vr-fail-bg); }
     .ow-body { overflow: hidden; height: 0; transition: height .45s ease; }
     /* Two columns at every width: water side on the left, oil side on the right */
     .ow-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; margin-bottom: 12px; }
     .ow-grid .inp-lbl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    /* Closed-state opener: a card-shaped tap target so it reads as something to press */
-    .ow-open { all: unset; box-sizing: border-box; width: 100%; cursor: pointer; display: flex; align-items: center; gap: 12px;
-      margin-top: 16px; padding: 12px 14px; background: var(--vr-surface); border: 1px dashed var(--vr-border-hi, var(--vr-border));
-      -webkit-tap-highlight-color: transparent; transition: border-color .2s, background .2s; }
-    .ow-open:hover, .ow-open:active { border-color: var(--vr-accent); background: var(--vr-accent-dim, transparent); }
-    .ow-open:focus-visible { outline: 2px solid var(--vr-accent); outline-offset: 3px; }
-    .ow-open .plus { flex: none; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-      border: 1px solid var(--vr-accent); color: var(--vr-accent); font-family: var(--fb); font-size: 20px; line-height: 1; }
-    .ow-open .t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-    .ow-open .t b { font-family: var(--fb); font-weight: 600; font-size: 14px; color: var(--vr-txt); }
-    .ow-open .t span { font-size: 11px; color: var(--vr-txt-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ow-open .go { flex: none; color: var(--vr-txt-2); font-size: 14px; }
-    .ow-open[hidden] { display: none; }
+    @media (max-width: 360px) { .ow-grid .inp-lbl { letter-spacing: .8px; } }
     .ow-grid .inp-box { padding: 8px 10px; }
     .ow-grid .inp-box input { font-size: 17px; }
     .ow-hint { font-size: 10px; color: var(--vr-txt-m); margin-top: 4px; line-height: 1.4; }
@@ -635,12 +624,7 @@ html,body{transition:background-color .25s ease,color .25s ease;}
 
   <!-- ── OIL & WATER — optional, collapsed by default ── -->
   <button type="button" class="sech" id="ow-toggle" aria-expanded="false" aria-controls="ow-body">
-    <span>Oil &amp; Water</span><span class="ln"></span><span class="chip" id="ow-chip">OPTIONAL</span><span class="chev" aria-hidden="true">▾</span>
-  </button>
-  <button type="button" class="ow-open" id="ow-open" aria-controls="ow-body">
-    <span class="plus" aria-hidden="true">+</span>
-    <span class="t"><b>Split by oil &amp; water</b><span>Water cut · weir · interface · oil dump</span></span>
-    <span class="go" aria-hidden="true">▾</span>
+    <span>Oil &amp; Water</span><span class="ln"></span><span class="chip act" id="ow-chip">ACTIVATE</span><span class="chev" aria-hidden="true">▾</span>
   </button>
   <div class="ow-body" id="ow-body" inert>
     <div class="card p18">
@@ -648,7 +632,7 @@ html,body{transition:background-color .25s ease,color .25s ease;}
         <div><div class="inp-lbl">Water</div><div class="inp-box"><input type="number" id="qw" value="100" inputmode="decimal" aria-label="Water rate, barrels per hour"><span class="inp-unit">bbl/hr</span></div><div class="ow-hint">Water + oil = total rate</div></div>
         <div><div class="inp-lbl">Oil</div><div class="inp-box"><input type="number" id="qo" value="20" inputmode="decimal" aria-label="Oil rate, barrels per hour"><span class="inp-unit">bbl/hr</span></div></div>
         <div><div class="inp-lbl">Water cut</div><div class="inp-box"><input type="number" id="wc" value="83.3" step="0.1" inputmode="decimal" aria-label="Water cut, percent"><span class="inp-unit">%</span></div><div class="ow-hint">Or type the rates above</div></div>
-        <div><div class="inp-lbl">Weir</div><div class="inp-box"><input type="number" id="wp" value="30" inputmode="numeric" aria-label="Weir position, inches from right tangent line"><span class="inp-unit">in</span></div><div class="ow-hint">From the right tangent line (T/L)</div></div>
+        <div><div class="inp-lbl">Oil chamber length</div><div class="inp-box"><input type="number" id="wp" value="30" inputmode="numeric" aria-label="Oil chamber length, inches from the weir to the right tangent line"><span class="inp-unit">in</span></div><div class="ow-hint">Weir to right tangent line (T/L)</div></div>
         <div><div class="inp-lbl">Interface</div><div class="inp-box"><input type="number" id="iw" value="-1.2" step="0.5" inputmode="decimal" aria-label="Oil-water interface, inches from centerline"><span class="inp-unit">in CL</span></div><div class="ow-hint">Where the sight glass shows it</div></div>
         <div><div class="inp-lbl">Oil dump</div><div class="inp-box"><input type="number" id="io" value="-1.2" step="0.5" inputmode="decimal" aria-label="Oil dump level, inches from centerline"><span class="inp-unit">in CL</span></div><div class="ow-hint">The high point where oil dumps</div></div>
       </div>
@@ -869,8 +853,9 @@ function calc() {
     : '';
   if (carry >= 1) { const el = $('v-r'); el.textContent = 'FAIL — CARRYOVER'; el.className = 'verdict v-fail'; }
   const chip = $('ow-chip');
-  chip.textContent = !S.ow ? 'OPTIONAL' : carry > 0 ? 'CARRYOVER' : 'IN USE';
-  chip.className = 'chip' + (!S.ow ? '' : carry > 0 ? ' warn' : ' ok');
+  // The chip is the action, not a status: carryover is reported in the section itself
+  chip.textContent = S.ow ? 'DEACTIVATE' : 'ACTIVATE';
+  chip.className = 'chip' + (S.ow ? '' : ' act');
 }
 
 // ── VERDICT ───────────────────────────────────────────────
@@ -1005,7 +990,7 @@ function drawVessel() {
       T(ox + hw2 / 2, yC + HS * 0.38, cl(S.io), 'middle', 'var(--vs-tick-ink)', HS / fs, 700);
     // weir position dim
     const wy = bot + stub + (compact ? 24 : 30);
-    g += `<path d="M${xw},${wy} H${x1} M${xw},${wy - 4} V${wy + 4} M${x1},${wy - 4} V${wy + 4}" stroke="var(--vr-accent)" fill="none"/>` + M((xw + x1) / 2, wy + 14, `weir ${S.wp}"`, 'middle', 'var(--vr-accent)');
+    g += `<path d="M${xw},${wy} H${x1} M${xw},${wy - 4} V${wy + 4} M${x1},${wy - 4} V${wy + 4}" stroke="var(--vr-accent)" fill="none"/>` + M((xw + x1) / 2, wy + 14, `chamber ${S.wp}"`, 'middle', 'var(--vr-accent)');
   }
 
   // dims: liquid level / weir top from CL (right), diameter, length T/T
@@ -1044,8 +1029,7 @@ function setOW(open) {
   const body = $('ow-body'), btn = $('ow-toggle');
   S.ow = open;
   btn.setAttribute('aria-expanded', open);
-  $('ow-open').hidden = open;
-  $('lvl-lbl').textContent = open ? 'Weir top' : 'Liquid level';
+  $('lvl-lbl').textContent = open ? 'Weir height' : 'Liquid level';
   if (open) {
     body.inert = false;
     body.style.height = body.scrollHeight + 'px';
@@ -1059,7 +1043,6 @@ function setOW(open) {
   calc(); animateT(open ? 1 : 0); if (typeof saveSoon === 'function') saveSoon();
 }
 $('ow-toggle').addEventListener('click', () => setOW(!S.ow));
-$('ow-open').addEventListener('click', () => setOW(true));
 window.addEventListener('resize', () => drawVessel());
 
 // ── INPUTS ────────────────────────────────────────────────
@@ -1212,7 +1195,7 @@ function restoreState() {
   $('box-hr').classList.toggle('hot', rateSrc === 'hr'); $('box-day').classList.toggle('hot', rateSrc === 'day');
   buildDrum();
   if (st.ow) { S.ow = true; S.t = 1; const b = $('ow-body'); b.inert = false; b.style.height = 'auto';
-    $('ow-toggle').setAttribute('aria-expanded', 'true'); $('ow-open').hidden = true; $('lvl-lbl').textContent = 'Weir top'; }
+    $('ow-toggle').setAttribute('aria-expanded', 'true'); $('lvl-lbl').textContent = 'Weir height'; }
   return true;
 }
 
@@ -1226,7 +1209,7 @@ function collectSetup() { return { D: S.D, Lft: S.Lft, hL: S.hL, ow: S.ow, wp: S
 function setupSummary(st) {
   const off = Math.round(st.hL - st.D / 2);
   let t = `${st.D}″ × ${st.Lft}′  ·  level ${off >= 0 ? '+' : '−'}${Math.abs(off)}″ CL`;
-  if (st.ow) t += `  ·  weir ${st.wp}″`;
+  if (st.ow) t += `  ·  chamber ${st.wp}″`;
   return t;
 }
 function applySetup(st) {
@@ -1307,7 +1290,7 @@ restoreState(); clampState(); syncSplit(); syncSetup(); update();
 
 
 <div class="footer">
-  Rev. 2026-10-02c<br>
+  Rev. 2026-10-02e<br>
   NFC Services &bull; <a href="https://www.nfcservices.com" target="_blank" rel="noopener">nfcservices.com</a>
 </div>
 
