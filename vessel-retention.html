@@ -527,6 +527,43 @@ html,body{transition:background-color .25s ease,color .25s ease;}
     .mfld label { display: block; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--vr-txt-2); margin-bottom: 6px; }
     .mfld input { width: 100%; background: var(--vr-surface); border: 1px solid var(--vr-border); color: var(--vr-txt); font-family: var(--fb); font-size: 16px; padding: 10px 12px; outline: none; }
     .mfld input:focus { border-color: var(--vr-accent); }
+
+    /* ── PICKER SHEET (touch) — iOS wheel in a bottom sheet ───────────────────── */
+    .psheet { position: fixed; inset: 0; z-index: 210; }
+    .psheet[hidden] { display: none; }
+    .pscrim { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,.15) 40%, rgba(0,0,0,.5) 100%); opacity: 0; transition: opacity .22s ease; }
+    .pcard { position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto; max-width: 560px; background: var(--vr-card, var(--vr-surface));
+      border-top: 1px solid var(--vr-border); border-radius: 14px 14px 0 0; padding: 0 0 calc(10px + env(safe-area-inset-bottom));
+      transform: translateY(100%); transition: transform .24s cubic-bezier(.2,.8,.2,1); box-shadow: 0 -10px 30px rgba(0,0,0,.35); }
+    .psheet.on .pscrim { opacity: 1; }
+    .psheet.on .pcard { transform: none; }
+    .pbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 6px; border-bottom: 1px solid var(--vr-border); }
+    .pbtn { all: unset; cursor: pointer; padding: 10px 12px; font-family: var(--fb); font-size: 16px; color: var(--vr-txt-2); -webkit-tap-highlight-color: transparent; }
+    .pbtn.pdone { color: var(--vr-accent); font-weight: 600; }
+    .pbtn:focus-visible { outline: 2px solid var(--vr-accent); outline-offset: -2px; }
+    .pttl { display: flex; flex-direction: column; align-items: center; min-width: 0; text-align: center; }
+    .pttl b { font-family: var(--fb); font-weight: 600; font-size: 15px; color: var(--vr-txt); white-space: nowrap; }
+    .pttl span { font-size: 11px; color: var(--vr-txt-2); white-space: nowrap; }
+    .pread { display: flex; align-items: baseline; justify-content: center; gap: 8px; padding: 12px 16px 0; }
+    .pread input { all: unset; box-sizing: border-box; width: 6.5ch; text-align: right; font-family: var(--fm); font-weight: 600; font-size: 34px; color: var(--vr-txt);
+      border-bottom: 1px dashed var(--vr-border); padding: 0 2px; }
+    .pread input:focus { border-bottom-color: var(--vr-accent); }
+    .punit { font-family: var(--fb); font-size: 14px; color: var(--vr-txt-2); min-width: 6.5ch; }
+    .plive { text-align: center; font-size: 12px; color: var(--vr-txt-2); min-height: 16px; margin: 4px 0 6px; font-family: var(--fb); }
+    .plive b { font-family: var(--fm); color: var(--vr-txt); font-weight: 600; }
+    .pwheel { position: relative; height: 200px; margin: 0 16px; perspective: 600px; }
+    .pband { position: absolute; left: 0; right: 0; top: 80px; height: 40px; border-radius: 9px; background: var(--vr-border); opacity: .55; pointer-events: none; }
+    .plist { position: relative; height: 200px; overflow-y: auto; scroll-snap-type: y mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 30%, #000 70%, transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 30%, #000 70%, transparent 100%); outline: none; }
+    .plist::-webkit-scrollbar { display: none; }
+    .plist .pp { height: 80px; }
+    .plist .pi { height: 40px; display: flex; align-items: center; justify-content: center; scroll-snap-align: center; font-family: var(--fm); font-size: 21px; color: var(--vr-txt-2);
+      transform-origin: center; will-change: transform; }
+    .plist .pi.sel { color: var(--vr-txt); font-weight: 600; }
+    @media (prefers-reduced-motion: reduce) { .pcard, .pscrim { transition: none; } }
+    /* touch: these boxes open the sheet instead of the keyboard */
+    .inp-box.picks { cursor: pointer; }
+    .inp-box.picks input { cursor: pointer; caret-color: transparent; }
   </style>
 </head>
 <body>
@@ -544,6 +581,16 @@ html,body{transition:background-color .25s ease,color .25s ease;}
     <button id="newJob" class="newjob" type="button" aria-label="New">New</button>
   </div>
 </header>
+<!-- Picker sheet: iOS-style wheel that rises from the bottom (touch screens only) -->
+<div class="psheet" id="psheet" hidden>
+  <div class="pscrim" id="pScrim"></div>
+  <div class="pcard" role="dialog" aria-modal="true" aria-labelledby="pTtl">
+    <div class="pbar"><button type="button" class="pbtn" id="pCancel">Cancel</button><div class="pttl"><b id="pTtl"></b><span id="pSub"></span></div><button type="button" class="pbtn pdone" id="pDone">Done</button></div>
+    <div class="pread"><input type="text" id="pIn" inputmode="decimal" autocomplete="off" aria-label="Type an exact value"><span class="punit" id="pUnit"></span></div>
+    <div class="plive" id="pLive"></div>
+    <div class="pwheel"><div class="pband"></div><div class="plist" id="pList" tabindex="0" role="listbox"></div></div>
+  </div>
+</div>
 <div class="modal" id="modal" hidden><div class="modalcard" role="dialog" aria-modal="true" aria-labelledby="modalTtl"><div class="modalttl" id="modalTtl"></div><div class="modalsub" id="modalSub"></div><div id="modalBody"></div></div></div>
 
 <div class="wrap">
@@ -635,9 +682,9 @@ html,body{transition:background-color .25s ease,color .25s ease;}
         <div><div class="inp-lbl">Water</div><div class="inp-box"><input type="number" id="qw" value="100" inputmode="decimal" aria-label="Water rate, barrels per hour"><span class="inp-unit">bbl/hr</span></div><div class="ow-hint">Water + oil = total rate</div></div>
         <div><div class="inp-lbl">Oil</div><div class="inp-box"><input type="number" id="qo" value="20" inputmode="decimal" aria-label="Oil rate, barrels per hour"><span class="inp-unit">bbl/hr</span></div></div>
         <div><div class="inp-lbl">Water cut</div><div class="inp-box"><input type="number" id="wc" value="83.3" step="0.1" inputmode="decimal" aria-label="Water cut, percent"><span class="inp-unit">%</span></div><div class="ow-hint">Or type the rates above</div></div>
-        <div><div class="inp-lbl">Oil chamber length</div><div class="inp-box"><input type="number" id="wp" value="30" inputmode="numeric" aria-label="Oil chamber length, inches from the weir to the right tangent line"><span class="inp-unit">in</span></div><div class="ow-hint">Weir to right tangent line (T/L)</div></div>
-        <div><div class="inp-lbl">Interface</div><div class="inp-box"><input type="number" id="iw" value="-1.2" step="0.5" inputmode="decimal" aria-label="Oil-water interface, inches from centerline"><span class="inp-unit">in CL</span></div><div class="ow-hint">Where the sight glass shows it</div></div>
-        <div><div class="inp-lbl">Oil dump</div><div class="inp-box"><input type="number" id="io" value="-1.2" step="0.5" inputmode="decimal" aria-label="Oil dump level, inches from centerline"><span class="inp-unit">in CL</span></div><div class="ow-hint">The high point where oil dumps</div></div>
+        <div><div class="inp-lbl">Oil chamber length</div><div class="inp-box"><input type="text" id="wp" value="30&quot;" inputmode="numeric" autocomplete="off" aria-label="Oil chamber length, inches from the weir to the right tangent line"></div><div class="ow-hint">Weir to right tangent line (T/L)</div></div>
+        <div><div class="inp-lbl">Interface</div><div class="inp-box"><input type="text" id="iw" value="−1.2&quot;" inputmode="decimal" autocomplete="off" aria-label="Oil-water interface, inches from centerline"><span class="inp-unit">CL</span></div><div class="ow-hint">Where the sight glass shows it</div></div>
+        <div><div class="inp-lbl">Oil dump</div><div class="inp-box"><input type="text" id="io" value="−1.2&quot;" inputmode="decimal" autocomplete="off" aria-label="Oil dump level, inches from centerline"><span class="inp-unit">CL</span></div><div class="ow-hint">The high point where oil dumps</div></div>
       </div>
       <div class="clocks">
         <div class="clock key"><div class="k">Water Retention</div><div class="v" id="t-w">—</div><div class="s" id="t-w-s"></div></div>
@@ -784,9 +831,9 @@ function setTotalFromSplit(skip) {
 }
 function syncSetup() {
   drumSet(S.hL);
-  $('iw').value  = +(S.iw - S.D / 2).toFixed(1);
-  $('io').value  = +(S.io - S.D / 2).toFixed(1);
-  $('wp').value  = S.wp;
+  if (document.activeElement !== $('iw')) $('iw').value = fmtIn(S.iw - S.D / 2, true);
+  if (document.activeElement !== $('io')) $('io').value = fmtIn(S.io - S.D / 2, true);
+  if (document.activeElement !== $('wp')) $('wp').value = fmtIn(S.wp, false);
 }
 
 // ── MAIN CALC ─────────────────────────────────────────────
@@ -1055,9 +1102,18 @@ $('diam').addEventListener('input', e => {
 });
 $('len').addEventListener('input', e => { const v = +e.target.value; if (!(v > 0)) return; S.Lft = v; update(); syncSetup(); });
 
-$('iw').addEventListener('input', e => { const v = e.target.value; if (v === '' || v === '-') return; S.iw = S.D / 2 + (+v); update(); });
-$('io').addEventListener('input', e => { const v = e.target.value; if (v === '' || v === '-') return; S.io = S.D / 2 + (+v); update(); });
-$('wp').addEventListener('input', e => { const v = +e.target.value; if (!(v > 0)) return; S.wp = v; update(); });
+// Inch fields show 30" / +6" / −1.2" at rest and the bare number while you type in them.
+function fmtIn(v, signed) { const n = +(+v).toFixed(1); return (signed ? (n > 0 ? '+' : n < 0 ? '−' : '') : (n < 0 ? '−' : '')) + Math.abs(n) + '"'; }
+function parseIn(t) { const v = parseFloat(String(t).replace(/[″"\s+]/g, '').replace(/[−–]/g, '-')); return isFinite(v) ? v : NaN; }
+[['iw', true], ['io', true], ['wp', false]].forEach(([id, signed]) => {
+  const el = $(id);
+  el.addEventListener('focus', () => { if (el.readOnly) return; const v = parseIn(el.value); el.value = isFinite(v) ? String(v) : ''; setTimeout(() => { try { el.select(); } catch (_) {} }, 0); });
+  el.addEventListener('blur', () => { if (!el.readOnly) syncSetup(); });
+  el.addEventListener('keydown', e => { if (e.key === 'Enter') el.blur(); });
+});
+$('iw').addEventListener('input', e => { const v = parseIn(e.target.value); if (!isFinite(v)) return; S.iw = S.D / 2 + v; update(); });
+$('io').addEventListener('input', e => { const v = parseIn(e.target.value); if (!isFinite(v)) return; S.io = S.D / 2 + v; update(); });
+$('wp').addEventListener('input', e => { const v = parseIn(e.target.value); if (!(v > 0)) return; S.wp = v; update(); });
 ['iw', 'io', 'wp', 'diam', 'len'].forEach(id => $(id).addEventListener('change', () => { clampState(); syncSetup(); }));
 $('r-hr').addEventListener('input',  () => syncRate('hr'));
 $('r-day').addEventListener('input', () => syncRate('day'));
@@ -1288,12 +1344,137 @@ $('saveVessel').addEventListener('click', openSaveVessel);
 $('newJob').addEventListener('click', openNew);
 
 // ── INIT ──────────────────────────────────────────────────
+
+// ── PICKER SHEET — iOS-style wheel from the bottom (touch screens) ──────────
+// Tap a box → the wheel rises into thumb reach; the value and the drawing update live as it rolls.
+// Type an exact value in the readout for anything between the steps. Done keeps it, Cancel puts it back.
+// Desktop (mouse) keeps plain typing — this only switches on for touch screens.
+const TOUCH = !!(window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+const PITEM = 40;                         // must equal .plist .pi height in CSS
+const P = { cfg: null, vals: [], i: 0, lock: 0, orig: null, raf: 0 };
+function pFmt(v) { return P.cfg.fmt ? P.cfg.fmt(v) : String(v); }
+function pMark() {
+  const items = $('pList').children, top = $('pList').scrollTop, lo = Math.max(0, Math.floor(top / PITEM) - 4), hi = Math.min(P.vals.length - 1, lo + 10);
+  for (let k = lo; k <= hi; k++) {
+    const el = items[k + 1]; if (!el) continue;
+    const d = (k * PITEM - top) / PITEM;                   // rows from the centre band
+    el.style.transform = `rotateX(${Math.max(-75, Math.min(75, -d * 20))}deg)`;
+    el.style.opacity = String(Math.max(.25, 1 - Math.abs(d) * .22));
+    el.classList.toggle('sel', k === P.i);
+  }
+}
+function pNearest(v) { let b = 0, dd = Infinity; P.vals.forEach((x, k) => { const e = Math.abs(x - v); if (e < dd) { dd = e; b = k; } }); return b; }
+function pScrollTo(k, smooth) {
+  P.i = k; P.lock++;
+  try { $('pList').scrollTo({ top: k * PITEM, behavior: smooth ? 'smooth' : 'auto' }); } catch (_) { $('pList').scrollTop = k * PITEM; }
+  pMark(); setTimeout(() => { P.lock = Math.max(0, P.lock - 1); }, smooth ? 360 : 60);
+}
+function pLive() { $('pLive').innerHTML = P.cfg.live ? P.cfg.live() : ''; }
+function pApply(v) { P.cfg.set(v); pLive(); }
+function openPicker(cfg) {
+  P.cfg = cfg; const cur = cfg.get();
+  let vals = cfg.values();
+  if (isFinite(cur) && !vals.some(x => Math.abs(x - cur) < 1e-9)) { vals.push(cur); vals.sort((a, b) => cfg.desc ? b - a : a - b); }   // keep an in-between value on the wheel
+  P.vals = vals; P.orig = cur;
+  $('pTtl').textContent = cfg.title; $('pSub').textContent = cfg.sub || ''; $('pUnit').textContent = cfg.unit || '';
+  $('pList').innerHTML = '<div class="pp"></div>' + vals.map((v, k) => `<div class="pi" role="option" data-k="${k}">${pFmt(v)}</div>`).join('') + '<div class="pp"></div>';
+  $('pIn').value = cfg.raw ? cfg.raw(cur) : String(cur);
+  // Keep the drawing in view above the sheet: if the vessel isn't docked at the top yet, scroll it there first.
+  const dock = $('vessel-dock'), hdr = document.querySelector('.hdr');
+  if (dock && getComputedStyle(dock).position === 'sticky') {
+    const r = dock.getBoundingClientRect(), hh = hdr ? hdr.getBoundingClientRect().height : 0;
+    if (r.top > hh + 2) window.scrollTo(0, window.scrollY + r.top - hh);
+  }
+  const sh = $('psheet'); sh.hidden = false; document.documentElement.style.overflow = 'hidden';
+  pScrollTo(pNearest(cur), false); pLive();
+  requestAnimationFrame(() => requestAnimationFrame(() => sh.classList.add('on')));
+  setTimeout(() => $('pList').focus({ preventScroll: true }), 60);
+}
+function closePicker(keep) {
+  if (!P.cfg) return;
+  if (!keep) P.cfg.set(P.orig);
+  if (P.cfg.done) P.cfg.done();
+  const sh = $('psheet'); sh.classList.remove('on'); document.documentElement.style.overflow = '';
+  const back = P.cfg.el; P.cfg = null;
+  setTimeout(() => { sh.hidden = true; }, DUR ? 240 : 0);
+  if (back) try { back.focus({ preventScroll: true }); } catch (_) {}
+}
+$('pList').addEventListener('scroll', () => {
+  if (!P.cfg) return;
+  if (!P.raf) P.raf = requestAnimationFrame(() => { P.raf = 0; pMark(); });
+  if (P.lock) return;
+  const k = Math.max(0, Math.min(P.vals.length - 1, Math.round($('pList').scrollTop / PITEM)));
+  if (k === P.i) return;
+  P.i = k; const v = P.vals[k]; $('pIn').value = P.cfg.raw ? P.cfg.raw(v) : String(v); pApply(v);
+}, { passive: true });
+$('pList').addEventListener('click', e => { const it = e.target.closest('.pi'); if (it) { const k = +it.dataset.k; const v = P.vals[k]; $('pIn').value = P.cfg.raw ? P.cfg.raw(v) : String(v); pApply(v); pScrollTo(k, true); } });
+$('pList').addEventListener('keydown', e => {
+  let k = P.i;
+  if (e.key === 'ArrowDown') k++; else if (e.key === 'ArrowUp') k--; else if (e.key === 'PageDown') k += 5; else if (e.key === 'PageUp') k -= 5;
+  else if (e.key === 'Enter') { e.preventDefault(); closePicker(true); return; } else return;
+  e.preventDefault(); k = Math.max(0, Math.min(P.vals.length - 1, k)); const v = P.vals[k]; $('pIn').value = P.cfg.raw ? P.cfg.raw(v) : String(v); pApply(v); pScrollTo(k, true);
+});
+$('pIn').addEventListener('focus', () => setTimeout(() => { try { $('pIn').select(); } catch (_) {} }, 0));
+$('pIn').addEventListener('input', () => {
+  const v = parseIn($('pIn').value); if (!isFinite(v)) return;
+  const ok = P.cfg.accept ? P.cfg.accept(v) : v; if (!isFinite(ok)) return;
+  pApply(ok); pScrollTo(pNearest(ok), true);
+});
+$('pIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); closePicker(true); } });
+$('pDone').addEventListener('click', () => closePicker(true));
+$('pScrim').addEventListener('click', () => closePicker(true));
+$('pCancel').addEventListener('click', () => closePicker(false));
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && P.cfg) closePicker(false); });
+
+function range(lo, hi, step) { const a = []; for (let v = lo; v <= hi + 1e-9; v += step) a.push(+v.toFixed(4)); return a; }
+const liveTxt = (k, id) => { const t = (($(id) && $(id).textContent) || '—').replace(/\s*min\s*$/, ''); return `${k} <b>${t}</b>${/\d/.test(t) ? ' min' : ''}`; };
+const PICKERS = {
+  lvl: () => ({
+    el: $('lvl'), desc: true,
+    title: S.ow ? 'Weir height' : 'Liquid level', sub: 'from centerline (CL)', unit: '″ CL',
+    values: () => range(lvlMin() - S.D / 2, lvlMax() - S.D / 2, 1).reverse(),
+    get: () => Math.round(S.hL - S.D / 2), fmt: v => fmtLvl(v), raw: v => (v > 0 ? '+' : '') + v,
+    accept: v => Math.max(lvlMin() - S.D / 2, Math.min(lvlMax() - S.D / 2, Math.round(v))),
+    set: v => { S.hL = S.D / 2 + v; update(); drumSet(S.hL); },
+    live: () => S.ow ? liveTxt('Water retention', 't-w') : liveTxt('Total retention', 'r-ret'),
+  }),
+  qw: () => ({
+    el: $('qw'), title: 'Water rate', sub: 'steps of 10 · type any value', unit: 'bbl/hr',
+    values: () => range(0, Math.max(2500, Math.ceil((+$('qw').value || 0) / 10) * 10), 10),
+    get: () => +$('qw').value || 0, accept: v => Math.max(0, v),
+    set: v => { $('qw').value = trim(v); setTotalFromSplit('qw'); },
+    live: () => liveTxt('Water retention', 't-w'),
+  }),
+  qo: () => ({
+    el: $('qo'), title: 'Oil rate', sub: 'steps of 1 · type any value', unit: 'bbl/hr',
+    values: () => range(0, Math.max(1000, Math.ceil(+$('qo').value || 0)), 1),
+    get: () => +$('qo').value || 0, accept: v => Math.max(0, v),
+    set: v => { $('qo').value = trim(v); setTotalFromSplit('qo'); },
+    live: () => liveTxt('Oil retention', 't-o'),
+  }),
+  wp: () => ({
+    el: $('wp'), title: 'Oil chamber length', sub: 'weir to right tangent line (T/L)', unit: 'in',
+    values: () => range(6, Math.round(S.Lft * 12 * 0.6), 1),
+    get: () => S.wp, fmt: v => v + '"', accept: v => Math.max(6, Math.min(Math.round(S.Lft * 12 * 0.6), v)),
+    set: v => { S.wp = v; update(); syncSetup(); },
+    live: () => liveTxt('Oil chamber hold', 't-c'),
+  }),
+};
+if (TOUCH) {
+  ['qw', 'qo', 'wp'].forEach(id => {
+    const el = $(id); el.readOnly = true; el.setAttribute('inputmode', 'none'); el.closest('.inp-box').classList.add('picks');
+    el.closest('.inp-box').addEventListener('click', e => { e.preventDefault(); openPicker(PICKERS[id]()); });
+  });
+  // The dock roller still flicks in place; a tap (no scroll) opens the big wheel instead.
+  $('lvl').addEventListener('click', () => openPicker(PICKERS.lvl()));
+}
+
 restoreState(); clampState(); syncSplit(); syncSetup(); update();
 </script>
 
 
 <div class="footer">
-  Rev. 2026-10-02f<br>
+  Rev. 2026-10-02g<br>
   NFC Services &bull; <a href="https://www.nfcservices.com" target="_blank" rel="noopener">nfcservices.com</a>
 </div>
 
