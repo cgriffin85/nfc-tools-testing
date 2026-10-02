@@ -391,11 +391,25 @@ html,body{transition:background-color .25s ease,color .25s ease;}
     .chip.ok   { color: var(--vr-pass); border-color: var(--vr-pass-bd); background: var(--vr-pass-bg); }
     .chip.warn { color: var(--vr-fail); border-color: var(--vr-fail-bd); background: var(--vr-fail-bg); }
     .ow-body { overflow: hidden; height: 0; transition: height .45s ease; }
-    .ow-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+    /* Two columns at every width: water side on the left, oil side on the right */
+    .ow-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; margin-bottom: 12px; }
+    .ow-grid .inp-lbl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* Closed-state opener: a card-shaped tap target so it reads as something to press */
+    .ow-open { all: unset; box-sizing: border-box; width: 100%; cursor: pointer; display: flex; align-items: center; gap: 12px;
+      margin-top: 16px; padding: 12px 14px; background: var(--vr-surface); border: 1px dashed var(--vr-border-hi, var(--vr-border));
+      -webkit-tap-highlight-color: transparent; transition: border-color .2s, background .2s; }
+    .ow-open:hover, .ow-open:active { border-color: var(--vr-accent); background: var(--vr-accent-dim, transparent); }
+    .ow-open:focus-visible { outline: 2px solid var(--vr-accent); outline-offset: 3px; }
+    .ow-open .plus { flex: none; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--vr-accent); color: var(--vr-accent); font-family: var(--fb); font-size: 20px; line-height: 1; }
+    .ow-open .t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .ow-open .t b { font-family: var(--fb); font-weight: 600; font-size: 14px; color: var(--vr-txt); }
+    .ow-open .t span { font-size: 11px; color: var(--vr-txt-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ow-open .go { flex: none; color: var(--vr-txt-2); font-size: 14px; }
+    .ow-open[hidden] { display: none; }
     .ow-grid .inp-box { padding: 8px 10px; }
     .ow-grid .inp-box input { font-size: 17px; }
     .ow-hint { font-size: 10px; color: var(--vr-txt-m); margin-top: 4px; line-height: 1.4; }
-    @media (max-width: 520px) { .ow-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     .clocks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--vr-border); border: 1px solid var(--vr-border); }
     .clock { background: var(--vr-surface); padding: 10px 12px; }
     .clock .k { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--vr-txt-2); margin-bottom: 3px; }
@@ -623,15 +637,20 @@ html,body{transition:background-color .25s ease,color .25s ease;}
   <button type="button" class="sech" id="ow-toggle" aria-expanded="false" aria-controls="ow-body">
     <span>Oil &amp; Water</span><span class="ln"></span><span class="chip" id="ow-chip">OPTIONAL</span><span class="chev" aria-hidden="true">▾</span>
   </button>
+  <button type="button" class="ow-open" id="ow-open" aria-controls="ow-body">
+    <span class="plus" aria-hidden="true">+</span>
+    <span class="t"><b>Split by oil &amp; water</b><span>Water cut · weir · interface · oil dump</span></span>
+    <span class="go" aria-hidden="true">▾</span>
+  </button>
   <div class="ow-body" id="ow-body" inert>
     <div class="card p18">
       <div class="ow-grid">
-        <div><div class="inp-lbl">Water cut · %</div><div class="inp-box"><input type="number" id="wc" value="83.3" step="0.1" inputmode="decimal" aria-label="Water cut, percent"></div><div class="ow-hint">Or type the split →</div></div>
-        <div><div class="inp-lbl">Water · bbl/hr</div><div class="inp-box"><input type="number" id="qw" value="100" inputmode="decimal" aria-label="Water rate, barrels per hour"></div></div>
-        <div><div class="inp-lbl">Oil · bbl/hr</div><div class="inp-box"><input type="number" id="qo" value="20" inputmode="decimal" aria-label="Oil rate, barrels per hour"></div><div class="ow-hint">Water + oil = total rate</div></div>
-        <div><div class="inp-lbl">Weir · in from right T/L</div><div class="inp-box"><input type="number" id="wp" value="30" inputmode="numeric" aria-label="Weir position, inches from right tangent line"></div><div class="ow-hint">Weir top = the liquid level above</div></div>
-        <div><div class="inp-lbl">Interface · in from CL</div><div class="inp-box"><input type="number" id="iw" value="-1.2" step="0.5" inputmode="decimal" aria-label="Oil-water interface, inches from centerline"></div><div class="ow-hint">Where the sight glass shows it</div></div>
-        <div><div class="inp-lbl">Oil dump · in from CL</div><div class="inp-box"><input type="number" id="io" value="-1.2" step="0.5" inputmode="decimal" aria-label="Oil dump level, inches from centerline"></div><div class="ow-hint">The high point where oil dumps</div></div>
+        <div><div class="inp-lbl">Water</div><div class="inp-box"><input type="number" id="qw" value="100" inputmode="decimal" aria-label="Water rate, barrels per hour"><span class="inp-unit">bbl/hr</span></div><div class="ow-hint">Water + oil = total rate</div></div>
+        <div><div class="inp-lbl">Oil</div><div class="inp-box"><input type="number" id="qo" value="20" inputmode="decimal" aria-label="Oil rate, barrels per hour"><span class="inp-unit">bbl/hr</span></div></div>
+        <div><div class="inp-lbl">Water cut</div><div class="inp-box"><input type="number" id="wc" value="83.3" step="0.1" inputmode="decimal" aria-label="Water cut, percent"><span class="inp-unit">%</span></div><div class="ow-hint">Or type the rates above</div></div>
+        <div><div class="inp-lbl">Weir</div><div class="inp-box"><input type="number" id="wp" value="30" inputmode="numeric" aria-label="Weir position, inches from right tangent line"><span class="inp-unit">in</span></div><div class="ow-hint">From the right tangent line (T/L)</div></div>
+        <div><div class="inp-lbl">Interface</div><div class="inp-box"><input type="number" id="iw" value="-1.2" step="0.5" inputmode="decimal" aria-label="Oil-water interface, inches from centerline"><span class="inp-unit">in CL</span></div><div class="ow-hint">Where the sight glass shows it</div></div>
+        <div><div class="inp-lbl">Oil dump</div><div class="inp-box"><input type="number" id="io" value="-1.2" step="0.5" inputmode="decimal" aria-label="Oil dump level, inches from centerline"><span class="inp-unit">in CL</span></div><div class="ow-hint">The high point where oil dumps</div></div>
       </div>
       <div class="clocks">
         <div class="clock key"><div class="k">Water Retention</div><div class="v" id="t-w">—</div><div class="s" id="t-w-s"></div></div>
@@ -1025,6 +1044,7 @@ function setOW(open) {
   const body = $('ow-body'), btn = $('ow-toggle');
   S.ow = open;
   btn.setAttribute('aria-expanded', open);
+  $('ow-open').hidden = open;
   $('lvl-lbl').textContent = open ? 'Weir top' : 'Liquid level';
   if (open) {
     body.inert = false;
@@ -1039,6 +1059,7 @@ function setOW(open) {
   calc(); animateT(open ? 1 : 0); if (typeof saveSoon === 'function') saveSoon();
 }
 $('ow-toggle').addEventListener('click', () => setOW(!S.ow));
+$('ow-open').addEventListener('click', () => setOW(true));
 window.addEventListener('resize', () => drawVessel());
 
 // ── INPUTS ────────────────────────────────────────────────
@@ -1191,7 +1212,7 @@ function restoreState() {
   $('box-hr').classList.toggle('hot', rateSrc === 'hr'); $('box-day').classList.toggle('hot', rateSrc === 'day');
   buildDrum();
   if (st.ow) { S.ow = true; S.t = 1; const b = $('ow-body'); b.inert = false; b.style.height = 'auto';
-    $('ow-toggle').setAttribute('aria-expanded', 'true'); $('lvl-lbl').textContent = 'Weir top'; }
+    $('ow-toggle').setAttribute('aria-expanded', 'true'); $('ow-open').hidden = true; $('lvl-lbl').textContent = 'Weir top'; }
   return true;
 }
 
@@ -1286,7 +1307,7 @@ restoreState(); clampState(); syncSplit(); syncSetup(); update();
 
 
 <div class="footer">
-  Rev. 2026-10-02b<br>
+  Rev. 2026-10-02c<br>
   NFC Services &bull; <a href="https://www.nfcservices.com" target="_blank" rel="noopener">nfcservices.com</a>
 </div>
 
