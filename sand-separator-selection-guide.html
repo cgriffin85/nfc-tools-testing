@@ -109,6 +109,16 @@
     .disc strong{color:var(--warn);font-weight:600}
 
     @media(max-width:360px){.vc-eff{font-size:18px}.tab{font-size:11px;padding:11px 3px}.hdr-title{font-size:20px}}
+
+    /* Collapsing header on scroll — same pattern as vessel-retention.html (2026-10-02) */
+    body{overflow-anchor:none}
+    .hdr{position:sticky;top:0;z-index:100;transition:padding .2s ease}
+    .hdr-title{transition:font-size .2s ease}
+    .hdr-sub,.hdr .ic-slot{overflow:hidden;max-height:40px;transition:opacity .15s ease,max-height .2s ease,margin .2s ease}
+    .hdr.fl-collapsed{padding-top:6px;padding-bottom:6px}
+    .hdr.fl-collapsed .hdr-title{font-size:17px}
+    .hdr.fl-collapsed .hdr-sub,.hdr.fl-collapsed .ic-slot{opacity:0;max-height:0;margin:0!important}
+    @media(max-width:360px){.hdr.fl-collapsed .hdr-title{font-size:16px}}
   </style>
 </head>
 <body>
@@ -390,6 +400,29 @@ calc();
   var saved=null; try{ saved=localStorage.getItem(KEY); }catch(e){}
   apply(saved==='light'?'light':'dark');
   if(btn) btn.addEventListener('click',function(){ apply(root.getAttribute('data-theme')==='dark'?'light':'dark'); });
+})();
+
+// ── COLLAPSING HEADER ─────────────────────────────────────
+// Same as vessel-retention.html: hysteresis (collapse past 64, expand only under 24) +
+// overflow-anchor:none + one rAF write per frame, so the header can't flap when collapsing it shifts the scroll position.
+(function () {
+  var h = document.querySelector('.hdr');
+  if (!h) return;
+  var DOWN = 64, UP = 24, collapsed = false, ticking = false;
+  function apply() {
+    ticking = false;
+    var y = window.scrollY || window.pageYOffset || 0;
+    var next = collapsed ? (y > UP) : (y > DOWN);
+    if (next === collapsed) return;
+    collapsed = next;
+    h.classList.toggle('fl-collapsed', collapsed);
+  }
+  window.addEventListener('scroll', function () {
+    if (ticking) return;
+    ticking = true;
+    (window.requestAnimationFrame || function (f) { setTimeout(f, 16); })(apply);
+  }, { passive: true });
+  apply();
 })();
 </script>
 </body>
