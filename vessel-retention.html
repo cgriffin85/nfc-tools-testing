@@ -378,6 +378,23 @@ html,body{transition:background-color .25s ease,color .25s ease;}
     .lvl-unit { font-size: 11px; color: var(--vr-txt-2); }
     /* Thumb reach: label stack and roller sit right-justified, bottom right of the dock */
     .lvl-row { justify-content: flex-end; }
+    /* Result in the dock's empty bottom-left, coloured by the same verdict as the Gravity Separation card */
+    .dres { margin-right: auto; min-width: 0; display: grid; grid-template-columns: auto auto auto; column-gap: 6px; align-items: baseline;
+      padding: 3px 8px; border: 1px solid var(--vr-border); background: var(--vr-surface); color: var(--vr-txt); }
+    .dres.v-pass { background: var(--vr-pass-bg); border-color: var(--vr-pass-bd); color: var(--vr-pass); }
+    .dres.v-warn { background: var(--vr-warn-bg); border-color: var(--vr-warn-bd); color: var(--vr-warn); }
+    .dres.v-fail { background: var(--vr-fail-bg); border-color: var(--vr-fail-bd); color: var(--vr-fail); }
+    .dres .dg { font-size: 12px; font-weight: 700; display: none; }
+    @media (max-width: 420px) { .dres .dx { display: none; } .dres .dg { display: inline; } }
+    .u-short { display: none; }
+    .dres .kmin { display: none; }
+    .dres .sep::before { content: ' · '; white-space: pre; }
+    @media (max-width: 345px) { .dres .kmin { display: inline; } .dres.ow .dv small { display: none; } .dres.ow .dv { font-size: 13px; } .dres .sep::before { content: '/'; } .lvl-row .dgroup { width: 66px; } }
+    @media (max-width: 380px) { .u-full { display: none; } .u-short { display: inline; } .dres { padding: 3px 6px; column-gap: 4px; } .dres .dv { font-size: 14px; } }
+    .dres .dk { grid-column: 1 / -1; font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: inherit; opacity: .85; white-space: nowrap; }
+    .dres .dv { font-family: var(--fm); font-weight: 600; font-size: 15px; white-space: nowrap; }
+    .dres .dv small { font-size: 10px; font-weight: 400; margin-left: 2px; }
+    .dres .dx { font-size: 9px; font-weight: 600; letter-spacing: .8px; white-space: nowrap; }
     .lvl-txt { display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 2px; }
     .lvl-txt .lvl-unit { font-size: 10px; letter-spacing: .3px; }
     .eq-row input, .ow-grid input { -moz-appearance: textfield; }
@@ -595,6 +612,19 @@ html,body{transition:background-color .25s ease,color .25s ease;}
 
 <div class="wrap">
 
+  <!-- ── VESSEL — drawing is also where the vessel is set up (2026-10-02) ── -->
+  <div class="sec">Vessel</div>
+  <div class="vessel-dock" id="vessel-dock">
+  <div class="vessel-wrap">
+    <div id="vessel-svg-container"></div>
+    <div class="lvl-row">
+      <div class="dres" id="dres" aria-live="polite"><span class="dk" id="dres-k">Retention</span><span class="dv" id="dres-v">—</span><span class="dx" id="dres-x"></span><span class="dg" id="dres-g" aria-hidden="true"></span></div>
+      <div class="lvl-txt"><span class="inp-lbl" id="lvl-lbl">Liquid level</span><span class="lvl-unit" id="lvl-unit"><span class="u-full">from centerline (CL)</span><span class="u-short">from CL</span></span></div>
+      <div class="dgroup"><div class="dwin"><div class="drum" id="lvl" tabindex="0" role="listbox" aria-labelledby="lvl-lbl lvl-unit"></div></div><span class="dspin" aria-hidden="true"><i></i><i></i></span></div>
+    </div>
+  </div>
+  </div><!-- /vessel-dock -->
+
   <!-- ── VESSEL DIMENSIONS ──────────────────────────── -->
   <div class="sec">Vessel Dimensions</div>
   <div class="card p18">
@@ -623,18 +653,6 @@ html,body{transition:background-color .25s ease,color .25s ease;}
     </div>
     <div class="fn" style="border-top:0;padding-top:8px">Straight shell only. The liquid in the two heads (end caps) is not counted in volume or retention — it depends on the head shape, which varies by vessel. That leaves the answer slightly on the safe side.</div>
   </div>
-
-  <!-- ── VESSEL — drawing is also where the vessel is set up (2026-10-02) ── -->
-  <div class="sec">Vessel</div>
-  <div class="vessel-dock" id="vessel-dock">
-  <div class="vessel-wrap">
-    <div id="vessel-svg-container"></div>
-    <div class="lvl-row">
-      <div class="lvl-txt"><span class="inp-lbl" id="lvl-lbl">Liquid level</span><span class="lvl-unit" id="lvl-unit">from centerline (CL)</span></div>
-      <div class="dgroup"><div class="dwin"><div class="drum" id="lvl" tabindex="0" role="listbox" aria-labelledby="lvl-lbl lvl-unit"></div></div><span class="dspin" aria-hidden="true"><i></i><i></i></span></div>
-    </div>
-  </div>
-  </div><!-- /vessel-dock -->
 
   <!-- ── FLOW RATE — one rate, typed in either unit ── -->
   <div class="sec">Flow Rate</div>
@@ -903,6 +921,24 @@ function calc() {
         : 'The interface is within 4 inches of the weir top. At higher rates there is more emulsion and less time, so water is likely to start going over with the oil.'}</div>`
     : '';
   if (carry >= 1) { const el = $('v-r'); el.textContent = 'FAIL — CARRYOVER'; el.className = 'verdict v-fail'; }
+  // Dock result: the key retention, in the verdict's colour
+  {
+    const vr = $('v-r');
+    let cls = (vr.className.match(/v-(pass|warn|fail)/) || [''])[0];
+    let word = carry >= 1 ? 'CARRYOVER' : vr.textContent === 'NEAR WATER DENSITY' ? 'NEAR WATER' : vr.textContent;
+    if (carry > 0 && carry < 1 && cls !== 'v-fail') { cls = 'v-warn'; word = 'CARRYOVER RISK'; }
+    $('dres').className = 'dres ' + cls + (S.ow ? ' ow' : '');
+    if (S.ow) {
+      $('dres-k').innerHTML = 'Water · Oil<span class="kmin"> · min</span>';
+      $('dres-v').innerHTML = fmt(keyRet) + '<span class="sep"></span>' + ($('t-o').textContent.replace(/min$/, '') || '—') + '<small>min</small>';
+    } else {
+      $('dres-k').textContent = 'Retention';
+      $('dres-v').innerHTML = fmt(keyRet) + '<small>min</small>';
+    }
+    $('dres-x').textContent = word;
+    $('dres-g').textContent = cls === 'v-pass' ? '✓' : cls === 'v-warn' ? '!' : cls === 'v-fail' ? '✕' : '';
+    $('dres').setAttribute('aria-label', $('dres-k').textContent + ' ' + $('dres-v').textContent + ', ' + word);
+  }
   const chip = $('ow-chip');
   // The chip is the action, not a status: carryover is reported in the section itself
   chip.textContent = S.ow ? 'DEACTIVATE' : 'ACTIVATE';
@@ -925,7 +961,7 @@ function verdict(id, ret, sep, dRho) {
 function geo() {
   const cw = ($('vessel-svg-container') && $('vessel-svg-container').clientWidth) || 640;
   const W = Math.round(Math.max(300, Math.min(640, cw))), compact = W < 520;
-  const padL = compact ? 30 : 56, padR = compact ? 72 : 84, padT = compact ? 54 : 62, padB = compact ? (S.ow ? 56 : 36) : 66;
+  const padL = compact ? 30 : 56, padR = compact ? 72 : 84, padT = compact ? 54 : 62, padB = compact ? (S.ow ? 56 : 36) : 70;
   const Din = S.D, Lin = S.Lft * 12, hd = Din / 4, total = Lin + 2 * hd, availW = W - padL - padR;
   let s = availW / total; const maxD = compact ? 120 : 180; if (Din * s > maxD) s = maxD / Din;
   const Dp = Din * s, Lp = Lin * s, Hp = hd * s, cx = padL + availW / 2;
@@ -1032,13 +1068,13 @@ function drawVessel() {
     // interface (blue, throttle)
     const hw = compact ? 64 : 52, hx = x0 + (xw - x0) * (compact ? 0.36 : 0.52) - hw / 2;
     g += `<line x1="${x0 + 2}" y1="${yW}" x2="${xw - 2}" y2="${yW}" stroke="var(--vs-wl)" stroke-width="1.5" stroke-dasharray="5 3"/>
-      <rect x="${hx}" y="${yW - HH / 2}" width="${hw}" height="${HH}" rx="2" fill="var(--vs-wl)"/>` + T(hx + hw / 2, yW + HS * 0.38, cl(S.iw), 'middle', '#FFFFFF', HS / fs, 700);
+` + (compact ? '' : `<rect x="${hx}" y="${yW - HH / 2}" width="${hw}" height="${HH}" rx="2" fill="var(--vs-wl)"/>` + T(hx + hw / 2, yW + HS * 0.38, cl(S.iw), 'middle', '#FFFFFF', HS / fs, 700));
     // oil dump (gold)
     const lineX2 = x1 + Hp * 0.6, hw2 = compact ? 64 : 52, ox = xw + (x1 - xw) * 0.5 - hw2 / 2;
     g += `<line x1="${xw + 3}" y1="${yC}" x2="${lineX2}" y2="${yC}" stroke="var(--vs-tick-ink)" stroke-width="3" opacity=".45"/>
       <line x1="${xw + 3}" y1="${yC}" x2="${lineX2}" y2="${yC}" stroke="var(--vs-tick-oil)" stroke-width="1.5" stroke-dasharray="5 3"/>
-      <rect x="${ox}" y="${yC - HH / 2}" width="${hw2}" height="${HH}" rx="2" fill="var(--vs-tick-oil)" stroke="var(--vs-tick-ink)" stroke-width="1"/>` +
-      T(ox + hw2 / 2, yC + HS * 0.38, cl(S.io), 'middle', 'var(--vs-tick-ink)', HS / fs, 700);
+` + (compact ? '' : `<rect x="${ox}" y="${yC - HH / 2}" width="${hw2}" height="${HH}" rx="2" fill="var(--vs-tick-oil)" stroke="var(--vs-tick-ink)" stroke-width="1"/>` +
+      T(ox + hw2 / 2, yC + HS * 0.38, cl(S.io), 'middle', 'var(--vs-tick-ink)', HS / fs, 700));
     // weir position dim
     const wy = bot + stub + (compact ? 24 : 30);
     g += `<path d="M${xw},${wy} H${x1} M${xw},${wy - 4} V${wy + 4} M${x1},${wy - 4} V${wy + 4}" stroke="var(--vr-accent)" fill="none"/>` + M((xw + x1) / 2, wy + 14, `chamber ${S.wp}"`, 'middle', 'var(--vr-accent)');
@@ -1052,7 +1088,7 @@ function drawVessel() {
   g += T(hdx + 6, cy + (bot - cy) * 0.45, `${Math.round(S.hL)}" deep`, 'start', 'var(--vs-dim)', 9, 600);
   g += M(hdx + 6, bot - 2, `ø${S.D}"`, 'start');
   const ly = top - (compact ? 30 : 44);
-  g += `<path d="M${x0},${ly} H${x1} M${x0},${ly - 4} V${ly + 4} M${x1},${ly - 4} V${ly + 4}" stroke="var(--vs-dim)" fill="none"/>` + M(x0 + Lp * 0.3, ly - 6, `${S.Lft}' T/T`);
+  g += `<path d="M${x0},${ly} H${x1} M${x0},${ly - 4} V${ly + 4} M${x1},${ly - 4} V${ly + 4}" stroke="var(--vs-dim)" fill="none"/>` + M(x0 + Lp * 0.3, ly - 6, `${S.Lft}' seam to seam`);
 
   $('vessel-svg-container').innerHTML = g + '</svg>';
 }
@@ -1491,7 +1527,7 @@ function levelPicker(id, key, o) {
 Object.assign(PICKERS, {
   diam: viaInput('diam', { title: 'Diameter', sub: 'steps of 6″ · type any value', unit: 'in', lo: 12, hi: 144, step: 6, fmt: v => v + '"',
     live: () => `Volume <b>${$('v-bbl').textContent}</b> bbl` }),
-  len: viaInput('len', { title: 'Length', sub: 'tangent to tangent · steps of 2½′', unit: 'ft', lo: 5, hi: 60, step: 2.5, fmt: v => v + "'",
+  len: viaInput('len', { title: 'Length', sub: 'seam to seam · steps of 2½′', unit: 'ft', lo: 5, hi: 60, step: 2.5, fmt: v => v + "'",
     live: () => `Volume <b>${$('v-bbl').textContent}</b> bbl` }),
   'r-hr': viaInput('r-hr', { title: 'Flow rate', sub: 'bbl/hr · steps of 10 · type any value', unit: 'bbl/hr', lo: 0, hi: 1000, step: 10,
     live: () => liveTxt('Total retention', 'r-ret') }),
@@ -1516,7 +1552,7 @@ restoreState(); clampState(); syncSplit(); syncSetup(); update();
 
 
 <div class="footer">
-  Rev. 2026-10-02i<br>
+  Rev. 2026-10-02j<br>
   NFC Services &bull; <a href="https://www.nfcservices.com" target="_blank" rel="noopener">nfcservices.com</a>
 </div>
 
