@@ -229,15 +229,15 @@ html,body{transition:background-color .25s ease,color .25s ease;}
 
     /* Retention highlight */
     .ret-bar {
-      background: var(--vr-accent-dim);
-      border: 1px solid rgba(212,43,43,0.22);
+      background: var(--vr-bg);
+      border: 1px solid var(--vr-border);
       padding: 10px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-top: 10px;
     }
-    .ret-lbl  { font-family: var(--fd); font-size: 13px; letter-spacing: 1.5px; color: var(--vr-accent); }
+    .ret-lbl  { font-family: var(--fd); font-size: 13px; letter-spacing: 1.5px; color: var(--vr-txt); }   /* neutral: the dock result carries the verdict colour */
     .ret-val  { font-family: var(--fm); font-size: 24px; font-weight: 600; }
     .ret-unit { font-size: 11px; color: var(--vr-txt-2); margin-left: 4px; }
 
@@ -604,6 +604,18 @@ html,body{transition:background-color .25s ease,color .25s ease;}
       .pread { padding-top: 6px; } .pread input { font-size: 26px; } .plive { margin: 2px 0 4px; }
       .pbar { padding: 2px 6px; } .pbtn { padding: 8px 12px; }
     }
+
+    /* PC / tablet: results sit under the drawing (left = see it, right = set it) — compact, one row each */
+    .vres:empty { display: none; }
+    .vres { display: flex; flex-direction: column; gap: 10px; }
+    .vres .owres.off { display: none; }
+    .vres .owres #carry:empty { display: none; }
+    .vres .clocks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .vres .clock { padding: 7px 12px; }
+    .vres .cmp-card { margin-bottom: 0 !important; display: grid; grid-template-columns: minmax(0, 1fr) minmax(120px, 34%); }
+    .vres .cmp-hdr { grid-column: 1 / -1; }
+    .vres .cmp-body { grid-column: 1; padding-top: 6px; padding-bottom: 6px; }
+    .vres .cmp-card .verdict { grid-column: 2; display: flex; align-items: center; justify-content: center; margin: 0; border-top: 0; }
   </style>
 </head>
 <body>
@@ -649,6 +661,7 @@ html,body{transition:background-color .25s ease,color .25s ease;}
     </div>
   </div>
   </div><!-- /vessel-dock -->
+  <div class="vres" id="vres"></div>
   </div><!-- /vcol -->
 
   <div class="rcol" id="rcol">
@@ -733,12 +746,14 @@ html,body{transition:background-color .25s ease,color .25s ease;}
         <div><div class="inp-lbl">Interface</div><div class="inp-box"><input type="text" id="iw" value="−1.2&quot;" inputmode="decimal" autocomplete="off" aria-label="Oil-water interface, inches from centerline"><span class="inp-unit">CL</span></div><div class="ow-hint">Where the sight glass shows it</div></div>
         <div><div class="inp-lbl">Oil dump</div><div class="inp-box"><input type="text" id="io" value="−1.2&quot;" inputmode="decimal" autocomplete="off" aria-label="Oil dump level, inches from centerline"><span class="inp-unit">CL</span></div><div class="ow-hint">The high point where oil dumps</div></div>
       </div>
+      <div class="owres" id="owres">
       <div class="clocks">
         <div class="clock key"><div class="k">Water Retention</div><div class="v" id="t-w">—</div><div class="s" id="t-w-s"></div></div>
         <div class="clock"><div class="k">Oil Retention</div><div class="v" id="t-o">—</div><div class="s" id="t-o-s"></div></div>
         <div class="clock"><div class="k">Oil Chamber Hold</div><div class="v" id="t-c">—</div><div class="s" id="t-c-s"></div></div>
       </div>
       <div id="carry"></div>
+      </div>
       <div class="fn" style="border-top:0;padding-top:10px">The drawing shows the weir, the blue interface line and the gold oil line where you set them. Each retention = that liquid's volume ÷ its own rate. The oil chamber is holding before the dump, not separation.</div>
     </div>
   </div>
@@ -971,6 +986,7 @@ function calc() {
   const chip = $('ow-chip');
   // The chip is the action, not a status: carryover is reported in the section itself
   chip.textContent = S.ow ? 'DEACTIVATE' : 'ACTIVATE';
+  const owr = $('owres'); if (owr) owr.classList.toggle('off', !!owr.closest('.vres') && !S.ow);
   chip.className = 'chip' + (S.ow ? '' : ' act');
 }
 
@@ -992,7 +1008,11 @@ function geo() {
   const W = Math.round(Math.max(300, Math.min(640, cw))), compact = W < 520;
   const padL = compact ? 30 : 56, padR = compact ? 72 : 84, padT = compact ? 54 : 62, padB = compact ? (S.ow ? 56 : 36) : 70;
   const Din = S.D, Lin = S.Lft * 12, hd = Din / 4, total = Lin + 2 * hd, availW = W - padL - padR;
-  let s = availW / total; const maxD = compact ? 120 : 180; if (Din * s > maxD) s = maxD / Din;
+  let s = availW / total;
+  // Two-column screens: the drawing also has to share the height with the results under it
+  const twoCol = $('vcol') && getComputedStyle($('vcol')).display !== 'contents';
+  const maxD = compact ? 120 : twoCol ? Math.max(110, Math.min(180, Math.round(window.innerHeight * 0.22))) : 180;
+  if (Din * s > maxD) s = maxD / Din;
   const Dp = Din * s, Lp = Lin * s, Hp = hd * s, cx = padL + availW / 2;
   return { W, compact, fs: compact ? 1.15 : 1, s, Dp, Lp, Hp, x0: cx - Lp / 2, x1: cx + Lp / 2, top: padT, bot: padT + Dp, H: Math.round(padT + Dp + padB) };
 }
@@ -1248,7 +1268,18 @@ buildDrum();
 (function () {
   var h = document.querySelector('.hdr');
   if (!h) return;
+  // Collapse the moment the first section heading ("Vessel" / "Vessel Dimensions") reaches the banner,
+  // not 64px later. Measured from the page, so it holds on every layout. Small UP keeps the hysteresis.
   var DOWN = 64, UP = 24, collapsed = false, ticking = false;
+  function measure() {
+    if (collapsed) return;
+    var sec = document.querySelector('.rcol .sec') && getComputedStyle(document.querySelector('.rcol')).display !== 'contents'
+      ? document.querySelector('.rcol .sec') : document.querySelector('.wrap .sec');
+    if (!sec) return;
+    var y = window.scrollY || 0, gap = sec.getBoundingClientRect().top + y - h.getBoundingClientRect().height;
+    DOWN = Math.max(6, Math.round(gap)); UP = Math.max(0, Math.min(4, DOWN - 4));
+  }
+  measure(); window.addEventListener('resize', measure);
   function apply() {
     ticking = false;
     var y = window.scrollY || window.pageYOffset || 0;
@@ -1576,12 +1607,27 @@ if (TOUCH) {
   $('lvl').addEventListener('click', () => openPicker(PICKERS.lvl()));
 }
 
+// ── PC / TABLET: results move under the drawing; back into their cards on smaller screens ──
+(function () {
+  const mq = window.matchMedia && window.matchMedia('(min-width: 900px) and (min-height: 600px)');
+  if (!mq) return;
+  const parts = [$('owres'), document.querySelector('.cmp-card')].map(el => ({ el, mark: el.parentNode.insertBefore(document.createComment('slot'), el) }));
+  function place() {
+    const left = mq.matches;
+    parts.forEach(p => { if (left) $('vres').appendChild(p.el); else p.mark.parentNode.insertBefore(p.el, p.mark.nextSibling); });
+    $('owres').classList.toggle('off', left && !S.ow);
+    drawVessel();
+  }
+  if (mq.addEventListener) mq.addEventListener('change', place); else if (mq.addListener) mq.addListener(place);
+  place();
+})();
+
 restoreState(); clampState(); syncSplit(); syncSetup(); update();
 </script>
 
 
 <div class="footer">
-  Rev. 2026-10-02k<br>
+  Rev. 2026-10-02l<br>
   NFC Services &bull; <a href="https://www.nfcservices.com" target="_blank" rel="noopener">nfcservices.com</a>
 </div>
 
