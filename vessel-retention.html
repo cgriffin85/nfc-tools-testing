@@ -581,6 +581,29 @@ html,body{transition:background-color .25s ease,color .25s ease;}
     /* touch: these boxes open the sheet instead of the keyboard */
     .inp-box.picks { cursor: pointer; }
     .inp-box.picks input { cursor: pointer; caret-color: transparent; }
+
+    /* ── WIDE SCREENS — vessel on the left, inputs scroll on the right ─────────────
+       Landscape phone, tablet, PC. The right column keeps phone width, so the inputs stay two boxes wide.
+       Narrow screens: both columns dissolve (display: contents) and the page is the single column it was. */
+    .vcol, .rcol { display: contents; }
+    @media (min-width: 900px), (orientation: landscape) and (min-width: 600px) {
+      .wrap { max-width: 1240px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(340px, 420px); column-gap: 22px; align-items: start; }
+      .vcol { display: flex; flex-direction: column; gap: 14px; min-width: 0; position: sticky; top: calc(var(--hdr-h, 55px) + 10px);
+        max-height: calc(100vh - var(--hdr-h, 55px) - 20px); overflow-y: auto; scrollbar-width: none; }
+      .vcol::-webkit-scrollbar { display: none; }
+      .rcol { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+      .vcol .vessel-dock { position: static; margin-top: 0; padding-top: 0; }
+      .vcol .vessel-dock .vessel-wrap { box-shadow: none; }
+      /* picker sheet rises under the inputs column, leaving the drawing in view */
+      .pcard { left: auto; right: max(0px, calc((100vw - 1240px) / 2)); width: min(440px, 100vw); margin: 0; }
+      .pscrim { background: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 45%, rgba(0,0,0,.35) 100%); }
+    }
+    /* short screens (landscape phone): a three-row wheel so the sheet fits */
+    @media (max-height: 500px) {
+      .pwheel, .plist { height: 120px; } .pband { top: 40px; } .plist .pp { height: 40px; }
+      .pread { padding-top: 6px; } .pread input { font-size: 26px; } .plive { margin: 2px 0 4px; }
+      .pbar { padding: 2px 6px; } .pbtn { padding: 8px 12px; }
+    }
   </style>
 </head>
 <body>
@@ -612,6 +635,8 @@ html,body{transition:background-color .25s ease,color .25s ease;}
 
 <div class="wrap">
 
+  <!-- Left column on wide screens (landscape phone, tablet, PC): the vessel stays put while the inputs scroll on the right -->
+  <div class="vcol" id="vcol">
   <!-- ── VESSEL — drawing is also where the vessel is set up (2026-10-02) ── -->
   <div class="sec">Vessel</div>
   <div class="vessel-dock" id="vessel-dock">
@@ -624,6 +649,9 @@ html,body{transition:background-color .25s ease,color .25s ease;}
     </div>
   </div>
   </div><!-- /vessel-dock -->
+  </div><!-- /vcol -->
+
+  <div class="rcol" id="rcol">
 
   <!-- ── VESSEL DIMENSIONS ──────────────────────────── -->
   <div class="sec">Vessel Dimensions</div>
@@ -759,6 +787,7 @@ html,body{transition:background-color .25s ease,color .25s ease;}
 
   </div>
 
+  </div><!-- /rcol -->
 </div><!-- /wrap -->
 
 <script>
@@ -1552,7 +1581,7 @@ restoreState(); clampState(); syncSplit(); syncSetup(); update();
 
 
 <div class="footer">
-  Rev. 2026-10-02j<br>
+  Rev. 2026-10-02k<br>
   NFC Services &bull; <a href="https://www.nfcservices.com" target="_blank" rel="noopener">nfcservices.com</a>
 </div>
 
