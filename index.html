@@ -16,6 +16,8 @@
   h1 { font-family: 'Bebas Neue', Impact, sans-serif; font-weight: 400; font-size: 34px; letter-spacing: 1.5px; margin: 0; line-height: 1; }
   .sub { color: var(--accent); font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; font-weight: 600; margin-top: 6px; }
   p { color: var(--mid); font-size: 14px; line-height: 1.5; margin: 0; }
+  p a { color: var(--text); text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 3px; }
+  p a:hover, p a:focus-visible { color: var(--accent); }
   a.tool { display: block; text-decoration: none; color: inherit; background: var(--surface); border: 1px solid var(--rule); padding: 14px 16px; }
   a.tool:hover, a.tool:focus-visible { border-color: var(--accent); outline: none; }
   a.tool b { font-family: 'Bebas Neue', Impact, sans-serif; font-weight: 400; font-size: 22px; letter-spacing: 1px; display: block; }
@@ -28,11 +30,11 @@
     <h1>NFC Tools</h1>
     <div class="sub">Test builds · NFC Services</div>
   </header>
-  <p>Work-in-progress versions for phone testing. They change often and may not match the published tools at tools.nfcservices.com.</p>
+  <p>Work-in-progress versions for phone testing. They change often and may not match the published tools at <a href="https://tools.nfcservices.com">tools.nfcservices.com</a>.</p>
+  <a class="tool" href="vessel-retention.html"><b>Vessel Retention</b><span>Horizontal vessel retention and gravity separation estimate</span></a>
   <a class="tool" href="api-flange-slide-rule.html"><b>API Flange Slide Rule</b><span>API 6A flange, ring gasket and stud bolt reference</span></a>
   <a class="tool" href="bottoms-up-calculator.html"><b>Bottoms-Up Calculator</b><span>Circulation and sweep timing with annular velocity</span></a>
   <a class="tool" href="sand-separator-selection-guide.html"><b>Sand Separator Selection Guide</b><span>Sand separator sizing and selection guide</span></a>
-  <a class="tool" href="vessel-retention.html"><b>Vessel Retention</b><span>Horizontal vessel retention and gravity separation estimate</span></a>
 </div>
 </body>
 </html>
