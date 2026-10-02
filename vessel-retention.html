@@ -577,7 +577,7 @@ html,body{transition:background-color .25s ease,color .25s ease;}
   </div>
   <div class="hdrbtns">
     <button id="nfc-theme-toggle" type="button" aria-label="Toggle light or dark theme"></button>
-    <button id="saveVessel" class="newjob" type="button" aria-label="Save vessel">Save<span class="lg"> vessel</span></button>
+    <button id="saveVessel" class="newjob" type="button" aria-label="Save configuration">Save<span class="lg"> configuration</span></button>
     <button id="newJob" class="newjob" type="button" aria-label="New">New</button>
   </div>
 </header>
@@ -1290,7 +1290,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && !_modal.hi
 function mkBtn(label, cls, fn) { const b = document.createElement('button'); b.type = 'button'; b.className = 'mbtn' + (cls ? ' ' + cls : ''); b.textContent = label; b.addEventListener('click', fn); return b; }
 function openSaveVessel() {
   const setup = collectSetup();
-  openModal('Save this vessel', 'Saves the size and level settings so the next well on this vessel only needs its rates.', body => {
+  openModal('Save this configuration', 'Saves the size and level settings so the next well on this vessel only needs its rates.', body => {
     const wrap = document.createElement('div'); wrap.className = 'mfld';
     wrap.innerHTML = '<label for="vesselName">Label</label><input id="vesselName" type="text" maxlength="40" placeholder="e.g. Test sep #3, 48 × 10">';
     body.appendChild(wrap);
@@ -1305,7 +1305,7 @@ function openSaveVessel() {
       closeModal();
     }));
     foot.appendChild(mkBtn('Cancel', '', closeModal)); body.appendChild(foot);
-    if (loadVessels().length >= VESSELS_MAX) { const w = document.createElement('div'); w.className = 'modalnote'; w.textContent = 'You have ' + VESSELS_MAX + ' saved vessels — the oldest will drop off.'; body.appendChild(w); }
+    if (loadVessels().length >= VESSELS_MAX) { const w = document.createElement('div'); w.className = 'modalnote'; w.textContent = 'You have ' + VESSELS_MAX + ' saved configurations — the oldest will drop off.'; body.appendChild(w); }
     try { $('vesselName').focus(); } catch (e) {}
   });
 }
@@ -1314,7 +1314,7 @@ function openNew() {
     body.appendChild(mkBtn('Start from scratch', 'prim', () => { closeModal(); try { localStorage.removeItem(SAVE_KEY); } catch (e) {} location.reload(); }));
     const list = loadVessels();
     const h = document.createElement('div'); h.className = 'modalsub'; h.style.margin = '18px 0 0';
-    h.textContent = list.length ? 'Or start from a saved vessel:' : 'No saved vessels yet — set one up and tap “Save”.';
+    h.textContent = list.length ? 'Or start from a saved configuration:' : 'No saved configurations yet — set one up and tap “Save”.';
     body.appendChild(h);
     if (list.length) {
       const box = document.createElement('div'); box.className = 'wells';
@@ -1335,7 +1335,7 @@ function openNew() {
       body.appendChild(box);
     }
     const note = document.createElement('div'); note.className = 'modalnote';
-    note.textContent = 'Saved vessels live on this device only — they are not synced, and clearing this browser’s site data removes them.';
+    note.textContent = 'Saved configurations live on this device only — they are not synced, and clearing this browser’s site data removes them.';
     body.appendChild(note);
     const foot = document.createElement('div'); foot.className = 'mfoot'; foot.appendChild(mkBtn('Cancel', '', closeModal)); body.appendChild(foot);
   });
@@ -1433,7 +1433,7 @@ const PICKERS = {
     el: $('lvl'), desc: true,
     title: S.ow ? 'Weir height' : 'Liquid level', sub: 'from centerline (CL)', unit: '″ CL',
     values: () => range(lvlMin() - S.D / 2, lvlMax() - S.D / 2, 1).reverse(),
-    get: () => Math.round(S.hL - S.D / 2), fmt: v => fmtLvl(v), raw: v => (v > 0 ? '+' : '') + v,
+    get: () => Math.round(S.hL - S.D / 2), fmt: v => fmtLvl(v), raw: v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v),
     accept: v => Math.max(lvlMin() - S.D / 2, Math.min(lvlMax() - S.D / 2, Math.round(v))),
     set: v => { S.hL = S.D / 2 + v; update(); drumSet(S.hL); },
     live: () => S.ow ? liveTxt('Water retention', 't-w') : liveTxt('Total retention', 'r-ret'),
@@ -1460,8 +1460,49 @@ const PICKERS = {
     live: () => liveTxt('Oil chamber hold', 't-c'),
   }),
 };
+// Boxes whose own 'input' handler already does the work: the wheel writes the value and fires 'input'.
+function viaInput(id, o) {
+  return () => {
+    const el = $(id);
+    return Object.assign({
+      el, get: () => { const v = parseIn(el.value); return isFinite(v) ? v : 0; },
+      values: () => { const cur = parseIn(el.value) || 0; return range(o.lo, Math.max(o.hi, Math.ceil(cur / o.step) * o.step), o.step); },
+      accept: v => Math.max(o.lo, v),
+      set: v => { el.value = trim(v); el.dispatchEvent(new Event('input', { bubbles: true })); },
+    }, o);
+  };
+}
+// Interface / oil dump: inches from CL, high at the top like the vessel; held inside the same limits the drawing uses.
+function levelPicker(id, key, o) {
+  return () => {
+    const lo = key === 'iw' ? 3 : 4, hi = key === 'iw' ? S.hL : S.hL - 1;
+    const rlo = Math.ceil((lo - S.D / 2) * 2) / 2, rhi = Math.floor((hi - S.D / 2) * 2) / 2;
+    return Object.assign({
+      el: $(id), desc: true, sub: 'from centerline (CL) · steps of ½″', unit: '″ CL',
+      values: () => range(rlo, rhi, 0.5).reverse(),
+      get: () => +(S[key] - S.D / 2).toFixed(1), fmt: v => fmtIn(v, true), raw: v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v),
+      accept: v => Math.max(lo - S.D / 2, Math.min(hi - S.D / 2, v)),
+      set: v => { S[key] = S.D / 2 + v; update(); syncSetup(); },
+    }, o);
+  };
+}
+// First-pass steps and ranges — to be tuned field by field on the phone.
+Object.assign(PICKERS, {
+  diam: viaInput('diam', { title: 'Diameter', sub: 'steps of 6″ · type any value', unit: 'in', lo: 12, hi: 144, step: 6, fmt: v => v + '"',
+    live: () => `Volume <b>${$('v-bbl').textContent}</b> bbl` }),
+  len: viaInput('len', { title: 'Length', sub: 'tangent to tangent · steps of 2½′', unit: 'ft', lo: 5, hi: 60, step: 2.5, fmt: v => v + "'",
+    live: () => `Volume <b>${$('v-bbl').textContent}</b> bbl` }),
+  'r-hr': viaInput('r-hr', { title: 'Flow rate', sub: 'bbl/hr · steps of 10 · type any value', unit: 'bbl/hr', lo: 0, hi: 1000, step: 10,
+    live: () => liveTxt('Total retention', 'r-ret') }),
+  'r-day': viaInput('r-day', { title: 'Flow rate', sub: 'bbl/day · steps of 100 · type any value', unit: 'bbl/day', lo: 0, hi: 25000, step: 100,
+    fmt: v => v.toLocaleString('en-US'), live: () => liveTxt('Total retention', 'r-ret') }),
+  wc: viaInput('wc', { title: 'Water cut', sub: 'steps of 1% · type any value', unit: '%', lo: 0, hi: 100, step: 1, accept: v => Math.max(0, Math.min(100, v)),
+    fmt: v => v + '%', live: () => liveTxt('Water retention', 't-w') }),
+  iw: levelPicker('iw', 'iw', { title: 'Interface', live: () => liveTxt('Water retention', 't-w') }),
+  io: levelPicker('io', 'io', { title: 'Oil dump', live: () => liveTxt('Oil retention', 't-o') }),
+});
 if (TOUCH) {
-  ['qw', 'qo', 'wp'].forEach(id => {
+  ['diam', 'len', 'r-hr', 'r-day', 'wc', 'qw', 'qo', 'wp', 'iw', 'io'].forEach(id => {
     const el = $(id); el.readOnly = true; el.setAttribute('inputmode', 'none'); el.closest('.inp-box').classList.add('picks');
     el.closest('.inp-box').addEventListener('click', e => { e.preventDefault(); openPicker(PICKERS[id]()); });
   });
@@ -1474,7 +1515,7 @@ restoreState(); clampState(); syncSplit(); syncSetup(); update();
 
 
 <div class="footer">
-  Rev. 2026-10-02g<br>
+  Rev. 2026-10-02h<br>
   NFC Services &bull; <a href="https://www.nfcservices.com" target="_blank" rel="noopener">nfcservices.com</a>
 </div>
 
