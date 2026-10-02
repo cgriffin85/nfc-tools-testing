@@ -621,6 +621,7 @@ html,body{transition:background-color .25s ease,color .25s ease;}
       <span class="vol-v"><b id="v-gal">—</b> gal</span>
       <span class="vol-v"><b id="v-ci">—</b> cu in</span>
     </div>
+    <div class="fn" style="border-top:0;padding-top:8px">Straight shell only. The liquid in the two heads (end caps) is not counted in volume or retention — it depends on the head shape, which varies by vessel. That leaves the answer slightly on the safe side.</div>
   </div>
 
   <!-- ── VESSEL — drawing is also where the vessel is set up (2026-10-02) ── -->
@@ -682,7 +683,7 @@ html,body{transition:background-color .25s ease,color .25s ease;}
         <div><div class="inp-lbl">Water</div><div class="inp-box"><input type="number" id="qw" value="100" inputmode="decimal" aria-label="Water rate, barrels per hour"><span class="inp-unit">bbl/hr</span></div><div class="ow-hint">Water + oil = total rate</div></div>
         <div><div class="inp-lbl">Oil</div><div class="inp-box"><input type="number" id="qo" value="20" inputmode="decimal" aria-label="Oil rate, barrels per hour"><span class="inp-unit">bbl/hr</span></div></div>
         <div><div class="inp-lbl">Water cut</div><div class="inp-box"><input type="number" id="wc" value="83.3" step="0.1" inputmode="decimal" aria-label="Water cut, percent"><span class="inp-unit">%</span></div><div class="ow-hint">Or type the rates above</div></div>
-        <div><div class="inp-lbl">Oil chamber length</div><div class="inp-box"><input type="text" id="wp" value="30&quot;" inputmode="numeric" autocomplete="off" aria-label="Oil chamber length, inches from the weir to the right tangent line"></div><div class="ow-hint">Weir to right tangent line (T/L)</div></div>
+        <div><div class="inp-lbl">Oil chamber length</div><div class="inp-box"><input type="text" id="wp" value="30&quot;" inputmode="numeric" autocomplete="off" aria-label="Oil chamber length, inches from the weir to the oil-end head seam"></div><div class="ow-hint">Weir to the oil-end head seam</div></div>
         <div><div class="inp-lbl">Interface</div><div class="inp-box"><input type="text" id="iw" value="−1.2&quot;" inputmode="decimal" autocomplete="off" aria-label="Oil-water interface, inches from centerline"><span class="inp-unit">CL</span></div><div class="ow-hint">Where the sight glass shows it</div></div>
         <div><div class="inp-lbl">Oil dump</div><div class="inp-box"><input type="text" id="io" value="−1.2&quot;" inputmode="decimal" autocomplete="off" aria-label="Oil dump level, inches from centerline"><span class="inp-unit">CL</span></div><div class="ow-hint">The high point where oil dumps</div></div>
       </div>
@@ -1453,7 +1454,7 @@ const PICKERS = {
     live: () => liveTxt('Oil retention', 't-o'),
   }),
   wp: () => ({
-    el: $('wp'), title: 'Oil chamber length', sub: 'weir to right tangent line (T/L)', unit: 'in',
+    el: $('wp'), title: 'Oil chamber length', sub: 'weir to the oil-end head seam', unit: 'in',
     values: () => range(6, Math.round(S.Lft * 12 * 0.6), 1),
     get: () => S.wp, fmt: v => v + '"', accept: v => Math.max(6, Math.min(Math.round(S.Lft * 12 * 0.6), v)),
     set: v => { S.wp = v; update(); syncSetup(); },
@@ -1515,7 +1516,7 @@ restoreState(); clampState(); syncSplit(); syncSetup(); update();
 
 
 <div class="footer">
-  Rev. 2026-10-02h<br>
+  Rev. 2026-10-02i<br>
   NFC Services &bull; <a href="https://www.nfcservices.com" target="_blank" rel="noopener">nfcservices.com</a>
 </div>
 
