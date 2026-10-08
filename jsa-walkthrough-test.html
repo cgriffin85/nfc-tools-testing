@@ -471,6 +471,7 @@ textarea.inp{resize:vertical;min-height:72px}
       if (!list.length) {
         h += '<div class="card empty">No JSAs yet on this phone.<div style="display:flex;flex-direction:column;gap:8px;margin-top:14px"><button class="btn btn-dark" data-act="new">Start a new JSA</button><button class="btn btn-ghost" data-act="sample">Load a filled-in example</button></div></div>';
       } else {
+        h += '<button class="btn btn-dark" data-act="new">Start a new JSA</button>';
         h += '<div class="card list">' + list.map(function (j) {
           var s = status(j);
           return '<button class="row" data-act="open" data-id="' + j.id + '"><div class="grow"><div class="v">' + esc(j.basics.location) + '</div><div class="sub">' + niceDate(j.basics.date) + ' · ' + (j.basics.shift === 'night' ? 'Night' : 'Day') + ' · ' + esc(j.basics.workType) + '</div></div>' + stChip(s.kind, s.text) + '</button>';
