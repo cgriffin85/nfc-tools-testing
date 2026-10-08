@@ -174,6 +174,7 @@ textarea.inp{resize:vertical;min-height:72px}
 .compass .chip{padding:0;min-height:48px;font-size:16px}
 .compass .mid{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:var(--ink2);line-height:1.2;text-align:center}
 .compass .mid b{font-size:17px;color:var(--ink)}
+.padmap{width:100%;height:auto;display:block;touch-action:manipulation}
 .radio{width:24px;height:24px;border-radius:50%;flex:none;border:2px solid #C9C7CD}
 .radio.on{border:7px solid var(--charcoal)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:110px;background:#1A1A1A;color:#fff;padding:12px 16px;border-radius:14px;font-size:14.5px;z-index:20;max-width:360px;text-align:center}
@@ -194,11 +195,14 @@ textarea.inp{resize:vertical;min-height:72px}
   'use strict';
 
   /* ---------- storage (local to this phone) ---------- */
-  var mem = { jsas: [], notes: '' };
+  var mem = { jsas: [], notes: '', sites: {} };
   function load() {
     try { var raw = localStorage.getItem(CONFIG.storageKey); if (raw) mem = JSON.parse(raw); } catch (e) {}
     if (!mem.jsas) mem.jsas = [];
     if (typeof mem.notes !== 'string') mem.notes = '';
+    if (!mem.sites || typeof mem.sites !== 'object') mem.sites = {};
+    /* before FJ-006 muster points were a typed list: old JSAs get an empty map and lose the list */
+    mem.jsas.forEach(function (j) { if (!j.site) return; if (!j.site.map) j.site.map = { rot: 0, marks: [] }; if (j.site.musters) delete j.site.musters; });
     /* wind typed as text before FJ-005: keep it if it names one of the eight directions */
     mem.jsas.forEach(function (j) { if (j.site && j.site.windDir) { var w = String(j.site.windDir).trim().toUpperCase(); if (DIRS.indexOf(w) >= 0) j.site.windDir = w; } });
   }
@@ -226,7 +230,7 @@ textarea.inp{resize:vertical;min-height:72px}
   function stChip(kind, text) { return '<span class="st st-' + kind + '">' + esc(text) + '</span>'; }
 
   /* ---------- UI state (not saved) ---------- */
-  var ui = { role: 'lead', view: 'home', id: null, step: 0, crewId: null, crewOk: {}, concernOpen: false, concern: '', commentFor: null, comment: '', vis: null, visDone: false, ppeNew: '', reviseWhy: '', reviseTags: {} };
+  var ui = { role: 'lead', view: 'home', id: null, step: 0, crewId: null, crewOk: {}, concernOpen: false, concern: '', commentFor: null, comment: '', vis: null, visDone: false, ppeNew: '', reviseWhy: '', reviseTags: {}, mapTool: '', mapSel: '' };
   var toastTimer = null;
   function toast(msg) {
     var old = document.getElementById('toast'); if (old) old.parentNode.removeChild(old);
@@ -256,7 +260,7 @@ textarea.inp{resize:vertical;min-height:72px}
       mentoring: { topic: '', why: '' },
       handoff: { status: '', instructions: '', plan: '' },
       changes: [], steps: [], stepsSeeded: false, hazards: [], hzSeeded: false,
-      site: { windDir: '', windMph: '', musters: prev ? prev.site.musters.map(function (m) { return { id: m.id, name: m.name }; }) : [{ id: uid(), name: 'A · Lease road entrance' }, { id: uid(), name: 'B · Far fence line' }], muster: '', ppe: CONFIG.ppeDefault.slice() },
+      site: { windDir: '', windMph: '', map: null, muster: '', ppe: CONFIG.ppeDefault.slice() },
       accepts: {}, concerns: [], visitors: [], comments: [], prevId: prev ? prev.id : null, rev: 0, revisions: []
     };
     mem.jsas.push(j); save();
@@ -317,7 +321,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 3: return j.changes.length > 0;
       case 4: return j.steps.length > 0 && j.steps.every(function (s) { return s.ok && s.text.trim(); });
       case 5: return j.hazards.length > 0 && !bareSteps(j).length && j.hazards.every(function (h) { return h.ok && h.risk && h.name.trim() && h.control.trim() && people(j).some(function (p) { return p.id === h.owner; }); });
-      case 6: return DIRS.indexOf(j.site.windDir) >= 0 && !!j.site.muster;
+      case 6: return DIRS.indexOf(j.site.windDir) >= 0 && !!todayMuster(j);
       default: return true;
     }
   }
@@ -330,7 +334,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 5: var nr = j.hazards.filter(function (h) { return !h.risk; }).length; var b = j.hazards.filter(function (h) { return !h.ok; }).length;
         var bare = bareSteps(j); if (bare.length) return 'Step ' + bare[0] + ' has no hazard yet';
         return j.hazards.length === 0 ? 'Add at least one hazard' : (nr ? 'Set the risk on ' + nr + ' hazard' + (nr === 1 ? '' : 's') : (b ? b + ' hazard' + (b === 1 ? '' : 's') + ' to confirm' : 'Every hazard needs a name and a control'));
-      case 6: return DIRS.indexOf(j.site.windDir) < 0 ? 'Pick the wind direction' : 'Pick a muster point';
+      case 6: return DIRS.indexOf(j.site.windDir) < 0 ? 'Pick the wind direction' : (!musters(j).length ? 'Put a muster point on the map' : 'Pick today\u2019s muster point');
     }
     return '';
   }
@@ -384,8 +388,9 @@ textarea.inp{resize:vertical;min-height:72px}
       L.push('    Owner: ' + personName(j, h.owner));
     });
     L.push('');
-    var m = j.site.musters.filter(function (x) { return x.id === j.site.muster; })[0];
-    L.push('Muster point: ' + (m ? m.name : '—'));
+    var mu = todayMuster(j);
+    L.push('Muster point today: ' + (mu ? musterText(mu) : '—'));
+    musters(j).filter(function (x) { return !mu || x.id !== mu.id; }).forEach(function (x) { L.push('  Other muster: ' + musterText(x)); });
     L.push('Wind: ' + (j.site.windDir || '—') + (j.site.windMph ? ' ' + j.site.windMph + ' mph' : ''));
     L.push('PPE: ' + j.site.ppe.join(', '));
     var tr = j.crew.filter(function (c) { return c.trainee && c.here !== false; });
@@ -644,6 +649,85 @@ textarea.inp{resize:vertical;min-height:72px}
     if (lib.length) h += '<div class="label">Starting list · adds to whole location</div><div class="chips">' + lib.map(function (l) { return '<button class="chip sm" data-act="hz-lib" data-id="' + esc(l.name) + '">+ ' + esc(l.name) + '</button>'; }).join('') + '</div>';
     return h;
   }
+  /* ---------- location map (FJ-006) ----------
+     j.site.map = { rot, marks: [{ id, type, label, x, y }] }: x, y are 0-100 across / down the pad as drawn; rot is
+     where north points on the drawing, degrees clockwise from up. Saved per location in mem.sites[location]. */
+  var MARK = {
+    muster: { label: 'Muster point', fill: '#245C1A' },
+    entrance: { label: 'Entrance / exit', fill: '#43424B', t: 'E' },
+    wellhead: { label: 'Wellhead', fill: '#8A5D00', t: 'W' },
+    tanks: { label: 'Tanks', fill: '#2E5C8A', t: 'T' },
+    equipment: { label: 'Our equipment', fill: '#635F6D', t: 'Q' }
+  };
+  var PAD = { x: 15, y: 25, w: 250, h: 200 };   /* the pad inside the 340 x 250 drawing; the compass sits to its right */
+  function siteKey(j) { return (j.basics.location || '').trim().toLowerCase(); }
+  function copyMap(m) { return JSON.parse(JSON.stringify(m)); }
+  /* first time on step 7: load this location's saved map (if any) and default today's muster to the first one */
+  function ensureMap(j) {
+    if (!j.site.map) j.site.map = { rot: 0, marks: [] };
+    if (j.site.mapLoaded) return;
+    var saved = mem.sites[siteKey(j)];
+    if (!j.site.map.marks.length && saved && saved.marks && saved.marks.length) { j.site.map = copyMap(saved); j.site.mapFromSaved = true; }
+    j.site.mapLoaded = true;
+    if (!todayMuster(j) && musters(j).length) j.site.muster = musters(j)[0].id;
+    save();
+  }
+  function syncSite(j) { if (siteKey(j)) mem.sites[siteKey(j)] = copyMap(j.site.map); }
+  /* compass bearing of a marker from the middle of the pad, or null near the middle */
+  function bearingOf(m, rot) {
+    var dx = m.x - 50, dy = (m.y - 50) * PAD.h / PAD.w;
+    if (Math.sqrt(dx * dx + dy * dy) < 8) return null;
+    var screen = Math.atan2(dx, -dy) * 180 / Math.PI;
+    return ((screen - rot) % 360 + 360) % 360;
+  }
+  function dir8(b) { return b == null ? 'center' : DIRS[Math.round(b / 45) % 8]; }
+  /* the side the wind comes from is upwind: within 60 degrees of it upwind, within 60 of the far side downwind */
+  function windRel(j, b) {
+    var wi = DIRS.indexOf(j.site.windDir); if (wi < 0 || b == null) return '';
+    var d = Math.abs(((b - wi * 45) % 360 + 540) % 360 - 180);
+    return d <= 60 ? 'upwind' : (d >= 120 ? 'downwind' : 'crosswind');
+  }
+  function musters(j) {
+    var map = j.site.map || { rot: 0, marks: [] };
+    return map.marks.filter(function (m) { return m.type === 'muster'; }).map(function (m, i) {
+      var b = bearingOf(m, map.rot || 0);
+      return { id: m.id, letter: String.fromCharCode(65 + i), rank: i === 0 ? 'Primary' : (i === 1 ? 'Secondary' : 'Extra'), name: m.label || '', side: dir8(b), rel: windRel(j, b) };
+    });
+  }
+  function sideText(mu) { return mu.side === 'center' ? 'center of pad' : mu.side + ' side'; }
+  function musterText(mu) { return mu.letter + ' · ' + mu.rank + (mu.name ? ' · ' + mu.name : '') + ' · ' + sideText(mu) + (mu.rel ? ' · ' + mu.rel : ''); }
+  function relChip(mu) { return mu.rel ? stChip(mu.rel === 'upwind' ? 'ok' : (mu.rel === 'downwind' ? 'warn' : 'none'), mu.rel.charAt(0).toUpperCase() + mu.rel.slice(1)) : ''; }
+  function todayMuster(j) { return musters(j).filter(function (m) { return m.id === j.site.muster; })[0] || null; }
+  function mapSvg(j, editable) {
+    var map = j.site.map || { rot: 0, marks: [] }, rot = map.rot || 0;
+    var cx = PAD.x + PAD.w / 2, cy = PAD.y + PAD.h / 2;
+    var s = '<svg viewBox="0 0 340 250" class="padmap" role="img" aria-label="Location map"' + (editable ? ' data-act="map-tap"' : '') + '>';
+    s += '<rect x="' + PAD.x + '" y="' + PAD.y + '" width="' + PAD.w + '" height="' + PAD.h + '" rx="6" fill="#EDEBE7" stroke="#A9A7AE" stroke-width="2"/>';
+    var wi = DIRS.indexOf(j.site.windDir);
+    if (wi >= 0) {   /* the wind across the pad: from its side, arrow pointing where it blows */
+      var a = (wi * 45 + 180 + rot) * Math.PI / 180, L = 70;
+      var x1 = cx - Math.sin(a) * L, y1 = cy + Math.cos(a) * L, x2 = cx + Math.sin(a) * L, y2 = cy - Math.cos(a) * L;
+      var hx = Math.sin(a), hy = -Math.cos(a), px = -hy, py = hx;
+      s += '<g class="wind"><line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="#2E5C8A" stroke-width="4" stroke-dasharray="10 7" stroke-linecap="round"/>';
+      s += '<polygon points="' + (x2 + hx * 6).toFixed(1) + ',' + (y2 + hy * 6).toFixed(1) + ' ' + (x2 - hx * 10 + px * 9).toFixed(1) + ',' + (y2 - hy * 10 + py * 9).toFixed(1) + ' ' + (x2 - hx * 10 - px * 9).toFixed(1) + ',' + (y2 - hy * 10 - py * 9).toFixed(1) + '" fill="#2E5C8A"/>';
+      s += '<text x="' + (x1 - hx * 4).toFixed(1) + '" y="' + (y1 - hy * 4 + 4).toFixed(1) + '" font-size="11" font-weight="700" fill="#2E5C8A" text-anchor="middle">WIND</text></g>';
+    }
+    var letters = 0;
+    map.marks.forEach(function (m) {
+      var mx = PAD.x + m.x / 100 * PAD.w, my = PAD.y + m.y / 100 * PAD.h, k = MARK[m.type] || MARK.equipment;
+      var t = m.type === 'muster' ? String.fromCharCode(65 + (letters++)) : k.t;
+      s += '<g class="mark" data-type="' + esc(m.type) + '"' + (editable ? ' data-act="map-sel" data-id="' + m.id + '" style="cursor:pointer"' : '') + '>';
+      if (editable) s += '<circle cx="' + mx.toFixed(1) + '" cy="' + my.toFixed(1) + '" r="26" fill="transparent"/>';   /* a 44px+ tap area on the narrowest phones */
+      if (editable && ui.mapSel === m.id) s += '<circle cx="' + mx.toFixed(1) + '" cy="' + my.toFixed(1) + '" r="17" fill="none" stroke="#C00000" stroke-width="3"/>';
+      s += m.type === 'muster' ? '<circle cx="' + mx.toFixed(1) + '" cy="' + my.toFixed(1) + '" r="12" fill="' + k.fill + '" stroke="#fff" stroke-width="2"/>' : '<rect x="' + (mx - 11).toFixed(1) + '" y="' + (my - 11).toFixed(1) + '" width="22" height="22" rx="5" fill="' + k.fill + '" stroke="#fff" stroke-width="2"/>';
+      s += '<text x="' + mx.toFixed(1) + '" y="' + (my + 4.5).toFixed(1) + '" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">' + t + '</text>';
+      if (m.label) { var anc = mx < 70 ? 'start' : (mx > 210 ? 'end' : 'middle'); var lx = anc === 'start' ? Math.max(4, mx - 11) : (anc === 'end' ? Math.min(336, mx + 11) : mx); var ly = my > 200 ? my - 18 : my + 26; s += '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" font-size="10" font-weight="600" fill="#1A1A1A" text-anchor="' + anc + '">' + esc(m.label.slice(0, 22)) + '</text>'; }
+      s += '</g>';
+    });
+    s += '<g class="north" transform="translate(303 58) rotate(' + rot + ')"><circle r="26" fill="#fff" stroke="#A9A7AE" stroke-width="2"/><polygon points="0,-21 7,2 -7,2" fill="#C00000"/><polygon points="0,21 7,2 -7,2" fill="#A9A7AE"/><text y="-28" font-size="12" font-weight="700" text-anchor="middle" fill="#1A1A1A" transform="rotate(' + (-rot) + ' 0 -32)">N</text></g>';
+    if (!map.marks.length && editable) s += '<text x="' + cx + '" y="' + (cy + 4) + '" font-size="12" fill="#83828A" text-anchor="middle">Pick a marker below, then tap the pad</text>';
+    return s + '</svg>';
+  }
   function w6(j) {
     var wd = DIRS.indexOf(j.site.windDir) >= 0 ? j.site.windDir : '';
     var h = '<div class="card pad" style="display:flex;flex-direction:column;gap:10px"><div class="label" style="padding:0" id="wind-lbl">Wind is blowing from</div>';
@@ -653,24 +737,35 @@ textarea.inp{resize:vertical;min-height:72px}
     }).join('') + '</div>';
     h += inp('site.windMph', j.site.windMph, 'Speed (mph)', 'e.g. 18', 'number');
     h += '<div class="muted-note" style="padding:0">The real app pulls wind from the weather service for this location’s GPS.</div></div>';
-    h += '<div class="label">Muster point — pick the upwind one</div>';
-    h += '<div class="card list">' + j.site.musters.map(function (m) {
-      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px 8px 14px"><button class="iconbtn" data-act="muster" data-id="' + m.id + '" aria-label="Use this muster point"><span class="radio' + (j.site.muster === m.id ? ' on' : '') + '"></span></button>' +
-        '<label class="sr" for="mu-' + m.id + '">Muster point name</label><input id="mu-' + m.id + '" class="inp" data-bind="site.musters.' + m.id + '.name" value="' + esc(m.name) + '"></div>';
+    ensureMap(j);
+    h += '<div class="label">Location map</div>';
+    h += '<div class="muted-note" data-mapnote>' + (j.site.mapFromSaved ? 'Loaded from this location’s earlier JSA. Change it only if something on location changed.' : 'Set this up on the first JSA for a location. It’s saved for the next one.') + '</div>';
+    h += '<div class="card" style="padding:8px">' + mapSvg(j, true) + '</div>';
+    h += '<div style="display:flex;gap:8px;align-items:center"><button class="btn btn-ghost btn-sm" data-act="map-rot" style="flex:none">↻ Turn north</button><span class="sub">Turn the red arrow until it points north on your pad.</span></div>';
+    h += '<div class="chips">' + Object.keys(MARK).map(function (k) { return '<button class="chip sm' + (ui.mapTool === k ? ' on' : '') + '" data-act="map-tool" data-id="' + k + '" aria-pressed="' + (ui.mapTool === k) + '">+ ' + MARK[k].label + '</button>'; }).join('') + '</div>';
+    if (ui.mapTool) h += '<div class="muted-note">Tap the pad where the ' + MARK[ui.mapTool].label.toLowerCase() + ' is.</div>';
+    var sel = j.site.map.marks.filter(function (m) { return m.id === ui.mapSel; })[0];
+    if (sel) {
+      h += '<div class="card pad" style="display:flex;gap:8px;align-items:flex-end"><div class="field" style="flex:1;min-width:0"><label for="mk-' + sel.id + '">' + MARK[sel.type].label + ' name</label><input id="mk-' + sel.id + '" class="inp" data-bind="site.map.marks.' + sel.id + '.label" value="' + esc(sel.label || '') + '" placeholder="e.g. Lease road entrance"></div><button class="btn btn-ghost btn-sm" data-act="map-del" data-id="' + sel.id + '" style="height:48px;color:var(--warn)">Remove</button></div>';
+    }
+    var mus = musters(j);
+    h += '<div class="label">Today’s muster point</div>';
+    if (!mus.length) h += '<div class="muted-note">Put at least one muster point on the map. Primary first, then secondary.</div>';
+    else h += '<div class="card list">' + mus.map(function (mu) {
+      return '<button class="row" data-act="muster" data-id="' + mu.id + '"><span class="radio' + (j.site.muster === mu.id ? ' on' : '') + '"></span><div class="grow"><div class="v">' + esc(mu.letter + ' · ' + mu.rank + (mu.name ? ' · ' + mu.name : '')) + '</div><div class="sub">' + esc(sideText(mu).charAt(0).toUpperCase() + sideText(mu).slice(1)) + '</div></div>' + relChip(mu) + '</button>';
     }).join('') + '</div>';
-    h += '<button class="btn btn-dash" data-act="muster-add">+ Add a muster point</button>';
     h += '<div class="label">PPE for this job</div><div class="chips">' + CONFIG.ppe.concat(j.site.ppe.filter(function (p) { return CONFIG.ppe.indexOf(p) < 0; })).map(function (p) { return '<button class="chip sm' + (j.site.ppe.indexOf(p) >= 0 ? ' on' : '') + '" data-act="ppe" data-id="' + esc(p) + '">' + esc(p) + '</button>'; }).join('') + '</div>';
     h += '<div style="display:flex;gap:8px"><label class="sr" for="ppe-new">Other PPE</label><input id="ppe-new" class="inp" data-ui="ppeNew" value="' + esc(ui.ppeNew) + '" placeholder="Other PPE"><button class="btn btn-ghost btn-sm" data-act="ppe-add" style="height:48px">Add</button></div>';
     return h;
   }
   function w7(j) {
-    var m = j.site.musters.filter(function (x) { return x.id === j.site.muster; })[0];
+    var mu = todayMuster(j);
     var rows = [
       ['Job', j.basics.location + ' · ' + j.basics.workType + ' · ' + (j.basics.shift === 'night' ? 'Night' : 'Day')],
       ['Changed', labelsFor(j.changes).join(', ') || 'Nothing'],
       ['Steps', j.steps.length + ' steps'],
       ['Hazards', j.hazards.length + ' (' + ['high', 'med', 'low'].map(function (r) { return j.hazards.filter(function (z) { return z.risk === r; }).length + ' ' + RISK[r].label.toLowerCase(); }).join(', ') + '), each with a control and an owner'],
-      ['Muster', m ? m.name : '—'],
+      ['Muster', mu ? musterText(mu) : '—'],
       ['PPE', j.site.ppe.join(', ')],
       ['Crew', people(j).map(function (p) { return p.name; }).join(', ')]
     ];
@@ -749,8 +844,9 @@ textarea.inp{resize:vertical;min-height:72px}
     return h;
   }
   function siteCards(j) {
-    var m = j.site.musters.filter(function (x) { return x.id === j.site.muster; })[0];
-    var h = '<div class="grid2"><div class="card pad" style="padding:12px 14px"><div class="k">Muster point</div><div style="font-weight:700">' + esc(m ? m.name : '—') + '</div></div>' +
+    var mu = todayMuster(j);
+    var h = '<div class="card" style="padding:8px">' + mapSvg(j, false) + '</div>';
+    h += '<div class="grid2"><div class="card pad" style="padding:12px 14px" data-muster-card><div class="k">Muster point</div><div style="font-weight:700">' + esc(mu ? mu.letter + ' · ' + (mu.name || mu.rank) : '—') + '</div>' + (mu ? '<div class="sub">' + esc(sideText(mu) + (mu.rel ? ' · ' + mu.rel : '')) + '</div>' : '') + '</div>' +
       '<div class="card pad" style="padding:12px 14px"><div class="k">Wind</div><div style="font-weight:700">' + esc((j.site.windDir ? 'From ' + j.site.windDir : '—') + (j.site.windMph ? ' · ' + j.site.windMph + ' mph' : '')) + '</div></div></div>';
     h += '<div class="card pad" style="padding:12px 14px"><div class="k">PPE</div><div style="font-weight:600">' + esc(j.site.ppe.join(' · ')) + '</div></div>';
     h += '<div class="card pad" style="padding:12px 14px"><div class="k">Nearest hospital</div><div style="font-weight:600">' + esc(j.basics.hospital) + '</div></div>';
@@ -818,6 +914,7 @@ textarea.inp{resize:vertical;min-height:72px}
       if (ui.commentFor === z.id) h += '<div style="display:flex;gap:8px"><label class="sr" for="cmt">Comment</label><input id="cmt" class="inp" data-ui="comment" value="' + esc(ui.comment) + '" placeholder="Note to ' + esc(j.basics.lead || 'the lead') + '…"><button class="btn btn-dark btn-sm" data-act="cmt-send" style="height:48px">Send</button></div>';
       h += '</div>';
     });
+    h += siteCards(j);
     h += '<div class="label">Signatures</div><div class="card list">' + people(j).map(function (p) {
       var at = p.id === 'lead' ? j.signedAt : j.accepts[p.id];
       return '<div class="row" style="cursor:default"><span class="av">' + esc(initials(p.name)) + '</span><div class="grow"><div class="v">' + esc(p.name) + '</div></div>' + (at ? stChip('ok', clock(at)) : stChip('warn', 'Pending')) + '</div>';
@@ -865,7 +962,7 @@ textarea.inp{resize:vertical;min-height:72px}
     var b = t.getAttribute('data-bind');
     if (b) {
       var j = cur(); if (!j) return;
-      setPath(j, b, t.value); save();
+      setPath(j, b, t.value); if (b.indexOf('site.map.') === 0) syncSite(j); save();
       softRefreshFooter();
       return;
     }
@@ -880,6 +977,7 @@ textarea.inp{resize:vertical;min-height:72px}
   app.addEventListener('change', function (e) {
     var t = e.target, b = t.getAttribute('data-bind');
     if (b && t.tagName === 'SELECT') { var j = cur(); if (j) { setPath(j, b, t.value); save(); render(); } }
+    if (b && b.indexOf('site.map.') === 0) render();   /* a marker's new name shows on the map and in the muster list */
   });
   /* Re-render only the footer state without stealing focus from a text field */
   function softRefreshFooter() {
@@ -915,11 +1013,11 @@ textarea.inp{resize:vertical;min-height:72px}
       case 'new': j = newJsa(); ui.id = j.id; ui.step = 0; ui.view = 'wizard'; window.scrollTo(0, 0); break;
       case 'sample': loadSample(); ui.view = 'home'; toast('Example loaded'); return;
       case 'open': ui.id = id; j = cur(); if (j.signedAt) { ui.view = 'detail'; } else { ui.view = 'wizard'; ui.step = (j.revisions && j.revisions.length) ? 3 : 0; } window.scrollTo(0, 0); break;
-      case 'wiz-back': if (ui.step > 0) ui.step--; else ui.view = 'home'; window.scrollTo(0, 0); break;
+      case 'wiz-back': ui.mapTool = ''; ui.mapSel = ''; if (ui.step > 0) ui.step--; else ui.view = 'home'; window.scrollTo(0, 0); break;
       case 'wiz-next':
         if (!stepReady(j, ui.step)) { toast(stepBlock(j, ui.step)); return; }
         if (ui.step === 7) { j.signedAt = Date.now(); save(); ui.view = 'detail'; window.scrollTo(0, 0); break; }
-        ui.step++;
+        ui.step++; ui.mapTool = ''; ui.mapSel = '';
         if (ui.step === 4) seedSteps(j);
         if (ui.step === 5) seedHazards(j);
         window.scrollTo(0, 0); break;
@@ -959,7 +1057,25 @@ textarea.inp{resize:vertical;min-height:72px}
       case 'hz-lib': var l = CONFIG.library.filter(function (x) { return x.name === id; })[0]; if (l) j.hazards.push({ id: uid(), step: 'all', name: l.name, control: l.control, owner: 'lead', risk: '', ok: false }); save(); break;
       case 'muster': j.site.muster = id; save(); break;
       case 'wind-dir': if (DIRS.indexOf(id) >= 0) { j.site.windDir = id; save(); } break;
-      case 'muster-add': j.site.musters.push({ id: uid(), name: '' }); save(); break;
+      case 'map-rot': ensureMap(j); j.site.map.rot = ((j.site.map.rot || 0) + 45) % 360; syncSite(j); save(); break;
+      case 'map-tool': ui.mapTool = ui.mapTool === id ? '' : id; ui.mapSel = ''; break;
+      case 'map-sel': ui.mapSel = ui.mapSel === id ? '' : id; ui.mapTool = ''; break;
+      case 'map-del':
+        if (!armed(el, 'Tap again to remove it from the map')) return;
+        j.site.map.marks = j.site.map.marks.filter(function (m) { return m.id !== id; }); if (j.site.muster === id) j.site.muster = '';
+        ui.mapSel = ''; syncSite(j); save(); break;
+      case 'map-tap':
+        if (!ui.mapTool) { toast('Pick a marker below first, then tap the pad'); return; }
+        ensureMap(j);
+        var rr = el.getBoundingClientRect();
+        var mx = ((e.clientX - rr.left) / rr.width * 340 - PAD.x) / PAD.w * 100, my = ((e.clientY - rr.top) / rr.height * 250 - PAD.y) / PAD.h * 100;
+        if (mx < -3 || mx > 103 || my < -3 || my > 103) { toast('Tap inside the pad'); return; }
+        mx = Math.min(100, Math.max(0, mx)); my = Math.min(100, Math.max(0, my));   /* a tap on the edge lands on it */
+        var nm = { id: uid(), type: ui.mapTool, label: '', x: Math.round(mx), y: Math.round(my) };
+        j.site.map.marks.push(nm);
+        if (nm.type === 'muster' && !todayMuster(j)) j.site.muster = nm.id;
+        ui.mapSel = nm.id; ui.mapTool = '';
+        syncSite(j); save(); render(); var mk = app.querySelector('[data-bind="site.map.marks.' + nm.id + '.label"]'); if (mk) mk.focus(); return;
       case 'ppe': var pi = j.site.ppe.indexOf(id); if (pi >= 0) j.site.ppe.splice(pi, 1); else j.site.ppe.push(id); save(); break;
       case 'ppe-add': var pf = app.querySelector('[data-ui="ppeNew"]'); var pv = pf && pf.value.trim(); if (pv && j.site.ppe.indexOf(pv) < 0) { j.site.ppe.push(pv); save(); } ui.ppeNew = ''; break;
       case 'to-detail': ui.view = 'detail'; ui.concernOpen = false; break;
@@ -989,7 +1105,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 'dl-all': download('field-jsa-test-' + today() + '.txt', allText()); return;
       case 'wipe':
         if (el.getAttribute('data-armed') !== '1') { el.setAttribute('data-armed', '1'); el.textContent = 'Tap again to clear everything'; return; }
-        mem = { jsas: [], notes: '' }; save(); ui.view = 'home'; toast('Cleared'); return;
+        mem = { jsas: [], notes: '', sites: {} }; save(); ui.view = 'home'; toast('Cleared'); return;
     }
     render();
   });
@@ -1020,10 +1136,11 @@ textarea.inp{resize:vertical;min-height:72px}
         { id: uid(), step: steps[2].id, name: CONFIG.library[2].name, control: CONFIG.library[2].control, owner: crew[0].id, risk: 'med', ok: true },
         { id: uid(), step: steps[4].id, name: CONFIG.library[4].name, control: CONFIG.library[4].control, owner: crew[1].id, risk: 'low', ok: true }
       ],
-      site: { windDir: 'SW', windMph: '18', musters: [{ id: 'mA', name: 'A · Lease road entrance (upwind today)' }, { id: 'mB', name: 'B · Far fence line' }], muster: 'mA', ppe: CONFIG.ppeDefault.slice() },
+      site: { windDir: 'SW', windMph: '18', map: { rot: 0, marks: [{ id: 'mA', type: 'muster', label: 'Lease road entrance', x: 8, y: 90 }, { id: 'mB', type: 'muster', label: 'Far fence line', x: 92, y: 8 }, { id: 'e1', type: 'entrance', label: 'Lease road', x: 4, y: 52 }, { id: 'w1', type: 'wellhead', label: '2H', x: 55, y: 40 }, { id: 't1', type: 'tanks', label: 'Frac tanks', x: 85, y: 75 }] }, mapLoaded: true, muster: 'mA', ppe: CONFIG.ppeDefault.slice() },
       accepts: {}, concerns: [], visitors: [], comments: [], prevId: null, rev: 0, revisions: []
     };
     j.accepts[crew[0].id] = Date.now() - 12 * 60000;
+    if (!mem.sites[siteKey(j)]) syncSite(j);
     mem.jsas.push(j); save();
   }
 

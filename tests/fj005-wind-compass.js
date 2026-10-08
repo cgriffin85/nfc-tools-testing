@@ -19,7 +19,7 @@ suite(async()=>{
     ck("nothing picked yet", on(), []);
     ck("the middle says what to do", document.querySelector(".compass .mid").innerText.replace(/\s+/g," "), "Tap where it’s coming from");
     ck("Next asks for the wind first", T.next(), "Pick the wind direction");
-    await T.tap("muster");
+    await T.place("muster",10,50);
     ck("a muster alone isn't enough", T.next(), "Pick the wind direction");
     await T.tap("wiz-next");
     ck("tapping Next without wind doesn't move on", T.wizStep(), 6);
@@ -52,6 +52,8 @@ suite(async()=>{
     await T.tap("new"); await T.tap("wiz-back"); await T.tap("new"); await T.tap("wiz-back");
     const m=T.stored(), drafts=m.jsas.filter(j=>!j.signedAt);
     drafts[0].site.windDir=" sw "; drafts[1].site.windDir="toward the road";
+    /* as saved before FJ-006 too: a typed muster list, no map, no saved locations */
+    drafts.forEach(j=>{ delete j.site.map; delete j.site.mapLoaded; j.site.musters=[{id:"m1",name:"Test muster"}]; j.site.muster=""; }); delete m.sites;
     T.store(m); sessionStorage.setItem("fjOld",JSON.stringify(drafts.map(j=>j.id)));
     return T.reload("2");
   }
@@ -60,7 +62,7 @@ suite(async()=>{
   ck("old data loads: every JSA still listed", T.rows().length, 3);
   await T.tap("open",typedSW); await T.wizTo(6);
   ck("old typed ' sw ' becomes SW", on(), ["SW"]);
-  ck("with old wind kept, Next asks only for the muster", T.next(), "Pick a muster point");
+  ck("with old wind kept, Next asks only for the muster", T.next(), "Put a muster point on the map");
   await T.home(); await T.tap("open",typedOther); await T.wizTo(6);
   ck("old text that isn't a direction: nothing picked", on(), []);
   ck("and Next asks for the wind", T.next(), "Pick the wind direction");

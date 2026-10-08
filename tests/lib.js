@@ -32,8 +32,18 @@ const T={
   before:(a,b)=>!!(a&&b&&(a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING)),
   tall:el=>Math.round(el.getBoundingClientRect().height),
   noSideScroll:()=>document.documentElement.scrollWidth<=innerWidth,
-  /* back to home from anywhere: the header back button, or back through the wizard */
-  async home(){ for(let i=0;i<10&&(T.acts("home").length||T.wizStep()>=0);i++) await T.tap(T.acts("home").length?"home":"wiz-back"); },
+  /* the step 7 map: tap the pad at x, y (0-100 across / down the pad as drawn; the pad sits at 15,25 250x200 in a
+     340x250 drawing), the way a finger does */
+  async padTap(x,y){ const svg=document.querySelector('svg.padmap[data-act="map-tap"]'); if(!svg) throw new Error("no editable map on "+T.title());
+    const r=svg.getBoundingClientRect(), cx=r.left+(15+x/100*250)/340*r.width, cy=r.top+(25+y/100*200)/250*r.height;
+    svg.dispatchEvent(new MouseEvent("click",{bubbles:true,clientX:cx,clientY:cy})); await sleep(60); },
+  /* pick a marker tool and put one on the pad; returns the new marker's id (it's left selected) */
+  async place(type,x,y){ if(!document.querySelector(`[data-act="map-tool"][data-id="${type}"].on`)) await T.tap("map-tool",type);
+    await T.padTap(x,y); const f=document.querySelector('[data-bind^="site.map.marks."]'); return f?f.getAttribute("data-bind").split(".")[3]:null; },
+  /* markers drawn on the editable map */
+  marks:()=>[...document.querySelectorAll('svg.padmap g.mark')],
+  /* back to home from anywhere: the header back button, the visitor screen's Done, or back through the wizard */
+  async home(){ for(let i=0;i<10;i++){ const act=["home","vis-close","wiz-back"].find(a=>T.acts(a).length); if(!act) return; await T.tap(act); } },
   /* which part of a reloading suite this page load is ("1" first) */
   phase:(()=>{ try{ return sessionStorage.getItem("fjPhase")||"1"; }catch(x){ return "1"; } })(),
   /* reload the page (e.g. after writing old-format data to localStorage) and run the suite again as phase `next` */
@@ -44,7 +54,7 @@ const T={
   /* the wizard step on screen, 0-based (from "Step n of 8" in the header), or -1 off the wizard */
   wizStep:()=>{ const m=/Step (\d+) of/.exec(T.text(".hdr .eyebrow")||""); return m?+m[1]-1:-1; },
   /* tap Next until the wizard is on step n (0-based), doing the least each step needs with made-up answers:
-     lead "Lead L", "Nothing changed", every task step ticked, every hazard Low and confirmed, wind from N, the first muster */
+     lead "Lead L", "Nothing changed", every task step ticked, every hazard Low and confirmed, wind from N, a muster on the map if there is none */
   async wizTo(n){
     for(let guard=0;T.wizStep()<n&&guard<12;guard++){
       const s=T.wizStep();
@@ -55,6 +65,7 @@ const T={
           const low=document.querySelector(`[data-act="hz-risk"][data-id="${id}"][data-r="low"]`); low.click(); await sleep(30);
           const ok=document.querySelector(`[data-act="hz-ok"][data-id="${id}"]`); if(ok.textContent.trim()!=="Confirmed"){ ok.click(); await sleep(30); } } }
       if(s===6&&!document.querySelector('[data-act="wind-dir"].on')) await T.tap("wind-dir","N");
+      if(s===6&&!T.acts("muster").length) await T.place("muster",10,50);
       if(s===6&&!document.querySelector('[data-act="muster"] .radio.on')) await T.tap("muster");
       if(s<0) throw new Error("wizTo: not on the wizard ("+T.title()+")");
       await T.tap("wiz-next");
