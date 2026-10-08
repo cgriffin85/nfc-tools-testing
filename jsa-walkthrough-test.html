@@ -170,6 +170,10 @@ textarea.inp{resize:vertical;min-height:72px}
 .stephead .stepnum{width:26px;height:26px;border-radius:8px;background:var(--charcoal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none}
 .stephead.none .stepnum{background:var(--warn)}
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.compass{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%;max-width:300px;margin:0 auto}
+.compass .chip{padding:0;min-height:48px;font-size:16px}
+.compass .mid{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:var(--ink2);line-height:1.2;text-align:center}
+.compass .mid b{font-size:17px;color:var(--ink)}
 .radio{width:24px;height:24px;border-radius:50%;flex:none;border:2px solid #C9C7CD}
 .radio.on{border:7px solid var(--charcoal)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:110px;background:#1A1A1A;color:#fff;padding:12px 16px;border-radius:14px;font-size:14.5px;z-index:20;max-width:360px;text-align:center}
@@ -195,6 +199,8 @@ textarea.inp{resize:vertical;min-height:72px}
     try { var raw = localStorage.getItem(CONFIG.storageKey); if (raw) mem = JSON.parse(raw); } catch (e) {}
     if (!mem.jsas) mem.jsas = [];
     if (typeof mem.notes !== 'string') mem.notes = '';
+    /* wind typed as text before FJ-005: keep it if it names one of the eight directions */
+    mem.jsas.forEach(function (j) { if (j.site && j.site.windDir) { var w = String(j.site.windDir).trim().toUpperCase(); if (DIRS.indexOf(w) >= 0) j.site.windDir = w; } });
   }
   function save() { try { localStorage.setItem(CONFIG.storageKey, JSON.stringify(mem)); } catch (e) {} }
 
@@ -298,6 +304,7 @@ textarea.inp{resize:vertical;min-height:72px}
   }
   function validOwner(j, id) { return people(j).some(function (p) { return p.id === id; }) ? id : 'lead'; }
 
+  var DIRS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
   var STEPS = ['Confirm the basics', 'Who’s on location', 'Shift handoff', 'What’s different today?', 'Today’s task steps', 'Hazards & controls', 'Site, wind & PPE', 'Review & sign'];
 
   /* task step numbers (1-based) with no hazard under them: every step needs at least one */
@@ -310,7 +317,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 3: return j.changes.length > 0;
       case 4: return j.steps.length > 0 && j.steps.every(function (s) { return s.ok && s.text.trim(); });
       case 5: return j.hazards.length > 0 && !bareSteps(j).length && j.hazards.every(function (h) { return h.ok && h.risk && h.name.trim() && h.control.trim() && people(j).some(function (p) { return p.id === h.owner; }); });
-      case 6: return !!j.site.muster;
+      case 6: return DIRS.indexOf(j.site.windDir) >= 0 && !!j.site.muster;
       default: return true;
     }
   }
@@ -323,7 +330,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 5: var nr = j.hazards.filter(function (h) { return !h.risk; }).length; var b = j.hazards.filter(function (h) { return !h.ok; }).length;
         var bare = bareSteps(j); if (bare.length) return 'Step ' + bare[0] + ' has no hazard yet';
         return j.hazards.length === 0 ? 'Add at least one hazard' : (nr ? 'Set the risk on ' + nr + ' hazard' + (nr === 1 ? '' : 's') : (b ? b + ' hazard' + (b === 1 ? '' : 's') + ' to confirm' : 'Every hazard needs a name and a control'));
-      case 6: return 'Pick a muster point';
+      case 6: return DIRS.indexOf(j.site.windDir) < 0 ? 'Pick the wind direction' : 'Pick a muster point';
     }
     return '';
   }
@@ -638,8 +645,14 @@ textarea.inp{resize:vertical;min-height:72px}
     return h;
   }
   function w6(j) {
-    var h = '<div class="card pad" style="display:flex;flex-direction:column;gap:10px"><div class="label" style="padding:0">Wind now</div><div class="muted-note" style="padding:0">The real app pulls this from the weather service for the location’s GPS.</div>';
-    h += '<div class="grid2">' + inp('site.windDir', j.site.windDir, 'Blowing from', 'e.g. SW') + inp('site.windMph', j.site.windMph, 'Speed (mph)', 'e.g. 18', 'number') + '</div></div>';
+    var wd = DIRS.indexOf(j.site.windDir) >= 0 ? j.site.windDir : '';
+    var h = '<div class="card pad" style="display:flex;flex-direction:column;gap:10px"><div class="label" style="padding:0" id="wind-lbl">Wind is blowing from</div>';
+    h += '<div class="compass" role="group" aria-labelledby="wind-lbl">' + ['NW', 'N', 'NE', 'W', '', 'E', 'SW', 'S', 'SE'].map(function (d) {
+      if (!d) return '<div class="mid">' + (wd ? 'From<b>' + wd + '</b>' : 'Tap where it’s<br>coming from') + '</div>';
+      return '<button class="chip' + (wd === d ? ' on' : '') + '" data-act="wind-dir" data-id="' + d + '" aria-pressed="' + (wd === d) + '">' + d + '</button>';
+    }).join('') + '</div>';
+    h += inp('site.windMph', j.site.windMph, 'Speed (mph)', 'e.g. 18', 'number');
+    h += '<div class="muted-note" style="padding:0">The real app pulls wind from the weather service for this location’s GPS.</div></div>';
     h += '<div class="label">Muster point — pick the upwind one</div>';
     h += '<div class="card list">' + j.site.musters.map(function (m) {
       return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px 8px 14px"><button class="iconbtn" data-act="muster" data-id="' + m.id + '" aria-label="Use this muster point"><span class="radio' + (j.site.muster === m.id ? ' on' : '') + '"></span></button>' +
@@ -945,6 +958,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 'hz-add': var nz = { id: uid(), step: id || 'all', name: '', control: '', owner: 'lead', risk: '', ok: false }; j.hazards.push(nz); save(); render(); var hz = app.querySelector('[data-bind="hazards.' + nz.id + '.name"]'); if (hz) hz.focus(); return;
       case 'hz-lib': var l = CONFIG.library.filter(function (x) { return x.name === id; })[0]; if (l) j.hazards.push({ id: uid(), step: 'all', name: l.name, control: l.control, owner: 'lead', risk: '', ok: false }); save(); break;
       case 'muster': j.site.muster = id; save(); break;
+      case 'wind-dir': if (DIRS.indexOf(id) >= 0) { j.site.windDir = id; save(); } break;
       case 'muster-add': j.site.musters.push({ id: uid(), name: '' }); save(); break;
       case 'ppe': var pi = j.site.ppe.indexOf(id); if (pi >= 0) j.site.ppe.splice(pi, 1); else j.site.ppe.push(id); save(); break;
       case 'ppe-add': var pf = app.querySelector('[data-ui="ppeNew"]'); var pv = pf && pf.value.trim(); if (pv && j.site.ppe.indexOf(pv) < 0) { j.site.ppe.push(pv); save(); } ui.ppeNew = ''; break;

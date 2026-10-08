@@ -2,7 +2,8 @@
 window.__e=[]; addEventListener("error",e=>__e.push(String(e.message)+" @"+e.lineno));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function waitFor(f,ms){ for(let i=0;i<(ms||5000)/50;i++){ if(f()) return true; await sleep(50); } return false; }
-const R={checks:[]};
+/* a suite can reload the page partway (T.reload) and carry on: its checks so far and its phase ride in sessionStorage */
+const R=(()=>{ try{ return JSON.parse(sessionStorage.getItem("fjR"))||{checks:[]}; }catch(x){ return {checks:[]}; } })();
 const ck=(n,g,w)=>{ g=g===undefined?null:g; R.step=n; R.checks.push({name:n,got:g,want:w,ok:JSON.stringify(g)===JSON.stringify(w)}); };
 function done(){ if(document.getElementById("T")) return; R.errs=__e; R.view=[innerWidth,innerHeight]; R.want=WANT_VIEW;
   const p=document.createElement("pre"); p.id="T"; p.textContent=JSON.stringify(R); document.body.appendChild(p);
@@ -31,10 +32,19 @@ const T={
   before:(a,b)=>!!(a&&b&&(a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING)),
   tall:el=>Math.round(el.getBoundingClientRect().height),
   noSideScroll:()=>document.documentElement.scrollWidth<=innerWidth,
+  /* back to home from anywhere: the header back button, or back through the wizard */
+  async home(){ for(let i=0;i<10&&(T.acts("home").length||T.wizStep()>=0);i++) await T.tap(T.acts("home").length?"home":"wiz-back"); },
+  /* which part of a reloading suite this page load is ("1" first) */
+  phase:(()=>{ try{ return sessionStorage.getItem("fjPhase")||"1"; }catch(x){ return "1"; } })(),
+  /* reload the page (e.g. after writing old-format data to localStorage) and run the suite again as phase `next` */
+  reload(next){ sessionStorage.setItem("fjR",JSON.stringify(R)); sessionStorage.setItem("fjPhase",next); location.reload(); return new Promise(()=>{}); },
+  /* the app's saved data, read and written the way the phone holds it */
+  stored:()=>JSON.parse(localStorage.getItem("fieldjsa-test-v1")||"{}"),
+  store:o=>localStorage.setItem("fieldjsa-test-v1",JSON.stringify(o)),
   /* the wizard step on screen, 0-based (from "Step n of 8" in the header), or -1 off the wizard */
   wizStep:()=>{ const m=/Step (\d+) of/.exec(T.text(".hdr .eyebrow")||""); return m?+m[1]-1:-1; },
   /* tap Next until the wizard is on step n (0-based), doing the least each step needs with made-up answers:
-     lead "Lead L", "Nothing changed", every task step ticked, every hazard Low and confirmed, the first muster */
+     lead "Lead L", "Nothing changed", every task step ticked, every hazard Low and confirmed, wind from N, the first muster */
   async wizTo(n){
     for(let guard=0;T.wizStep()<n&&guard<12;guard++){
       const s=T.wizStep();
@@ -44,6 +54,7 @@ const T={
       if(s===5){ for(const id of T.acts("hz-ok").map(b=>b.getAttribute("data-id"))){
           const low=document.querySelector(`[data-act="hz-risk"][data-id="${id}"][data-r="low"]`); low.click(); await sleep(30);
           const ok=document.querySelector(`[data-act="hz-ok"][data-id="${id}"]`); if(ok.textContent.trim()!=="Confirmed"){ ok.click(); await sleep(30); } } }
+      if(s===6&&!document.querySelector('[data-act="wind-dir"].on')) await T.tap("wind-dir","N");
       if(s===6&&!document.querySelector('[data-act="muster"] .radio.on')) await T.tap("muster");
       if(s<0) throw new Error("wizTo: not on the wizard ("+T.title()+")");
       await T.tap("wiz-next");
