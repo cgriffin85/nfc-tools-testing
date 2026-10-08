@@ -169,6 +169,10 @@ textarea.inp{resize:vertical;min-height:72px}
 .radio.on{border:7px solid var(--charcoal)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:110px;background:#1A1A1A;color:#fff;padding:12px 16px;border-radius:14px;font-size:14.5px;z-index:20;max-width:360px;text-align:center}
 .empty{text-align:center;color:var(--ink2);padding:28px 16px}
+.risk{display:inline-flex;align-items:center;border-radius:999px;font-size:11.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:2px 8px;flex:none}
+.risk-high{color:#fff;background:#8B0000}.risk-med{color:#5C3E00;background:#F2CC4E}.risk-low{color:var(--ok);background:var(--ok-soft)}
+.rk{flex:1;min-height:44px;border-radius:999px;font-weight:700;font-size:15px;background:#fff;border:1px solid var(--rule);color:var(--ink2)}
+.rk.on.high{background:#8B0000;border-color:#8B0000;color:#fff}.rk.on.med{background:#F2CC4E;border-color:#C9A227;color:#3A2A00}.rk.on.low{background:var(--ok);border-color:var(--ok);color:#fff}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .muted-note{font-size:12.5px;color:var(--ink3);padding:0 4px}
 @media (max-width:360px){.h1{font-size:21px}.roles button{font-size:14px}}
@@ -211,7 +215,7 @@ textarea.inp{resize:vertical;min-height:72px}
   function stChip(kind, text) { return '<span class="st st-' + kind + '">' + esc(text) + '</span>'; }
 
   /* ---------- UI state (not saved) ---------- */
-  var ui = { role: 'lead', view: 'home', id: null, step: 0, crewId: null, crewOk: {}, concernOpen: false, concern: '', commentFor: null, comment: '', vis: null, visDone: false, ppeNew: '' };
+  var ui = { role: 'lead', view: 'home', id: null, step: 0, crewId: null, crewOk: {}, concernOpen: false, concern: '', commentFor: null, comment: '', vis: null, visDone: false, ppeNew: '', reviseWhy: '', reviseTags: {} };
   var toastTimer = null;
   function toast(msg) {
     var old = document.getElementById('toast'); if (old) old.parentNode.removeChild(old);
@@ -242,7 +246,7 @@ textarea.inp{resize:vertical;min-height:72px}
       handoff: { status: '', instructions: '', plan: '' },
       changes: [], steps: [], stepsSeeded: false, hazards: [], hzSeeded: false,
       site: { windDir: '', windMph: '', musters: prev ? prev.site.musters.map(function (m) { return { id: m.id, name: m.name }; }) : [{ id: uid(), name: 'A · Lease road entrance' }, { id: uid(), name: 'B · Far fence line' }], muster: '', ppe: CONFIG.ppeDefault.slice() },
-      accepts: {}, concerns: [], visitors: [], comments: [], prevId: prev ? prev.id : null
+      accepts: {}, concerns: [], visitors: [], comments: [], prevId: prev ? prev.id : null, rev: 0, revisions: []
     };
     mem.jsas.push(j); save();
     return j;
@@ -264,11 +268,11 @@ textarea.inp{resize:vertical;min-height:72px}
     if (!j.hzSeeded) {
       var base;
       if (p && p.basics.workType === j.basics.workType && p.hazards.length) {
-        base = p.hazards.filter(function (h) { return !h.change; }).map(function (h) { return { name: h.name, control: h.control, owner: validOwner(j, h.owner) }; });
+        base = p.hazards.filter(function (h) { return !h.change; }).map(function (h) { return { name: h.name, control: h.control, owner: validOwner(j, h.owner), risk: h.risk || '' }; });
       } else {
         base = CONFIG.library.slice(0, 3).map(function (h) { return { name: h.name, control: h.control, owner: 'lead' }; });
       }
-      j.hazards = base.map(function (h) { return { id: uid(), step: 'all', name: h.name, control: h.control, owner: h.owner, ok: false }; });
+      j.hazards = base.map(function (h) { return { id: uid(), step: 'all', name: h.name, control: h.control, owner: h.owner, risk: h.risk || '', ok: false }; });
       j.hzSeeded = true;
     }
     j.hazards.forEach(function (h) { h.owner = validOwner(j, h.owner); });
@@ -278,7 +282,7 @@ textarea.inp{resize:vertical;min-height:72px}
       var t = CONFIG.changeHazards[c];
       if (!t) return;
       if (j.hazards.some(function (h) { return h.change === c; })) return;
-      j.hazards.unshift({ id: uid(), step: 'all', name: t.name, control: t.control, owner: 'lead', ok: false, change: c });
+      j.hazards.unshift({ id: uid(), step: 'all', name: t.name, control: t.control, owner: 'lead', risk: '', ok: false, change: c });
     });
     save();
   }
@@ -293,7 +297,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 2: return true;
       case 3: return j.changes.length > 0;
       case 4: return j.steps.length > 0 && j.steps.every(function (s) { return s.ok && s.text.trim(); });
-      case 5: return j.hazards.length > 0 && j.hazards.every(function (h) { return h.ok && h.name.trim() && h.control.trim() && people(j).some(function (p) { return p.id === h.owner; }); });
+      case 5: return j.hazards.length > 0 && j.hazards.every(function (h) { return h.ok && h.risk && h.name.trim() && h.control.trim() && people(j).some(function (p) { return p.id === h.owner; }); });
       case 6: return !!j.site.muster;
       default: return true;
     }
@@ -304,7 +308,8 @@ textarea.inp{resize:vertical;min-height:72px}
       case 1: return 'Every crew member needs a name';
       case 3: return 'Pick at least one';
       case 4: var a = j.steps.filter(function (s) { return !s.ok; }).length; return a ? 'Tick ' + a + ' more step' + (a === 1 ? '' : 's') : 'Fill in every step';
-      case 5: var b = j.hazards.filter(function (h) { return !h.ok; }).length; return j.hazards.length === 0 ? 'Add at least one hazard' : (b ? b + ' hazard' + (b === 1 ? '' : 's') + ' to confirm' : 'Every hazard needs a name and a control');
+      case 5: var nr = j.hazards.filter(function (h) { return !h.risk; }).length; var b = j.hazards.filter(function (h) { return !h.ok; }).length;
+        return j.hazards.length === 0 ? 'Add at least one hazard' : (nr ? 'Set the risk on ' + nr + ' hazard' + (nr === 1 ? '' : 's') : (b ? b + ' hazard' + (b === 1 ? '' : 's') + ' to confirm' : 'Every hazard needs a name and a control'));
       case 6: return 'Pick a muster point';
     }
     return '';
@@ -325,7 +330,7 @@ textarea.inp{resize:vertical;min-height:72px}
 
   /* ---------- status ---------- */
   function status(j) {
-    if (!j.signedAt) return { kind: 'none', text: 'Draft' };
+    if (!j.signedAt) return (j.revisions && j.revisions.length) ? { kind: 'warn', text: 'Revising — work stopped' } : { kind: 'none', text: 'Draft' };
     var crew = j.crew.filter(function (c) { return c.here !== false; });
     var acc = crew.filter(function (c) { return j.accepts[c.id]; }).length;
     if (acc < crew.length) return { kind: 'warn', text: acc + ' of ' + crew.length + ' accepted' };
@@ -340,7 +345,7 @@ textarea.inp{resize:vertical;min-height:72px}
     L.push('Customer: ' + j.basics.customer);
     L.push('Location: ' + j.basics.location + ' (' + j.basics.gps + ')');
     L.push('Nearest hospital: ' + j.basics.hospital);
-    L.push('Shift lead: ' + (j.basics.lead || '—') + ' · Supervisor reviewer: ' + (j.basics.supervisor || '—'));
+    L.push('Shift lead (crew supervisor, approves): ' + (j.basics.lead || '—') + ' · Field supervisor (reviewer): ' + (j.basics.supervisor || '—'));
     L.push('');
     L.push('HANDOFF');
     L.push('  Well status: ' + (j.handoff.status || '—'));
@@ -353,8 +358,8 @@ textarea.inp{resize:vertical;min-height:72px}
     j.steps.forEach(function (s, i) { L.push('  ' + (i + 1) + '. ' + s.text); });
     L.push('');
     L.push('HAZARDS → CONTROLS → OWNER');
-    j.hazards.forEach(function (h) {
-      L.push('  • ' + h.name + (h.change ? ' [NEW TODAY]' : '') + ' (' + stepLabel(j, h.step) + ')');
+    byRisk(j.hazards).forEach(function (h) {
+      L.push('  \u2022 [' + (RISK[h.risk] ? RISK[h.risk].label.toUpperCase() : 'NO RISK SET') + '] ' + h.name + (h.change ? ' [NEW TODAY]' : '') + ' (' + stepLabel(j, h.step) + ')');
       L.push('    Control: ' + h.control);
       L.push('    Owner: ' + personName(j, h.owner));
     });
@@ -369,11 +374,15 @@ textarea.inp{resize:vertical;min-height:72px}
     L.push('SIGNATURES');
     L.push('  Shift lead ' + (j.basics.lead || '') + (j.signedAt ? ' — signed ' + clock(j.signedAt) : ' — not signed'));
     j.crew.filter(function (c) { return c.here !== false; }).forEach(function (c) { L.push('  ' + c.name + (j.accepts[c.id] ? ' — accepted ' + clock(j.accepts[c.id]) : ' — not yet accepted')); });
-    j.visitors.forEach(function (v) { L.push('  ' + v.name + ', ' + v.company + (v.role ? ' (' + v.role + ')' : '') + ' — verified ' + clock(v.at)); });
+    j.visitors.forEach(function (v) { L.push('  ' + v.name + ', ' + v.company + (v.role ? ' (' + v.role + ')' : '') + ' \u2014 verified ' + clock(v.at) + ((v.rev || 0) < (j.rev || 0) ? ' (before revision ' + j.rev + ')' : '')); });
+    if (j.revisions && j.revisions.length) { L.push(''); L.push('REVISIONS (work stopped and JSA revised)'); j.revisions.forEach(function (r) { L.push('  Rev ' + r.n + ' at ' + clock(r.at) + ': ' + r.why); }); }
     if (j.concerns.length) { L.push(''); L.push('CONCERNS'); j.concerns.forEach(function (c) { L.push('  ' + c.by + ' (' + clock(c.at) + '): ' + c.text); }); }
     if (j.comments.length) { L.push(''); L.push('SUPERVISOR COMMENTS'); j.comments.forEach(function (c) { var h = j.hazards.filter(function (x) { return x.id === c.hazard; })[0]; L.push('  On "' + (h ? h.name : 'hazard') + '": ' + c.text); }); }
     return L.join('\n');
   }
+  var RISK = { high: { label: 'High', n: 0 }, med: { label: 'Medium', n: 1 }, low: { label: 'Low', n: 2 } };
+  function riskPill(r) { return RISK[r] ? '<span class="risk risk-' + r + '">' + RISK[r].label + '</span>' : ''; }
+  function byRisk(list) { return list.slice().sort(function (a, b) { return (RISK[a.risk] ? RISK[a.risk].n : 3) - (RISK[b.risk] ? RISK[b.risk].n : 3); }); }
   function labelsFor(ids) { return CONFIG.changes.filter(function (c) { return ids.indexOf(c.id) >= 0 && c.id !== 'none'; }).map(function (c) { return c.label; }); }
   function stepLabel(j, sid) { if (sid === 'all') return 'All steps'; for (var i = 0; i < j.steps.length; i++) if (j.steps[i].id === sid) return 'Step ' + (i + 1); return 'All steps'; }
 
@@ -416,6 +425,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 'crew': html = vCrew(); break;
       case 'visitor': html = vVisitor(); break;
       case 'review': html = vReview(); break;
+      case 'revise': html = vRevise(); break;
       case 'feedback': html = vFeedback(); break;
       default: html = vHome();
     }
@@ -481,7 +491,7 @@ textarea.inp{resize:vertical;min-height:72px}
         }).join('') + '</div></div>';
       });
     } else {
-      h += '<div class="lead">You’re the supervisor. Read any JSA and leave a comment. Nothing waits on you.</div>';
+      h += '<div class="lead">You\u2019re the field supervisor \u2014 the shift leads\u2019 boss. Read any JSA and leave a comment. Nothing waits on you.</div>';
       if (!list.length) h += '<div class="card empty">No JSAs on this phone yet.</div>';
       else h += '<div class="card list">' + list.map(function (j) {
         var s = status(j);
@@ -498,7 +508,7 @@ textarea.inp{resize:vertical;min-height:72px}
     var n = ui.step;
     var segs = '<div class="segs" style="grid-template-columns:repeat(' + STEPS.length + ',minmax(0,1fr))">' + STEPS.map(function (t, i) { return '<div class="seg' + (i < n ? ' done' : (i === n ? ' cur' : '')) + '"></div>'; }).join('') + '</div>';
     var right = '<span class="mono" style="font-size:12px;color:#F2CC4E;text-align:right;max-width:110px" data-countdown="1">' + esc(countdown(j)) + '</span>';
-    var h = header('JSA · ' + esc(j.basics.location || 'New') + ' · Step ' + (n + 1) + ' of ' + STEPS.length, STEPS[n], { back: 'wiz-back', right: right, extra: segs });
+    var h = header('JSA · ' + esc(j.basics.location || 'New') + (j.rev ? ' · Revision ' + j.rev : '') + ' · Step ' + (n + 1) + ' of ' + STEPS.length, STEPS[n], { back: 'wiz-back', right: right, extra: segs });
     h += '<div class="body">';
     h += [w0, w1, w2, w3, w4, w5, w6, w7][n](j);
     h += '</div>';
@@ -526,8 +536,8 @@ textarea.inp{resize:vertical;min-height:72px}
       '<div class="field"><label for="f-shift">Shift</label><select id="f-shift" class="inp" data-bind="basics.shift"><option value="day"' + (b.shift === 'day' ? ' selected' : '') + '>Day</option><option value="night"' + (b.shift === 'night' ? ' selected' : '') + '>Night</option></select></div></div>';
     h += '<div class="field"><label>Work type</label><div class="chips">' + CONFIG.workTypes.map(function (w) { return '<button class="chip sm' + (b.workType === w ? ' on' : '') + '" data-act="worktype" data-id="' + esc(w) + '">' + esc(w) + '</button>'; }).join('') + '</div></div>';
     h += inp('basics.hospital', b.hospital, 'Nearest hospital (name & city)');
-    h += inp('basics.lead', b.lead, 'Shift lead (you — approves this JSA)', 'Your full name');
-    h += inp('basics.supervisor', b.supervisor, 'Supervisor who can review it', 'Name');
+    h += inp('basics.lead', b.lead, 'Shift lead (you \u2014 the crew\u2019s supervisor; your signature approves this JSA)', 'Your full name');
+    h += inp('basics.supervisor', b.supervisor, 'Field supervisor (your boss \u2014 can review it)', 'Name');
     h += '</div>';
     return h;
   }
@@ -562,7 +572,10 @@ textarea.inp{resize:vertical;min-height:72px}
     return h + '</div>';
   }
   function w3(j) {
-    var h = '<div style="font-size:17px;font-weight:600">Compared to yesterday, what’s different on this location?</div>';
+    var h = '';
+    var lastRev = (j.revisions && j.revisions.length) ? j.revisions[j.revisions.length - 1] : null;
+    if (lastRev && !j.signedAt) h += '<div class="banner warn" style="display:block"><div style="font-weight:700;color:var(--warn)">Work stopped \u00b7 revision ' + lastRev.n + '</div><div style="font-size:14.5px">' + esc(lastRev.why) + '</div><div class="sub" style="margin-top:4px">Update what changed, re-check every hazard, and sign again. Your crew will re-accept.</div></div>';
+    h += '<div style="font-size:17px;font-weight:600">Compared to yesterday, what’s different on this location?</div>';
     h += '<div class="lead" style="font-size:14.5px">Your picks add hazards to the next step, marked NEW TODAY. Pick all that apply.</div>';
     h += '<div class="chips">' + CONFIG.changes.map(function (c) { return '<button class="chip' + (j.changes.indexOf(c.id) >= 0 ? ' on' : '') + '" data-act="change" data-id="' + c.id + '">' + esc(c.label) + '</button>'; }).join('') + '</div>';
     return h;
@@ -582,7 +595,7 @@ textarea.inp{resize:vertical;min-height:72px}
   }
   function w5(j) {
     var left = j.hazards.filter(function (h) { return !h.ok; }).length;
-    var h = '<div class="lead">For each hazard: is the control right, and who owns it? <b style="color:var(--ink)">' + (left ? left + ' left to confirm.' : 'All confirmed.') + '</b></div>';
+    var h = '<div class="lead">For each hazard: how bad could it be, is the control right, and who owns it? <b style="color:var(--ink)">' + (left ? left + ' left to confirm.' : 'All confirmed.') + '</b></div>';
     var ppl = people(j);
     j.hazards.forEach(function (z) {
       h += '<div class="card pad' + (z.ok ? ' ok' : '') + '" style="display:flex;flex-direction:column;gap:10px">';
@@ -591,6 +604,7 @@ textarea.inp{resize:vertical;min-height:72px}
         (z.change ? '<span class="newtag">New today</span>' : '') +
         '<button class="iconbtn" data-act="hz-del" data-id="' + z.id + '" aria-label="Remove hazard" style="color:var(--ink3)">' + ICON.x + '</button></div>';
       h += '<div class="field"><label for="hn-' + z.id + '">Hazard</label><input id="hn-' + z.id + '" class="inp" data-bind="hazards.' + z.id + '.name" value="' + esc(z.name) + '" placeholder="What could hurt someone?" style="font-weight:700"></div>';
+      h += '<div class="field"><label>Risk</label><div style="display:flex;gap:6px">' + ['high', 'med', 'low'].map(function (r) { return '<button class="rk ' + r + (z.risk === r ? ' on' : '') + '" data-act="hz-risk" data-id="' + z.id + '" data-r="' + r + '" aria-pressed="' + (z.risk === r) + '">' + RISK[r].label + '</button>'; }).join('') + '</div></div>';
       h += '<div class="field"><label for="hc-' + z.id + '">Control</label><textarea id="hc-' + z.id + '" class="inp" rows="2" data-bind="hazards.' + z.id + '.control" placeholder="How we remove it, guard it, or work around it">' + esc(z.control) + '</textarea></div>';
       h += '<div style="display:flex;gap:8px;align-items:center"><label class="sr" for="ho-' + z.id + '">Owner</label><select id="ho-' + z.id + '" class="inp" data-bind="hazards.' + z.id + '.owner" style="flex:1">' + ppl.map(function (p) { return '<option value="' + p.id + '"' + (z.owner === p.id ? ' selected' : '') + '>Owner: ' + esc(p.name || 'unnamed') + '</option>'; }).join('') + '</select>' +
         '<button class="btn btn-sm ' + (z.ok ? 'btn-ghost' : 'btn-dark') + '" data-act="hz-ok" data-id="' + z.id + '" style="' + (z.ok ? 'color:var(--ok);border-color:var(--ok-rule);background:var(--ok-soft)' : '') + '">' + (z.ok ? 'Confirmed' : 'Confirm') + '</button></div>';
@@ -623,7 +637,7 @@ textarea.inp{resize:vertical;min-height:72px}
       ['Job', j.basics.location + ' · ' + j.basics.workType + ' · ' + (j.basics.shift === 'night' ? 'Night' : 'Day')],
       ['Changed', labelsFor(j.changes).join(', ') || 'Nothing'],
       ['Steps', j.steps.length + ' steps'],
-      ['Hazards', j.hazards.length + ', each with a control and an owner'],
+      ['Hazards', j.hazards.length + ' (' + ['high', 'med', 'low'].map(function (r) { return j.hazards.filter(function (z) { return z.risk === r; }).length + ' ' + RISK[r].label.toLowerCase(); }).join(', ') + '), each with a control and an owner'],
       ['Muster', m ? m.name : '—'],
       ['PPE', j.site.ppe.join(', ')],
       ['Crew', people(j).map(function (p) { return p.name; }).join(', ')]
@@ -638,7 +652,9 @@ textarea.inp{resize:vertical;min-height:72px}
     var j = cur(); if (!j) { ui.view = 'home'; return vHome(); }
     var h = header('JSA · ' + niceDate(j.basics.date) + ' · ' + (j.basics.shift === 'night' ? 'Night' : 'Day'), esc(j.basics.location), { back: 'home' });
     h += '<div class="body">';
-    h += '<div class="banner ok">' + ICON.bigcheck + '<div><div style="font-weight:700;font-size:17px">Signed by ' + esc(j.basics.lead) + '</div><div style="font-size:14px">' + clock(j.signedAt) + ' · sent to crew</div></div></div>';
+    h += '<div class="banner ok">' + ICON.bigcheck + '<div><div style="font-weight:700;font-size:17px">Signed by ' + esc(j.basics.lead) + (j.rev ? ' \u00b7 revision ' + j.rev : '') + '</div><div style="font-size:14px">' + clock(j.signedAt) + ' \u00b7 sent to crew</div></div></div>';
+    h += '<button class="btn btn-ghost" data-act="revise-open" style="color:var(--warn);border-color:var(--warn-rule)">Conditions changed? Stop work and revise</button>';
+    if (j.revisions && j.revisions.length) h += '<div class="card pad"><div class="k">Revisions</div>' + j.revisions.map(function (r) { return '<div style="margin-top:6px"><b>Rev ' + r.n + '</b> \u00b7 ' + clock(r.at) + ' \u2014 ' + esc(r.why) + '</div>'; }).join('') + '</div>';
     var crew = j.crew.filter(function (c) { return c.here !== false; });
     h += '<div class="label">Crew</div>';
     if (!crew.length) h += '<div class="muted-note">No crew on this JSA.</div>';
@@ -655,7 +671,7 @@ textarea.inp{resize:vertical;min-height:72px}
     }
     h += '<div class="label">Others on location · ' + j.visitors.length + '</div>';
     h += '<div class="muted-note">Everyone who comes on location signs this JSA. Tap below and hand them your phone.</div>';
-    if (j.visitors.length) h += '<div class="card list">' + j.visitors.map(function (v) { return '<div class="row" style="cursor:default"><span class="av sq">' + esc(initials(v.company)) + '</span><div class="grow"><div class="v">' + esc(v.name) + '</div><div class="sub">' + esc(v.company) + (v.role ? ' · ' + esc(v.role) : '') + ' · signed ' + clock(v.at) + '</div></div></div>'; }).join('') + '</div>';
+    if (j.visitors.length) h += '<div class="card list">' + j.visitors.map(function (v) { var stale = (v.rev || 0) < (j.rev || 0); return '<div class="row" style="cursor:default"><span class="av sq">' + esc(initials(v.company)) + '</span><div class="grow"><div class="v">' + esc(v.name) + '</div><div class="sub">' + esc(v.company) + (v.role ? ' \u00b7 ' + esc(v.role) : '') + ' \u00b7 signed ' + clock(v.at) + '</div></div>' + (stale ? stChip('warn', 'Sign again') : '') + '</div>'; }).join('') + '</div>';
     h += '<button class="btn btn-outline" data-act="vis-open">' + ICON.plus + ' Add someone on location</button>';
     h += '<div class="label">Send it</div>' + (isStandalone() ? '<button class="btn btn-ghost" data-act="share-one">Share as text</button>' : '<div class="grid2"><button class="btn btn-ghost btn-sm" data-act="share-one" style="height:48px">Share as text</button><button class="btn btn-ghost btn-sm" data-act="dl-one" style="height:48px">Download</button></div>');
     h += '<details class="card pad"><summary style="font-weight:700;cursor:pointer">See the whole JSA</summary><pre style="white-space:pre-wrap;font-family:inherit;font-size:13.5px;margin:10px 0 0">' + esc(jsaText(j)) + '</pre></details>';
@@ -674,19 +690,20 @@ textarea.inp{resize:vertical;min-height:72px}
     if (done) h += '<div class="banner ok">' + ICON.bigcheck + '<div><div style="font-weight:700;font-size:17px">You accepted this JSA</div><div style="font-size:14px">' + clock(done) + '</div></div></div>';
     var mineC = j.concerns.filter(function (c) { return c.by === me.name; });
     mineC.forEach(function (c) { h += '<div class="banner warn" style="display:block"><div style="font-weight:700;color:var(--warn)">Concern sent to ' + esc(j.basics.lead) + '</div><div class="lead" style="font-size:14px">“' + esc(c.text) + '”</div></div>'; });
+    if (j.rev && j.revisions && j.revisions.length) { var lr = j.revisions[j.revisions.length - 1]; h += '<div class="banner warn" style="display:block"><div style="font-weight:700;color:var(--warn)">Revised at ' + clock(lr.at) + '</div><div style="font-size:14.5px">' + esc(lr.why) + '</div><div class="sub">Read it again and accept the new version.</div></div>'; }
     var ch = labelsFor(j.changes);
     if (ch.length) h += '<div class="card pad"><div class="label" style="padding:0;color:var(--warn)">Different from yesterday</div><div class="v" style="margin-top:4px">' + esc(ch.join(' · ')) + '</div></div>';
-    var mine = j.hazards.filter(function (z) { return z.owner === me.id; });
-    var rest = j.hazards.filter(function (z) { return z.owner !== me.id; });
+    var mine = byRisk(j.hazards.filter(function (z) { return z.owner === me.id; }));
+    var rest = byRisk(j.hazards.filter(function (z) { return z.owner !== me.id; }));
     if (mine.length) {
       h += '<div class="label">Assigned to you · tap each to confirm you’ve got it</div>';
       mine.forEach(function (z) {
         var on = done || ui.crewOk[z.id];
-        h += '<button class="card pad' + (on ? ' ok' : ' needs') + '" data-act="crew-ok" data-id="' + z.id + '" style="text-align:left;width:100%;display:flex;gap:12px;align-items:flex-start"><div class="grow" style="flex:1"><div class="sub" style="font-weight:600">' + esc(stepLabel(j, z.step)) + '</div><div class="v" style="font-weight:700;font-size:16.5px">' + esc(z.name) + '</div><div style="font-size:14.5px;color:#3A3942;margin-top:6px">' + esc(z.control) + '</div></div>' + box(on) + '</button>';
+        h += '<button class="card pad' + (on ? ' ok' : ' needs') + '" data-act="crew-ok" data-id="' + z.id + '" style="text-align:left;width:100%;display:flex;gap:12px;align-items:flex-start"><div class="grow" style="flex:1"><div class="sub" style="font-weight:600">' + esc(stepLabel(j, z.step)) + '</div><div class="v" style="font-weight:700;font-size:16.5px">' + riskPill(z.risk) + ' ' + esc(z.name) + '</div><div style="font-size:14.5px;color:#3A3942;margin-top:6px">' + esc(z.control) + '</div></div>' + box(on) + '</button>';
       });
     }
     h += '<div class="label">' + (mine.length ? 'The rest of the hazards on location' : 'Hazards on location') + '</div>';
-    h += '<div class="card list">' + rest.map(function (z) { return '<div style="display:flex;gap:12px;padding:12px 16px"><span class="av" style="width:30px;height:30px;font-size:11px">' + esc(initials(personName(j, z.owner))) + '</span><div style="flex:1;min-width:0"><div style="font-weight:700">' + esc(z.name) + '</div><div style="font-size:13.5px;color:var(--ink2)">' + esc(z.control) + '</div></div></div>'; }).join('') + '</div>';
+    h += '<div class="card list">' + rest.map(function (z) { return '<div style="display:flex;gap:12px;padding:12px 16px"><span class="av" style="width:30px;height:30px;font-size:11px">' + esc(initials(personName(j, z.owner))) + '</span><div style="flex:1;min-width:0"><div style="font-weight:700">' + riskPill(z.risk) + ' ' + esc(z.name) + '</div><div style="font-size:13.5px;color:var(--ink2)">' + esc(z.control) + '</div></div></div>'; }).join('') + '</div>';
     h += siteCards(j);
     if (ui.concernOpen) {
       h += '<div class="card pad" style="display:flex;flex-direction:column;gap:10px"><label for="concern" style="font-weight:700">What doesn’t look right?</label><textarea id="concern" class="inp" data-ui="concern" rows="3" placeholder="e.g. The sand trap is on the downwind side today">' + esc(ui.concern) + '</textarea><button class="btn btn-warn" data-act="concern-send">Send to ' + esc(j.basics.lead) + '</button></div>';
@@ -722,7 +739,7 @@ textarea.inp{resize:vertical;min-height:72px}
       h += '<button class="btn btn-ghost" data-act="vis-close">Done — back to ' + esc(j.basics.lead) + '</button>';
       return h + '</div>';
     }
-    h += '<div class="card pad"><div class="k">Hazards on this location</div>' + j.hazards.map(function (z) { return '<div style="padding:7px 0;border-bottom:1px solid var(--rule-soft)"><div style="font-weight:700;font-size:14.5px">' + esc(z.name) + '</div><div style="font-size:13px;color:var(--ink2)">' + esc(z.control) + '</div></div>'; }).join('') + '</div>';
+    h += '<div class="card pad"><div class="k">Hazards on this location \u00b7 highest risk first</div>' + byRisk(j.hazards).map(function (z) { return '<div style="padding:7px 0;border-bottom:1px solid var(--rule-soft)"><div style="font-weight:700;font-size:14.5px">' + riskPill(z.risk) + ' ' + esc(z.name) + '</div><div style="font-size:13px;color:var(--ink2)">' + esc(z.control) + '</div></div>'; }).join('') + '</div>';
     h += siteCards(j);
     h += '<div class="card pad" style="display:flex;flex-direction:column;gap:12px">';
     h += '<div class="field"><label for="v-co">Your company</label><input id="v-co" class="inp" data-ui="vis.company" value="' + esc(v.company) + '" placeholder="Company name" autocomplete="organization"></div>';
@@ -736,20 +753,34 @@ textarea.inp{resize:vertical;min-height:72px}
     return h;
   }
 
+  /* ---------- REVISE (stop work) ---------- */
+  function vRevise() {
+    var j = cur(); if (!j) { ui.view = 'home'; return vHome(); }
+    var h = '<div class="hdr" style="background:var(--warn)"><div class="hdr-row"><button class="iconbtn" data-act="to-detail" aria-label="Back">' + ICON.back + '</button><div class="hdr-title"><div class="eyebrow" style="color:#F6E6C2">' + esc(j.basics.location) + '</div><div class="h1">Stop work \u00b7 revise the JSA</div></div></div></div>';
+    h += '<div class="body">';
+    h += '<div class="lead">When conditions change, work stops and everyone reviews the plan again. Say what changed. You\u2019ll update the JSA and sign it, and your crew re-accepts. Visitors who signed before will be marked to sign again.</div>';
+    h += '<div class="card pad"><label for="rv-why" style="font-weight:700">What changed?</label><textarea id="rv-why" class="inp" data-ui="reviseWhy" rows="3" placeholder="e.g. Customer wants the choke opened to 24/64 at noon" style="margin-top:6px">' + esc(ui.reviseWhy) + '</textarea></div>';
+    h += '<div class="label">Tag it (adds the matching hazards)</div><div class="chips">' + CONFIG.changes.filter(function (c) { return c.id !== 'none'; }).map(function (c) { return '<button class="chip sm' + (ui.reviseTags[c.id] ? ' on' : '') + '" data-act="revise-tag" data-id="' + c.id + '">' + esc(c.label) + '</button>'; }).join('') + '</div>';
+    h += '</div>';
+    h += '<div class="footer solid"><button class="btn btn-warn" data-act="revise-go" style="height:56px">Stop work and revise</button></div>';
+    return h;
+  }
+
   /* ---------- SUPERVISOR REVIEW ---------- */
   function vReview() {
     var j = cur(); if (!j) { ui.view = 'home'; return vHome(); }
     var s = status(j);
-    var h = header('Supervisor review · nothing waits on you', esc(j.basics.location) + ' · ' + (j.basics.shift === 'night' ? 'Night' : 'Day'), { back: 'home' });
+    var h = header('Field supervisor review · nothing waits on you', esc(j.basics.location) + ' · ' + (j.basics.shift === 'night' ? 'Night' : 'Day'), { back: 'home' });
     h += '<div class="body">';
     h += '<div class="card pad" style="display:flex;align-items:center;gap:10px"><div style="flex:1"><div class="v">Lead ' + esc(j.basics.lead || '—') + '</div><div class="sub">' + (j.signedAt ? 'Signed ' + clock(j.signedAt) : 'Still a draft') + ' · ' + niceDate(j.basics.date) + '</div></div>' + stChip(s.kind, s.text) + '</div>';
     var ch = labelsFor(j.changes);
     h += '<div class="banner warn" style="display:block"><div class="label" style="padding:0;color:var(--warn)">Changed from yesterday</div><div class="v">' + esc(ch.length ? ch.join(' · ') : 'Nothing') + '</div></div>';
     if (j.concerns.length) h += '<div class="card pad"><div class="label" style="padding:0;color:var(--warn)">Concerns from crew</div>' + j.concerns.map(function (c) { return '<div style="margin-top:6px"><b>' + esc(c.by) + ':</b> ' + esc(c.text) + '</div>'; }).join('') + '</div>';
-    h += '<div class="label">Hazards · tap the bubble to comment</div>';
-    j.hazards.forEach(function (z) {
+    if (j.revisions && j.revisions.length) h += '<div class="card pad"><div class="label" style="padding:0">Revisions</div>' + j.revisions.map(function (r) { return '<div style="margin-top:6px"><b>Rev ' + r.n + '</b> \u00b7 ' + clock(r.at) + ' \u2014 ' + esc(r.why) + '</div>'; }).join('') + '</div>';
+    h += '<div class="label">Hazards · highest risk first · tap the bubble to comment</div>';
+    byRisk(j.hazards).forEach(function (z) {
       var notes = j.comments.filter(function (c) { return c.hazard === z.id; });
-      h += '<div class="card pad" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;gap:8px;align-items:flex-start"><div style="flex:1;min-width:0"><div style="font-weight:700">' + esc(z.name) + (z.change ? ' <span class="newtag">New today</span>' : '') + '</div><div style="font-size:13.5px;color:var(--ink2)">' + esc(z.control) + ' · <b style="color:var(--ink)">' + esc(personName(j, z.owner)) + '</b></div></div>' +
+      h += '<div class="card pad" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;gap:8px;align-items:flex-start"><div style="flex:1;min-width:0"><div style="font-weight:700">' + riskPill(z.risk) + ' ' + esc(z.name) + (z.change ? ' <span class="newtag">New today</span>' : '') + '</div><div style="font-size:13.5px;color:var(--ink2)">' + esc(z.control) + ' · <b style="color:var(--ink)">' + esc(personName(j, z.owner)) + '</b></div></div>' +
         '<button class="iconbtn" data-act="cmt-open" data-id="' + z.id + '" aria-label="Comment on this hazard" style="border:1px solid var(--rule);width:40px;height:40px;color:var(--ink2)">' + ICON.chat + '</button></div>';
       notes.forEach(function (c) { h += '<div style="border-radius:10px;background:#F4F4F6;padding:8px 10px;font-size:13.5px"><b>You:</b> ' + esc(c.text) + ' <span class="sub">· sent to ' + esc(j.basics.lead) + '</span></div>'; });
       if (ui.commentFor === z.id) h += '<div style="display:flex;gap:8px"><label class="sr" for="cmt">Comment</label><input id="cmt" class="inp" data-ui="comment" value="' + esc(ui.comment) + '" placeholder="Note to ' + esc(j.basics.lead || 'the lead') + '…"><button class="btn btn-dark btn-sm" data-act="cmt-send" style="height:48px">Send</button></div>';
@@ -810,6 +841,7 @@ textarea.inp{resize:vertical;min-height:72px}
     if (u === 'notes') { mem.notes = t.value; save(); return; }
     if (u === 'concern') { ui.concern = t.value; return; }
     if (u === 'ppeNew') { ui.ppeNew = t.value; return; }
+    if (u === 'reviseWhy') { ui.reviseWhy = t.value; return; }
     if (u === 'comment') { ui.comment = t.value; return; }
     if (u && u.indexOf('vis.') === 0) { ui.vis[u.slice(4)] = t.value; softRefreshFooter(); return; }
   });
@@ -850,7 +882,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 'go-feedback': ui.view = 'feedback'; break;
       case 'new': j = newJsa(); ui.id = j.id; ui.step = 0; ui.view = 'wizard'; window.scrollTo(0, 0); break;
       case 'sample': loadSample(); ui.view = 'home'; toast('Example loaded'); return;
-      case 'open': ui.id = id; j = cur(); if (j.signedAt) { ui.view = 'detail'; } else { ui.view = 'wizard'; ui.step = 0; } window.scrollTo(0, 0); break;
+      case 'open': ui.id = id; j = cur(); if (j.signedAt) { ui.view = 'detail'; } else { ui.view = 'wizard'; ui.step = (j.revisions && j.revisions.length) ? 3 : 0; } window.scrollTo(0, 0); break;
       case 'wiz-back': if (ui.step > 0) ui.step--; else ui.view = 'home'; window.scrollTo(0, 0); break;
       case 'wiz-next':
         if (!stepReady(j, ui.step)) { toast(stepBlock(j, ui.step)); return; }
@@ -874,10 +906,25 @@ textarea.inp{resize:vertical;min-height:72px}
       case 'step-ok': j.steps.forEach(function (s) { if (s.id === id) s.ok = !s.ok; }); save(); break;
       case 'step-del': if (!armed(el, 'Tap again to remove this step')) return; j.steps = j.steps.filter(function (s) { return s.id !== id; }); j.hazards.forEach(function (z) { if (z.step === id) z.step = 'all'; }); save(); break;
       case 'step-add': j.steps.push({ id: uid(), text: '', ok: false }); save(); render(); var ins = app.querySelectorAll('[data-bind^="steps."]'); if (ins.length) ins[ins.length - 1].focus(); return;
-      case 'hz-ok': j.hazards.forEach(function (z) { if (z.id === id) z.ok = !z.ok; }); save(); break;
+      case 'hz-ok': var hzz = j.hazards.filter(function (z) { return z.id === id; })[0]; if (hzz && !hzz.ok && !hzz.risk) { toast('Set the risk first: High, Medium or Low'); return; } if (hzz) hzz.ok = !hzz.ok; save(); break;
+      case 'hz-risk': j.hazards.forEach(function (z) { if (z.id === id) z.risk = el.getAttribute('data-r'); }); save(); break;
+      case 'revise-open': ui.view = 'revise'; ui.reviseWhy = ''; ui.reviseTags = {}; window.scrollTo(0, 0); break;
+      case 'revise-tag': ui.reviseTags[id] = !ui.reviseTags[id]; break;
+      case 'revise-go':
+        if (!ui.reviseWhy.trim()) { toast('Write what changed first'); return; }
+        j.revisions = j.revisions || [];
+        j.rev = (j.rev || 0) + 1;
+        j.revisions.push({ n: j.rev, at: Date.now(), why: ui.reviseWhy.trim(), prevSignedAt: j.signedAt });
+        var tags = Object.keys(ui.reviseTags).filter(function (k) { return ui.reviseTags[k]; });
+        j.changes = j.changes.filter(function (c) { return c !== 'none'; });
+        tags.forEach(function (t) { if (j.changes.indexOf(t) < 0) j.changes.push(t); });
+        if (!j.changes.length) j.changes = ['none'];
+        j.signedAt = null; j.accepts = {};
+        j.hazards.forEach(function (z) { z.ok = false; });
+        save(); ui.view = 'wizard'; ui.step = 3; window.scrollTo(0, 0); break;
       case 'hz-del': if (!armed(el, 'Tap again to remove this hazard')) return; j.hazards = j.hazards.filter(function (z) { return z.id !== id; }); save(); break;
-      case 'hz-add': j.hazards.push({ id: uid(), step: 'all', name: '', control: '', owner: 'lead', ok: false }); save(); render(); var hz = app.querySelectorAll('[data-bind$=".name"][data-bind^="hazards."]'); if (hz.length) hz[hz.length - 1].focus(); return;
-      case 'hz-lib': var l = CONFIG.library.filter(function (x) { return x.name === id; })[0]; if (l) j.hazards.push({ id: uid(), step: 'all', name: l.name, control: l.control, owner: 'lead', ok: false }); save(); break;
+      case 'hz-add': j.hazards.push({ id: uid(), step: 'all', name: '', control: '', owner: 'lead', risk: '', ok: false }); save(); render(); var hz = app.querySelectorAll('[data-bind$=".name"][data-bind^="hazards."]'); if (hz.length) hz[hz.length - 1].focus(); return;
+      case 'hz-lib': var l = CONFIG.library.filter(function (x) { return x.name === id; })[0]; if (l) j.hazards.push({ id: uid(), step: 'all', name: l.name, control: l.control, owner: 'lead', risk: '', ok: false }); save(); break;
       case 'muster': j.site.muster = id; save(); break;
       case 'muster-add': j.site.musters.push({ id: uid(), name: '' }); save(); break;
       case 'ppe': var pi = j.site.ppe.indexOf(id); if (pi >= 0) j.site.ppe.splice(pi, 1); else j.site.ppe.push(id); save(); break;
@@ -898,7 +945,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 'vis-ok': ui.vis.ok = !ui.vis.ok; break;
       case 'vis-sign':
         if (!(ui.vis.company.trim() && ui.vis.name.trim() && ui.vis.ok)) { toast('Fill in your company and name, and tick the box'); return; }
-        j.visitors.push({ company: ui.vis.company.trim(), name: ui.vis.name.trim(), role: ui.vis.role.trim(), at: Date.now() }); save(); ui.visDone = true; window.scrollTo(0, 0); break;
+        j.visitors.push({ company: ui.vis.company.trim(), name: ui.vis.name.trim(), role: ui.vis.role.trim(), at: Date.now(), rev: j.rev || 0 }); save(); ui.visDone = true; window.scrollTo(0, 0); break;
       case 'vis-close': ui.view = 'detail'; window.scrollTo(0, 0); break;
       case 'review-open': ui.id = id; ui.commentFor = null; ui.view = 'review'; window.scrollTo(0, 0); break;
       case 'cmt-open': ui.commentFor = ui.commentFor === id ? null : id; ui.comment = ''; render(); var ci = app.querySelector('[data-ui="comment"]'); if (ci) ci.focus(); return;
@@ -932,15 +979,15 @@ textarea.inp{resize:vertical;min-height:72px}
       handoff: { status: 'Flowing on 18/64, 2,350 psi, ~85 bbl/hr, sand light', instructions: 'Hold the choke until the company man says otherwise. Report any swing over 200 psi.', plan: 'Keep flowing. Sand trap dumps every 2 hrs. Swap tank at ~80%.' },
       changes: ['wx', 'crew'], steps: steps, stepsSeeded: true, hzSeeded: true,
       hazards: [
-        { id: uid(), step: 'all', name: CONFIG.changeHazards.wx.name, control: CONFIG.changeHazards.wx.control, owner: 'lead', ok: true, change: 'wx' },
-        { id: uid(), step: 'all', name: CONFIG.changeHazards.crew.name, control: CONFIG.changeHazards.crew.control, owner: 'lead', ok: true, change: 'crew' },
-        { id: uid(), step: steps[1].id, name: CONFIG.library[0].name, control: CONFIG.library[0].control, owner: 'lead', ok: true },
-        { id: uid(), step: steps[3].id, name: CONFIG.library[1].name, control: CONFIG.library[1].control, owner: crew[0].id, ok: true },
-        { id: uid(), step: steps[2].id, name: CONFIG.library[4].name, control: CONFIG.library[4].control, owner: crew[0].id, ok: true },
-        { id: uid(), step: steps[4].id, name: CONFIG.library[2].name, control: CONFIG.library[2].control, owner: crew[1].id, ok: true }
+        { id: uid(), step: 'all', name: CONFIG.changeHazards.wx.name, control: CONFIG.changeHazards.wx.control, owner: 'lead', risk: 'med', ok: true, change: 'wx' },
+        { id: uid(), step: 'all', name: CONFIG.changeHazards.crew.name, control: CONFIG.changeHazards.crew.control, owner: 'lead', risk: 'med', ok: true, change: 'crew' },
+        { id: uid(), step: steps[1].id, name: CONFIG.library[0].name, control: CONFIG.library[0].control, owner: 'lead', risk: 'high', ok: true },
+        { id: uid(), step: steps[3].id, name: CONFIG.library[1].name, control: CONFIG.library[1].control, owner: crew[0].id, risk: 'high', ok: true },
+        { id: uid(), step: steps[2].id, name: CONFIG.library[4].name, control: CONFIG.library[4].control, owner: crew[0].id, risk: 'med', ok: true },
+        { id: uid(), step: steps[4].id, name: CONFIG.library[2].name, control: CONFIG.library[2].control, owner: crew[1].id, risk: 'low', ok: true }
       ],
       site: { windDir: 'SW', windMph: '18', musters: [{ id: 'mA', name: 'A · Lease road entrance (upwind today)' }, { id: 'mB', name: 'B · Far fence line' }], muster: 'mA', ppe: CONFIG.ppeDefault.slice() },
-      accepts: {}, concerns: [], visitors: [], comments: [], prevId: null
+      accepts: {}, concerns: [], visitors: [], comments: [], prevId: null, rev: 0, revisions: []
     };
     j.accepts[crew[0].id] = Date.now() - 12 * 60000;
     mem.jsas.push(j); save();
