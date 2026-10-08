@@ -44,15 +44,17 @@ var CONFIG = {
     simops: { name: 'Other contractors working on location', control: 'Know who is here and what they are doing; agree traffic routes and who has the pad when.' }
   },
   /* Starting hazard library — the tester should replace this */
+  /* step: which starting task step (0-based) the hazard is seeded under; 'all' = whole location (offered as a chip) */
   library: [
-    { name: 'High-pressure release at a connection', control: 'Stay out of the line of fire. Confirm the line is bled to zero before breaking any connection. Restraints in place.' },
-    { name: 'H2S exposure', control: 'Personal H2S monitor on. Work from the upwind side. Second person watching on dumps and gauging.' },
-    { name: 'Fall from stairs, catwalk or tank top', control: 'Three points of contact. Handrails checked. No climbing with hands full.' },
-    { name: 'Vapors at the thief hatch', control: 'Stand upwind. Gas monitor on. Open the hatch slowly.' },
-    { name: 'Erosion / washout of iron or chokes from sand', control: 'Check chokes on a set interval and log sand. Back-up choke staged.' },
-    { name: 'Vehicle traffic on the pad', control: 'Spotter when backing. Park facing out. Agreed traffic route.' },
-    { name: 'Heat or cold stress', control: 'Water and breaks scheduled. Watch each other for symptoms.' },
-    { name: 'Slips and trips on the pad', control: 'Housekeeping on hoses and iron. Lighting at night.' }
+    { name: 'Missed information at shift change', control: 'Walk the location together. The outgoing lead names anything abnormal before leaving.', step: 0 },
+    { name: 'High-pressure release at a connection', control: 'Stay out of the line of fire. Confirm the line is bled to zero before breaking any connection. Restraints in place.', step: 1 },
+    { name: 'Erosion / washout of iron or chokes from sand', control: 'Check chokes on a set interval and log sand. Back-up choke staged.', step: 2 },
+    { name: 'H2S exposure', control: 'Personal H2S monitor on. Work from the upwind side. Second person watching on dumps and gauging.', step: 3 },
+    { name: 'Fall from stairs, catwalk or tank top', control: 'Three points of contact. Handrails checked. No climbing with hands full.', step: 4 },
+    { name: 'Vapors at the thief hatch', control: 'Stand upwind. Gas monitor on. Open the hatch slowly.', step: 4 },
+    { name: 'Vehicle traffic on the pad', control: 'Spotter when backing. Park facing out. Agreed traffic route.', step: 'all' },
+    { name: 'Heat or cold stress', control: 'Water and breaks scheduled. Watch each other for symptoms.', step: 'all' },
+    { name: 'Slips and trips on the pad', control: 'Housekeeping on hoses and iron. Lighting at night.', step: 'all' }
   ],
   /* Starting task steps by work type — the tester should replace these */
   stepTemplates: {
@@ -164,6 +166,9 @@ textarea.inp{resize:vertical;min-height:72px}
 .banner.warn{background:var(--warn-soft);border:1px solid var(--warn-rule)}
 .newtag{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--warn);background:var(--warn-soft);border-radius:999px;padding:2px 8px}
 .hz-head{display:flex;align-items:center;gap:8px}
+.stephead{display:flex;align-items:center;gap:10px;padding:10px 4px 0;font-weight:700;font-size:15.5px}
+.stephead .stepnum{width:26px;height:26px;border-radius:8px;background:var(--charcoal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+.stephead.none .stepnum{background:var(--warn)}
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .radio{width:24px;height:24px;border-radius:50%;flex:none;border:2px solid #C9C7CD}
 .radio.on{border:7px solid var(--charcoal)}
@@ -268,11 +273,16 @@ textarea.inp{resize:vertical;min-height:72px}
     if (!j.hzSeeded) {
       var base;
       if (p && p.basics.workType === j.basics.workType && p.hazards.length) {
-        base = p.hazards.filter(function (h) { return !h.change; }).map(function (h) { return { name: h.name, control: h.control, owner: validOwner(j, h.owner), risk: h.risk || '' }; });
+        /* carried forward: under the new step with the same text, else whole location */
+        base = p.hazards.filter(function (h) { return !h.change; }).map(function (h) {
+          var ps = p.steps.filter(function (x) { return x.id === h.step; })[0];
+          var ns = ps ? j.steps.filter(function (x) { return x.text === ps.text; })[0] : null;
+          return { name: h.name, control: h.control, owner: validOwner(j, h.owner), risk: h.risk || '', step: ns ? ns.id : 'all' };
+        });
       } else {
-        base = CONFIG.library.slice(0, 3).map(function (h) { return { name: h.name, control: h.control, owner: 'lead' }; });
+        base = CONFIG.library.filter(function (h) { return h.step !== 'all'; }).map(function (h) { var st = j.steps[h.step]; return { name: h.name, control: h.control, owner: 'lead', step: st ? st.id : 'all' }; });
       }
-      j.hazards = base.map(function (h) { return { id: uid(), step: 'all', name: h.name, control: h.control, owner: h.owner, risk: h.risk || '', ok: false }; });
+      j.hazards = base.map(function (h) { return { id: uid(), step: h.step, name: h.name, control: h.control, owner: h.owner, risk: h.risk || '', ok: false }; });
       j.hzSeeded = true;
     }
     j.hazards.forEach(function (h) { h.owner = validOwner(j, h.owner); });
@@ -290,6 +300,8 @@ textarea.inp{resize:vertical;min-height:72px}
 
   var STEPS = ['Confirm the basics', 'Who’s on location', 'Shift handoff', 'What’s different today?', 'Today’s task steps', 'Hazards & controls', 'Site, wind & PPE', 'Review & sign'];
 
+  /* task step numbers (1-based) with no hazard under them: every step needs at least one */
+  function bareSteps(j) { return j.steps.map(function (s, i) { return j.hazards.some(function (z) { return z.step === s.id; }) ? 0 : i + 1; }).filter(Boolean); }
   function stepReady(j, n) {
     switch (n) {
       case 0: return !!(j.basics.lead.trim() && j.basics.location.trim() && j.basics.workType && j.basics.date);
@@ -297,7 +309,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 2: return true;
       case 3: return j.changes.length > 0;
       case 4: return j.steps.length > 0 && j.steps.every(function (s) { return s.ok && s.text.trim(); });
-      case 5: return j.hazards.length > 0 && j.hazards.every(function (h) { return h.ok && h.risk && h.name.trim() && h.control.trim() && people(j).some(function (p) { return p.id === h.owner; }); });
+      case 5: return j.hazards.length > 0 && !bareSteps(j).length && j.hazards.every(function (h) { return h.ok && h.risk && h.name.trim() && h.control.trim() && people(j).some(function (p) { return p.id === h.owner; }); });
       case 6: return !!j.site.muster;
       default: return true;
     }
@@ -309,6 +321,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 3: return 'Pick at least one';
       case 4: var a = j.steps.filter(function (s) { return !s.ok; }).length; return a ? 'Tick ' + a + ' more step' + (a === 1 ? '' : 's') : 'Fill in every step';
       case 5: var nr = j.hazards.filter(function (h) { return !h.risk; }).length; var b = j.hazards.filter(function (h) { return !h.ok; }).length;
+        var bare = bareSteps(j); if (bare.length) return 'Step ' + bare[0] + ' has no hazard yet';
         return j.hazards.length === 0 ? 'Add at least one hazard' : (nr ? 'Set the risk on ' + nr + ' hazard' + (nr === 1 ? '' : 's') : (b ? b + ' hazard' + (b === 1 ? '' : 's') + ' to confirm' : 'Every hazard needs a name and a control'));
       case 6: return 'Pick a muster point';
     }
@@ -594,29 +607,34 @@ textarea.inp{resize:vertical;min-height:72px}
     h += '<button class="btn btn-dash" data-act="step-add">+ Add a step</button>';
     return h;
   }
+  function hzCard(z, ppl) {
+    var h = '<div class="card pad' + (z.ok ? ' ok' : '') + '" style="display:flex;flex-direction:column;gap:10px">';
+    h += '<div class="hz-head"><div class="field" style="flex:1;min-width:0"><label for="hn-' + z.id + '">Hazard' + (z.change ? ' <span class="newtag">New today</span>' : '') + '</label><input id="hn-' + z.id + '" class="inp" data-bind="hazards.' + z.id + '.name" value="' + esc(z.name) + '" placeholder="What could hurt someone?" style="font-weight:700"></div>' +
+      '<button class="iconbtn" data-act="hz-del" data-id="' + z.id + '" aria-label="Remove hazard" style="color:var(--ink3);align-self:flex-end">' + ICON.x + '</button></div>';
+    h += '<div class="field"><label>Risk</label><div style="display:flex;gap:6px">' + ['high', 'med', 'low'].map(function (r) { return '<button class="rk ' + r + (z.risk === r ? ' on' : '') + '" data-act="hz-risk" data-id="' + z.id + '" data-r="' + r + '" aria-pressed="' + (z.risk === r) + '">' + RISK[r].label + '</button>'; }).join('') + '</div></div>';
+    h += '<div class="field"><label for="hc-' + z.id + '">Control</label><textarea id="hc-' + z.id + '" class="inp" rows="2" data-bind="hazards.' + z.id + '.control" placeholder="How we remove it, guard it, or work around it">' + esc(z.control) + '</textarea></div>';
+    h += '<div style="display:flex;gap:8px;align-items:center"><label class="sr" for="ho-' + z.id + '">Owner</label><select id="ho-' + z.id + '" class="inp" data-bind="hazards.' + z.id + '.owner" style="flex:1">' + ppl.map(function (p) { return '<option value="' + p.id + '"' + (z.owner === p.id ? ' selected' : '') + '>Owner: ' + esc(p.name || 'unnamed') + '</option>'; }).join('') + '</select>' +
+      '<button class="btn btn-sm ' + (z.ok ? 'btn-ghost' : 'btn-dark') + '" data-act="hz-ok" data-id="' + z.id + '" style="' + (z.ok ? 'color:var(--ok);border-color:var(--ok-rule);background:var(--ok-soft)' : '') + '">' + (z.ok ? 'Confirmed' : 'Confirm') + '</button></div>';
+    return h + '</div>';
+  }
+  /* hazards sit under their task step; anything not under a current step is whole location */
   function w5(j) {
-    var left = j.hazards.filter(function (h) { return !h.ok; }).length;
-    var h = '<div class="lead">For each hazard: how bad could it be, is the control right, and who owns it? <b style="color:var(--ink)">' + (left ? left + ' left to confirm.' : 'All confirmed.') + '</b></div>';
+    var left = j.hazards.filter(function (h) { return !h.ok; }).length, bare = bareSteps(j).length;
+    var h = '<div class="lead">Every task step needs at least one hazard. For each one: how bad could it be, what’s the control, and who owns it? <b style="color:var(--ink)">' + (bare ? bare + ' step' + (bare === 1 ? '' : 's') + ' with no hazard. ' : '') + (left ? left + ' left to confirm.' : 'All confirmed.') + '</b></div>';
     var ppl = people(j);
-    j.hazards.forEach(function (z) {
-      h += '<div class="card pad' + (z.ok ? ' ok' : '') + '" style="display:flex;flex-direction:column;gap:10px">';
-      h += '<div class="hz-head"><label class="sr" for="hs-' + z.id + '">Applies to</label><select id="hs-' + z.id + '" class="inp" data-bind="hazards.' + z.id + '.step" style="min-height:44px;padding:4px 8px;font-size:16px;width:auto;flex:1;min-width:0">' +
-        '<option value="all"' + (z.step === 'all' ? ' selected' : '') + '>All steps</option>' + j.steps.map(function (s, i) { return '<option value="' + s.id + '"' + (z.step === s.id ? ' selected' : '') + '>Step ' + (i + 1) + ': ' + esc(s.text.slice(0, 34)) + (s.text.length > 34 ? '…' : '') + '</option>'; }).join('') + '</select>' +
-        (z.change ? '<span class="newtag">New today</span>' : '') +
-        '<button class="iconbtn" data-act="hz-del" data-id="' + z.id + '" aria-label="Remove hazard" style="color:var(--ink3)">' + ICON.x + '</button></div>';
-      h += '<div class="field"><label for="hn-' + z.id + '">Hazard</label><input id="hn-' + z.id + '" class="inp" data-bind="hazards.' + z.id + '.name" value="' + esc(z.name) + '" placeholder="What could hurt someone?" style="font-weight:700"></div>';
-      h += '<div class="field"><label>Risk</label><div style="display:flex;gap:6px">' + ['high', 'med', 'low'].map(function (r) { return '<button class="rk ' + r + (z.risk === r ? ' on' : '') + '" data-act="hz-risk" data-id="' + z.id + '" data-r="' + r + '" aria-pressed="' + (z.risk === r) + '">' + RISK[r].label + '</button>'; }).join('') + '</div></div>';
-      h += '<div class="field"><label for="hc-' + z.id + '">Control</label><textarea id="hc-' + z.id + '" class="inp" rows="2" data-bind="hazards.' + z.id + '.control" placeholder="How we remove it, guard it, or work around it">' + esc(z.control) + '</textarea></div>';
-      h += '<div style="display:flex;gap:8px;align-items:center"><label class="sr" for="ho-' + z.id + '">Owner</label><select id="ho-' + z.id + '" class="inp" data-bind="hazards.' + z.id + '.owner" style="flex:1">' + ppl.map(function (p) { return '<option value="' + p.id + '"' + (z.owner === p.id ? ' selected' : '') + '>Owner: ' + esc(p.name || 'unnamed') + '</option>'; }).join('') + '</select>' +
-        '<button class="btn btn-sm ' + (z.ok ? 'btn-ghost' : 'btn-dark') + '" data-act="hz-ok" data-id="' + z.id + '" style="' + (z.ok ? 'color:var(--ok);border-color:var(--ok-rule);background:var(--ok-soft)' : '') + '">' + (z.ok ? 'Confirmed' : 'Confirm') + '</button></div>';
-      h += '</div>';
+    j.steps.forEach(function (s, i) {
+      var mine = j.hazards.filter(function (z) { return z.step === s.id; });
+      h += '<div class="stephead' + (mine.length ? '' : ' none') + '" data-step="' + (i + 1) + '"><span class="mono stepnum">' + (i + 1) + '</span><span style="flex:1;min-width:0">' + esc(s.text || 'Step ' + (i + 1)) + '</span>' + (mine.length ? '' : stChip('warn', 'No hazard yet')) + '</div>';
+      mine.forEach(function (z) { h += hzCard(z, ppl); });
+      h += '<button class="btn btn-dash" data-act="hz-add" data-id="' + s.id + '">+ Add a hazard to step ' + (i + 1) + '</button>';
     });
+    var whole = j.hazards.filter(function (z) { return !j.steps.some(function (s) { return s.id === z.step; }); });
+    h += '<div class="stephead" data-step="all"><span class="mono stepnum">✱</span><span style="flex:1;min-width:0">Whole location · applies to every step</span></div>';
+    whole.forEach(function (z) { h += hzCard(z, ppl); });
+    h += '<button class="btn btn-dash" data-act="hz-add" data-id="all">+ Add a whole-location hazard</button>';
     var have = j.hazards.map(function (z) { return z.name; });
     var lib = CONFIG.library.filter(function (l) { return have.indexOf(l.name) < 0; });
-    h += '<button class="btn btn-dash" data-act="hz-add">+ Write a hazard we haven’t listed</button>';
-    if (lib.length) {
-      h += '<div class="label">Or add from the starting list</div><div class="chips">' + lib.map(function (l) { return '<button class="chip sm" data-act="hz-lib" data-id="' + esc(l.name) + '">+ ' + esc(l.name) + '</button>'; }).join('') + '</div>';
-    }
+    if (lib.length) h += '<div class="label">Starting list · adds to whole location</div><div class="chips">' + lib.map(function (l) { return '<button class="chip sm" data-act="hz-lib" data-id="' + esc(l.name) + '">+ ' + esc(l.name) + '</button>'; }).join('') + '</div>';
     return h;
   }
   function w6(j) {
@@ -924,7 +942,7 @@ textarea.inp{resize:vertical;min-height:72px}
         j.hazards.forEach(function (z) { z.ok = false; });
         save(); ui.view = 'wizard'; ui.step = 3; window.scrollTo(0, 0); break;
       case 'hz-del': if (!armed(el, 'Tap again to remove this hazard')) return; j.hazards = j.hazards.filter(function (z) { return z.id !== id; }); save(); break;
-      case 'hz-add': j.hazards.push({ id: uid(), step: 'all', name: '', control: '', owner: 'lead', risk: '', ok: false }); save(); render(); var hz = app.querySelectorAll('[data-bind$=".name"][data-bind^="hazards."]'); if (hz.length) hz[hz.length - 1].focus(); return;
+      case 'hz-add': var nz = { id: uid(), step: id || 'all', name: '', control: '', owner: 'lead', risk: '', ok: false }; j.hazards.push(nz); save(); render(); var hz = app.querySelector('[data-bind="hazards.' + nz.id + '.name"]'); if (hz) hz.focus(); return;
       case 'hz-lib': var l = CONFIG.library.filter(function (x) { return x.name === id; })[0]; if (l) j.hazards.push({ id: uid(), step: 'all', name: l.name, control: l.control, owner: 'lead', risk: '', ok: false }); save(); break;
       case 'muster': j.site.muster = id; save(); break;
       case 'muster-add': j.site.musters.push({ id: uid(), name: '' }); save(); break;
@@ -982,10 +1000,11 @@ textarea.inp{resize:vertical;min-height:72px}
       hazards: [
         { id: uid(), step: 'all', name: CONFIG.changeHazards.wx.name, control: CONFIG.changeHazards.wx.control, owner: 'lead', risk: 'med', ok: true, change: 'wx' },
         { id: uid(), step: 'all', name: CONFIG.changeHazards.crew.name, control: CONFIG.changeHazards.crew.control, owner: 'lead', risk: 'med', ok: true, change: 'crew' },
-        { id: uid(), step: steps[1].id, name: CONFIG.library[0].name, control: CONFIG.library[0].control, owner: 'lead', risk: 'high', ok: true },
-        { id: uid(), step: steps[3].id, name: CONFIG.library[1].name, control: CONFIG.library[1].control, owner: crew[0].id, risk: 'high', ok: true },
-        { id: uid(), step: steps[2].id, name: CONFIG.library[4].name, control: CONFIG.library[4].control, owner: crew[0].id, risk: 'med', ok: true },
-        { id: uid(), step: steps[4].id, name: CONFIG.library[2].name, control: CONFIG.library[2].control, owner: crew[1].id, risk: 'low', ok: true }
+        { id: uid(), step: steps[0].id, name: CONFIG.library[0].name, control: CONFIG.library[0].control, owner: 'lead', risk: 'low', ok: true },
+        { id: uid(), step: steps[1].id, name: CONFIG.library[1].name, control: CONFIG.library[1].control, owner: 'lead', risk: 'high', ok: true },
+        { id: uid(), step: steps[3].id, name: CONFIG.library[3].name, control: CONFIG.library[3].control, owner: crew[0].id, risk: 'high', ok: true },
+        { id: uid(), step: steps[2].id, name: CONFIG.library[2].name, control: CONFIG.library[2].control, owner: crew[0].id, risk: 'med', ok: true },
+        { id: uid(), step: steps[4].id, name: CONFIG.library[4].name, control: CONFIG.library[4].control, owner: crew[1].id, risk: 'low', ok: true }
       ],
       site: { windDir: 'SW', windMph: '18', musters: [{ id: 'mA', name: 'A · Lease road entrance (upwind today)' }, { id: 'mB', name: 'B · Far fence line' }], muster: 'mA', ppe: CONFIG.ppeDefault.slice() },
       accepts: {}, concerns: [], visitors: [], comments: [], prevId: null, rev: 0, revisions: []

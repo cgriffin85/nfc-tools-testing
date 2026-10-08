@@ -31,4 +31,23 @@ const T={
   before:(a,b)=>!!(a&&b&&(a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING)),
   tall:el=>Math.round(el.getBoundingClientRect().height),
   noSideScroll:()=>document.documentElement.scrollWidth<=innerWidth,
+  /* the wizard step on screen, 0-based (from "Step n of 8" in the header), or -1 off the wizard */
+  wizStep:()=>{ const m=/Step (\d+) of/.exec(T.text(".hdr .eyebrow")||""); return m?+m[1]-1:-1; },
+  /* tap Next until the wizard is on step n (0-based), doing the least each step needs with made-up answers:
+     lead "Lead L", "Nothing changed", every task step ticked, every hazard Low and confirmed, the first muster */
+  async wizTo(n){
+    for(let guard=0;T.wizStep()<n&&guard<12;guard++){
+      const s=T.wizStep();
+      if(s===0&&!T.field("basics.lead").value.trim()) await T.fill("basics.lead","Lead L");
+      if(s===3&&!document.querySelector('[data-act="change"].on')) await T.tap("change","none");
+      if(s===4) for(const id of T.acts("step-ok").filter(b=>!b.querySelector(".box.on")).map(b=>b.getAttribute("data-id"))) await T.tap("step-ok",id);
+      if(s===5){ for(const id of T.acts("hz-ok").map(b=>b.getAttribute("data-id"))){
+          const low=document.querySelector(`[data-act="hz-risk"][data-id="${id}"][data-r="low"]`); low.click(); await sleep(30);
+          const ok=document.querySelector(`[data-act="hz-ok"][data-id="${id}"]`); if(ok.textContent.trim()!=="Confirmed"){ ok.click(); await sleep(30); } } }
+      if(s===6&&!document.querySelector('[data-act="muster"] .radio.on')) await T.tap("muster");
+      if(s<0) throw new Error("wizTo: not on the wizard ("+T.title()+")");
+      await T.tap("wiz-next");
+      if(T.wizStep()===s) throw new Error(`wizTo: stuck on step ${s+1}: ${T.next()}`);
+    }
+  },
 };
