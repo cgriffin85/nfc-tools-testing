@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Field JSA">
+<meta name="theme-color" content="#43424B">
+<title>Field JSA · test build</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<script>
+/* =====================================================================
+   CONFIG BLOCK — everything entity-specific lives here.
+   This is a de-branded TEST BUILD. No company names, no real people,
+   no real locations. Hazard and step content below is a starting set
+   for the tester to replace — it is NOT an approved hazard library.
+   ===================================================================== */
+var CONFIG = {
+  appName: 'Field JSA',
+  storageKey: 'fieldjsa-test-v1',
+  shiftStart: { day: '06:00', night: '18:00' },
+  workTypes: ['Toe Prep', 'Frac', 'Drillout', 'Flowback', 'Well Test', 'Production'],
+  changes: [
+    { id: 'none',   label: 'Nothing changed' },
+    { id: 'wx',     label: 'Weather / wind' },
+    { id: 'press',  label: 'Pressure or rate change' },
+    { id: 'rig',    label: 'Rigging up or down' },
+    { id: 'equip',  label: 'New or swapped equipment' },
+    { id: 'crew',   label: 'New person on crew' },
+    { id: 'cust',   label: 'New customer instructions' },
+    { id: 'simops', label: 'Other contractors on location' }
+  ],
+  /* Hazards that appear when a change is picked (marked NEW TODAY) */
+  changeHazards: {
+    wx:     { name: 'Wind or weather change', control: 'Secure loose items. Re-check which side is upwind before dumps, gauging and venting.' },
+    press:  { name: 'Unexpected pressure or rate swing', control: 'Watch gauges closely; agree the limit that triggers a call to the supervisor and the customer.' },
+    rig:    { name: 'Struck-by or pinch points during rig up / rig down', control: 'One person directs; nobody under a suspended load; stop-work if anyone is in the line of fire.' },
+    equip:  { name: 'New or swapped equipment not yet proven', control: 'Pressure test before use; check ratings match the job; walk the new connections with the crew.' },
+    crew:   { name: 'Inexperienced person on location', control: 'Stays within sight of a named mentor; does not break connections or work pressure alone.' },
+    cust:   { name: 'Plan changed by the customer', control: 'Read the new instructions back to the customer rep and the crew before acting on them.' },
+    simops: { name: 'Other contractors working on location', control: 'Know who is here and what they are doing; agree traffic routes and who has the pad when.' }
+  },
+  /* Starting hazard library — the tester should replace this */
+  library: [
+    { name: 'High-pressure release at a connection', control: 'Stay out of the line of fire. Confirm the line is bled to zero before breaking any connection. Restraints in place.' },
+    { name: 'H2S exposure', control: 'Personal H2S monitor on. Work from the upwind side. Second person watching on dumps and gauging.' },
+    { name: 'Fall from stairs, catwalk or tank top', control: 'Three points of contact. Handrails checked. No climbing with hands full.' },
+    { name: 'Vapors at the thief hatch', control: 'Stand upwind. Gas monitor on. Open the hatch slowly.' },
+    { name: 'Erosion / washout of iron or chokes from sand', control: 'Check chokes on a set interval and log sand. Back-up choke staged.' },
+    { name: 'Vehicle traffic on the pad', control: 'Spotter when backing. Park facing out. Agreed traffic route.' },
+    { name: 'Heat or cold stress', control: 'Water and breaks scheduled. Watch each other for symptoms.' },
+    { name: 'Slips and trips on the pad', control: 'Housekeeping on hoses and iron. Lighting at night.' }
+  ],
+  /* Starting task steps by work type — the tester should replace these */
+  stepTemplates: {
+    'Flowback': [
+      'Shift change: walk the location with the outgoing lead',
+      'Check iron, connections and pressure ratings on the manifold',
+      'Monitor flowback: choke checks, readings every hour',
+      'Dump the sand trap and watch the separator',
+      'Gauge tanks and transfer fluid'
+    ],
+    '_default': [
+      'Shift change: walk the location with the outgoing lead',
+      'Check equipment, connections and pressure ratings',
+      'Perform today’s work',
+      'Monitor and record readings',
+      'Housekeeping and handover'
+    ]
+  },
+  ppe: ['FR clothing', 'Hard hat', 'Safety glasses', 'Personal H2S monitor', 'Gloves', 'Steel-toe boots', 'Hearing protection', 'Face shield'],
+  ppeDefault: ['FR clothing', 'Hard hat', 'Safety glasses', 'Personal H2S monitor', 'Gloves', 'Steel-toe boots'],
+  colors: {
+    charcoal: '#43424B', charcoal2: '#54525E', charcoal3: '#635F6D',
+    ground: '#F2F0ED', card: '#FFFFFF', rule: '#D8D6D2', ruleSoft: '#EDEBE7',
+    ink: '#1A1A1A', ink2: '#54535A', ink3: '#83828A',
+    ok: '#245C1A', okSoft: '#EAF0E8', okRule: '#C9DBC4',
+    warn: '#8A5D00', warnSoft: '#FBF2E0', warnRule: '#E8CF9C',
+    visitor: '#2E5C8A', visitorSoft: '#E8EEF6'
+  }
+};
+</script>
+<style>
+:root{
+  --charcoal:#43424B;--charcoal2:#54525E;--charcoal3:#635F6D;
+  --ground:#F2F0ED;--card:#FFF;--rule:#D8D6D2;--rule-soft:#EDEBE7;
+  --ink:#1A1A1A;--ink2:#54535A;--ink3:#83828A;
+  --ok:#245C1A;--ok-soft:#EAF0E8;--ok-rule:#C9DBC4;
+  --warn:#8A5D00;--warn-soft:#FBF2E0;--warn-rule:#E8CF9C;
+  --vis:#2E5C8A;--vis-soft:#E8EEF6;
+  --r-card:17px;--r-field:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#E4E1DB;color:var(--ink);font-family:'Barlow',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:15px;line-height:1.35;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer}
+#app{max-width:480px;min-height:100vh;min-height:100dvh;margin:0 auto;background:var(--ground);position:relative;display:flex;flex-direction:column}
+.hdr{background:var(--charcoal);color:#fff;padding:calc(env(safe-area-inset-top) + 10px) 12px 12px 12px;position:sticky;top:0;z-index:5}
+.hdr-row{display:flex;align-items:center;gap:8px;min-height:44px}
+.hdr-title{flex:1;min-width:0}
+.eyebrow{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12.5px;letter-spacing:1.2px;text-transform:uppercase}
+.hdr .eyebrow{color:#D6D4DA}
+.h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:24px;line-height:1.15}
+.pill{display:inline-flex;align-items:center;border-radius:999px;font-size:11.5px;font-weight:700;padding:2px 9px;letter-spacing:.4px}
+.pill-test{background:#F2CC4E;color:#1A1A1A}
+.iconbtn{width:44px;height:44px;border:0;background:none;color:inherit;display:flex;align-items:center;justify-content:center;padding:0;border-radius:999px;flex:none}
+.roles{display:flex;gap:2px;padding:4px;border-radius:999px;background:var(--charcoal2);margin-top:10px}
+.roles button{flex:1;height:40px;border:0;border-radius:999px;background:transparent;color:#E4E2E8;font-weight:600;font-size:15px}
+.roles button.on{background:#fff;color:var(--ink)}
+.segs{display:grid;gap:4px;margin-top:10px}
+.seg{height:5px;border-radius:999px;background:var(--charcoal3)}
+.seg.done{background:#7FC06F}.seg.cur{background:#fff}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.body{flex:1;padding:14px 12px 130px;display:flex;flex-direction:column;gap:12px}
+.lead{color:var(--ink2);font-size:15px}
+.card{border-radius:var(--r-card);background:var(--card);border:1px solid var(--rule)}
+.card.pad{padding:14px 16px}
+.card.ok{border-color:var(--ok-rule)}
+.card.needs{border:2px solid var(--charcoal)}
+.list > *{border-bottom:1px solid var(--rule-soft)}
+.list > *:last-child{border-bottom:0}
+.row{display:flex;align-items:center;gap:12px;padding:12px 16px;width:100%;background:none;border:0;text-align:left;min-height:56px}
+.row .grow{flex:1;min-width:0}
+.k{font-size:12.5px;color:var(--ink3);font-weight:600}
+.v{font-weight:600;font-size:15.5px}
+.sub{color:var(--ink3);font-size:13px}
+.label{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink2);padding:4px 4px 0}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:13px;color:var(--ink2);font-weight:600}
+.inp{width:100%;min-height:48px;border-radius:var(--r-field);border:1px solid var(--rule);background:#fff;padding:10px 12px;font-size:16px;outline:none}
+.inp:focus{border-color:var(--charcoal)}
+textarea.inp{resize:vertical;min-height:72px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:44px;padding:0 16px;border-radius:999px;font-size:15px;font-weight:600;background:#fff;color:var(--ink);border:1px solid var(--rule)}
+.chip.on{background:var(--charcoal);color:#fff;border-color:var(--charcoal)}
+.chip.sm{min-height:38px;font-size:14px;padding:0 12px}
+.btn{height:52px;border-radius:999px;border:0;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 18px;text-decoration:none}
+.btn-dark{background:var(--charcoal);color:#fff}
+.btn-black{background:#1A1A1A;color:#fff}
+.btn-warn{background:var(--warn);color:#fff}
+.btn-vis{background:var(--vis);color:#fff}
+.btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--rule)}
+.btn-outline{background:#fff;color:var(--ink);border:2px solid var(--charcoal)}
+.btn-dash{background:#F8F7F5;color:var(--ink);border:1px dashed #A9A7AE;height:46px;font-weight:600;font-size:15px}
+.btn-off{background:#DCDAD6;color:var(--ink3)}
+.btn-sm{height:40px;font-size:14.5px;padding:0 14px}
+.linkbtn{border:0;background:none;color:var(--warn);font-weight:700;height:40px}
+.linkbtn.quiet{color:var(--ink3);font-weight:600}
+.footer{position:sticky;bottom:0;padding:12px 12px calc(env(safe-area-inset-bottom) + 14px);background:linear-gradient(rgba(242,240,237,0),var(--ground) 28%);display:flex;flex-direction:column;gap:6px;z-index:4}
+.footer.solid{background:#fff;border-top:1px solid var(--rule)}
+.box{width:28px;height:28px;border-radius:8px;flex:none;display:flex;align-items:center;justify-content:center;background:#fff;border:2px solid #C9C7CD}
+.box.on{background:var(--ok);border-color:var(--ok)}
+.av{width:36px;height:36px;border-radius:50%;background:var(--charcoal3);color:#fff;font-weight:700;font-size:12.5px;display:flex;align-items:center;justify-content:center;flex:none}
+.av.sq{border-radius:10px;background:var(--vis-soft);color:var(--vis)}
+.st{font-size:12.5px;font-weight:700;border-radius:999px;padding:4px 10px;flex:none;white-space:nowrap}
+.st-ok{color:var(--ok);background:var(--ok-soft)}
+.st-warn{color:var(--warn);background:var(--warn-soft)}
+.st-none{color:var(--ink2);background:var(--rule-soft)}
+.banner{border-radius:var(--r-card);padding:14px 16px;display:flex;gap:12px;align-items:center}
+.banner.ok{background:var(--ok-soft);border:1px solid var(--ok-rule);color:var(--ok)}
+.banner.warn{background:var(--warn-soft);border:1px solid var(--warn-rule)}
+.newtag{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--warn);background:var(--warn-soft);border-radius:999px;padding:2px 8px}
+.hz-head{display:flex;align-items:center;gap:8px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.radio{width:24px;height:24px;border-radius:50%;flex:none;border:2px solid #C9C7CD}
+.radio.on{border:7px solid var(--charcoal)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:110px;background:#1A1A1A;color:#fff;padding:12px 16px;border-radius:14px;font-size:14.5px;z-index:20;max-width:360px;text-align:center}
+.empty{text-align:center;color:var(--ink2);padding:28px 16px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.muted-note{font-size:12.5px;color:var(--ink3);padding:0 4px}
+@media (max-width:360px){.h1{font-size:21px}.roles button{font-size:14px}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- storage (local to this phone) ---------- */
+  var mem = { jsas: [], notes: '' };
+  function load() {
+    try { var raw = localStorage.getItem(CONFIG.storageKey); if (raw) mem = JSON.parse(raw); } catch (e) {}
+    if (!mem.jsas) mem.jsas = [];
+    if (typeof mem.notes !== 'string') mem.notes = '';
+  }
+  function save() { try { localStorage.setItem(CONFIG.storageKey, JSON.stringify(mem)); } catch (e) {} }
+
+  /* ---------- helpers ---------- */
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function uid() { return Math.random().toString(36).slice(2, 9); }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function today() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function clock(ts) { var d = new Date(ts), h = d.getHours(); return (h % 12 || 12) + ':' + pad(d.getMinutes()) + (h >= 12 ? ' PM' : ' AM'); }
+  function niceDate(iso) { if (!iso) return ''; var p = iso.split('-'); var d = new Date(+p[0], +p[1] - 1, +p[2]); return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }); }
+  function initials(name) { return String(name || '?').trim().split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase() || '?'; }
+  var ICON = {
+    back: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+    check: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>',
+    bigcheck: '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>',
+    plus: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+    shield: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#245C1A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>',
+    note: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 4h16v12H9l-5 4z"/></svg>',
+    chat: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>',
+    x: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+  };
+  function box(on) { return '<span class="box' + (on ? ' on' : '') + '">' + (on ? ICON.check : '') + '</span>'; }
+  function stChip(kind, text) { return '<span class="st st-' + kind + '">' + esc(text) + '</span>'; }
+
+  /* ---------- UI state (not saved) ---------- */
+  var ui = { role: 'lead', view: 'home', id: null, step: 0, crewId: null, crewOk: {}, concernOpen: false, concern: '', commentFor: null, comment: '', vis: null, visDone: false, toast: '' };
+  var toastTimer = null;
+  function toast(msg) { ui.toast = msg; render(); clearTimeout(toastTimer); toastTimer = setTimeout(function () { ui.toast = ''; render(); }, 2200); }
+
+  function cur() { for (var i = 0; i < mem.jsas.length; i++) if (mem.jsas[i].id === ui.id) return mem.jsas[i]; return null; }
+
+  /* ---------- model ---------- */
+  function newJsa() {
+    var prev = mem.jsas.filter(function (j) { return j.signedAt; }).slice(-1)[0];
+    var j = {
+      id: uid(), created: Date.now(), signedAt: null,
+      basics: {
+        customer: prev ? prev.basics.customer : '[Customer]',
+        location: prev ? prev.basics.location : 'Pad A · Well 2H',
+        gps: prev ? prev.basics.gps : '00.0000, −00.0000',
+        date: today(), shift: 'day',
+        workType: prev ? prev.basics.workType : 'Flowback',
+        hospital: prev ? prev.basics.hospital : '[Nearest hospital], [City]',
+        lead: prev ? prev.basics.lead : '',
+        supervisor: prev ? prev.basics.supervisor : ''
+      },
+      crew: prev ? prev.crew.map(function (c) { return { id: c.id, name: c.name, role: c.role, trainee: c.trainee, here: true }; }) : [],
+      mentoring: { topic: '', why: '' },
+      handoff: { status: '', instructions: '', plan: '' },
+      changes: [], steps: [], stepsSeeded: false, hazards: [], hzSeeded: false,
+      site: { windDir: '', windMph: '', musters: prev ? prev.site.musters.map(function (m) { return { id: m.id, name: m.name }; }) : [{ id: uid(), name: 'A · Lease road entrance' }, { id: uid(), name: 'B · Far fence line' }], muster: '', ppe: CONFIG.ppeDefault.slice() },
+      accepts: {}, concerns: [], visitors: [], comments: [], prevId: prev ? prev.id : null
+    };
+    mem.jsas.push(j); save();
+    return j;
+  }
+  function leadMember(j) { return { id: 'lead', name: j.basics.lead || 'Shift lead', role: 'Shift lead', here: true }; }
+  function people(j) { return [leadMember(j)].concat(j.crew.filter(function (c) { return c.here !== false; })); }
+  function personName(j, id) { var p = people(j).filter(function (x) { return x.id === id; })[0]; return p ? p.name : '—'; }
+  function prevOf(j) { if (!j.prevId) return null; return mem.jsas.filter(function (x) { return x.id === j.prevId; })[0] || null; }
+
+  function seedSteps(j) {
+    if (j.stepsSeeded) return;
+    var p = prevOf(j);
+    var src = (p && p.basics.workType === j.basics.workType && p.steps.length) ? p.steps.map(function (s) { return s.text; }) : (CONFIG.stepTemplates[j.basics.workType] || CONFIG.stepTemplates._default);
+    j.steps = src.map(function (t) { return { id: uid(), text: t, ok: false }; });
+    j.stepsSeeded = true; save();
+  }
+  function seedHazards(j) {
+    var p = prevOf(j);
+    if (!j.hzSeeded) {
+      var base;
+      if (p && p.basics.workType === j.basics.workType && p.hazards.length) {
+        base = p.hazards.filter(function (h) { return !h.change; }).map(function (h) { return { name: h.name, control: h.control, owner: validOwner(j, h.owner) }; });
+      } else {
+        base = CONFIG.library.slice(0, 3).map(function (h) { return { name: h.name, control: h.control, owner: 'lead' }; });
+      }
+      j.hazards = base.map(function (h) { return { id: uid(), step: 'all', name: h.name, control: h.control, owner: h.owner, ok: false }; });
+      j.hzSeeded = true;
+    }
+    /* keep change-driven hazards in sync with today's picks */
+    j.hazards = j.hazards.filter(function (h) { return !h.change || j.changes.indexOf(h.change) >= 0; });
+    j.changes.forEach(function (c) {
+      var t = CONFIG.changeHazards[c];
+      if (!t) return;
+      if (j.hazards.some(function (h) { return h.change === c; })) return;
+      j.hazards.unshift({ id: uid(), step: 'all', name: t.name, control: t.control, owner: 'lead', ok: false, change: c });
+    });
+    save();
+  }
+  function validOwner(j, id) { return people(j).some(function (p) { return p.id === id; }) ? id : 'lead'; }
+
+  var STEPS = ['Confirm the basics', 'Who’s on location', 'Shift handoff', 'What’s different today?', 'Today’s task steps', 'Hazards & controls', 'Site, wind & PPE', 'Review & sign'];
+
+  function stepReady(j, n) {
+    switch (n) {
+      case 0: return !!(j.basics.lead.trim() && j.basics.location.trim() && j.basics.workType);
+      case 1: return true;
+      case 2: return true;
+      case 3: return j.changes.length > 0;
+      case 4: return j.steps.length > 0 && j.steps.every(function (s) { return s.ok && s.text.trim(); });
+      case 5: return j.hazards.length > 0 && j.hazards.every(function (h) { return h.ok && h.name.trim() && h.control.trim(); });
+      case 6: return !!j.site.muster;
+      default: return true;
+    }
+  }
+  function stepBlock(j, n) {
+    switch (n) {
+      case 0: return !j.basics.lead.trim() ? 'Enter the shift lead' : 'Fill in the location';
+      case 3: return 'Pick at least one';
+      case 4: var a = j.steps.filter(function (s) { return !s.ok; }).length; return a ? 'Tick ' + a + ' more step' + (a === 1 ? '' : 's') : 'Fill in every step';
+      case 5: var b = j.hazards.filter(function (h) { return !h.ok; }).length; return j.hazards.length === 0 ? 'Add at least one hazard' : (b ? b + ' hazard' + (b === 1 ? '' : 's') + ' to confirm' : 'Every hazard needs a name and a control');
+      case 6: return 'Pick a muster point';
+    }
+    return '';
+  }
+  function shiftDeadline(j) {
+    var t = CONFIG.shiftStart[j.basics.shift] || '06:00';
+    var p = j.basics.date.split('-'), hm = t.split(':');
+    return new Date(+p[0], +p[1] - 1, +p[2], +hm[0], +hm[1]).getTime();
+  }
+  function countdown(j) {
+    var left = shiftDeadline(j) - Date.now();
+    if (left <= 0) return 'Past shift start';
+    var h = Math.floor(left / 3600000), m = Math.floor((left % 3600000) / 60000), s = Math.floor((left % 60000) / 1000);
+    return (h ? h + ':' + pad(m) : pad(m)) + ':' + pad(s) + ' to shift start';
+  }
+
+  /* ---------- status ---------- */
+  function status(j) {
+    if (!j.signedAt) return { kind: 'none', text: 'Draft' };
+    var crew = j.crew.filter(function (c) { return c.here !== false; });
+    var acc = crew.filter(function (c) { return j.accepts[c.id]; }).length;
+    if (acc < crew.length) return { kind: 'warn', text: acc + ' of ' + crew.length + ' accepted' };
+    return { kind: 'ok', text: crew.length ? 'All accepted' : 'Signed' };
+  }
+
+  /* ---------- export ---------- */
+  function jsaText(j) {
+    var L = [];
+    L.push(CONFIG.appName.toUpperCase() + ' (TEST BUILD) — JOB SAFETY ANALYSIS');
+    L.push(niceDate(j.basics.date) + ' · ' + (j.basics.shift === 'night' ? 'Night' : 'Day') + ' shift · ' + j.basics.workType);
+    L.push('Customer: ' + j.basics.customer);
+    L.push('Location: ' + j.basics.location + ' (' + j.basics.gps + ')');
+    L.push('Nearest hospital: ' + j.basics.hospital);
+    L.push('Shift lead: ' + (j.basics.lead || '—') + ' · Supervisor reviewer: ' + (j.basics.supervisor || '—'));
+    L.push('');
+    L.push('HANDOFF');
+    L.push('  Well status: ' + (j.handoff.status || '—'));
+    L.push('  Customer instructions: ' + (j.handoff.instructions || '—'));
+    L.push('  Plan: ' + (j.handoff.plan || '—'));
+    L.push('');
+    L.push('CHANGED TODAY: ' + (labelsFor(j.changes).join(', ') || '—'));
+    L.push('');
+    L.push('TASK STEPS');
+    j.steps.forEach(function (s, i) { L.push('  ' + (i + 1) + '. ' + s.text); });
+    L.push('');
+    L.push('HAZARDS → CONTROLS → OWNER');
+    j.hazards.forEach(function (h) {
+      L.push('  • ' + h.name + (h.change ? ' [NEW TODAY]' : '') + ' (' + stepLabel(j, h.step) + ')');
+      L.push('    Control: ' + h.control);
+      L.push('    Owner: ' + personName(j, h.owner));
+    });
+    L.push('');
+    var m = j.site.musters.filter(function (x) { return x.id === j.site.muster; })[0];
+    L.push('Muster point: ' + (m ? m.name : '—'));
+    L.push('Wind: ' + (j.site.windDir || '—') + (j.site.windMph ? ' ' + j.site.windMph + ' mph' : ''));
+    L.push('PPE: ' + j.site.ppe.join(', '));
+    var tr = j.crew.filter(function (c) { return c.trainee && c.here !== false; });
+    if (tr.length) L.push('Mentoring: ' + tr.map(function (c) { return c.name; }).join(', ') + ' — topic: ' + (j.mentoring.topic || '—') + '; why: ' + (j.mentoring.why || '—'));
+    L.push('');
+    L.push('SIGNATURES');
+    L.push('  Shift lead ' + (j.basics.lead || '') + (j.signedAt ? ' — signed ' + clock(j.signedAt) : ' — not signed'));
+    j.crew.filter(function (c) { return c.here !== false; }).forEach(function (c) { L.push('  ' + c.name + (j.accepts[c.id] ? ' — accepted ' + clock(j.accepts[c.id]) : ' — not yet accepted')); });
+    j.visitors.forEach(function (v) { L.push('  ' + v.name + ', ' + v.company + (v.role ? ' (' + v.role + ')' : '') + ' — verified ' + clock(v.at)); });
+    if (j.concerns.length) { L.push(''); L.push('CONCERNS'); j.concerns.forEach(function (c) { L.push('  ' + c.by + ' (' + clock(c.at) + '): ' + c.text); }); }
+    if (j.comments.length) { L.push(''); L.push('SUPERVISOR COMMENTS'); j.comments.forEach(function (c) { var h = j.hazards.filter(function (x) { return x.id === c.hazard; })[0]; L.push('  On "' + (h ? h.name : 'hazard') + '": ' + c.text); }); }
+    return L.join('\n');
+  }
+  function labelsFor(ids) { return CONFIG.changes.filter(function (c) { return ids.indexOf(c.id) >= 0 && c.id !== 'none'; }).map(function (c) { return c.label; }); }
+  function stepLabel(j, sid) { if (sid === 'all') return 'All steps'; for (var i = 0; i < j.steps.length; i++) if (j.steps[i].id === sid) return 'Step ' + (i + 1); return 'All steps'; }
+
+  function shareText(title, text) {
+    if (navigator.share) { navigator.share({ title: title, text: text }).catch(function () {}); return; }
+    copyText(text);
+  }
+  function copyText(text) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(function () { toast('Copied — paste it into a text or email'); }, function () { fallbackCopy(text); }); return; }
+    } catch (e) {}
+    fallbackCopy(text);
+  }
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); toast('Copied — paste it into a text or email'); } catch (e) { toast('Could not copy on this phone'); }
+    document.body.removeChild(ta);
+  }
+  function download(name, text) {
+    try {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+      a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    } catch (e) { copyText(text); }
+  }
+
+  /* =====================================================================
+     RENDER
+     ===================================================================== */
+  var app = document.getElementById('app');
+  function render() {
+    var keep = captureFocus();
+    var html;
+    switch (ui.view) {
+      case 'wizard': html = vWizard(); break;
+      case 'detail': html = vDetail(); break;
+      case 'crew': html = vCrew(); break;
+      case 'visitor': html = vVisitor(); break;
+      case 'review': html = vReview(); break;
+      case 'feedback': html = vFeedback(); break;
+      default: html = vHome();
+    }
+    if (ui.toast) html += '<div class="toast" role="status">' + esc(ui.toast) + '</div>';
+    app.innerHTML = html;
+    restoreFocus(keep);
+  }
+  function captureFocus() {
+    var a = document.activeElement;
+    if (!a || !a.getAttribute) return null;
+    var id = a.getAttribute('data-bind') || a.getAttribute('data-ui');
+    if (!id) return null;
+    return { key: a.getAttribute('data-bind') ? 'data-bind' : 'data-ui', id: id, s: a.selectionStart, e: a.selectionEnd };
+  }
+  function restoreFocus(k) {
+    if (!k) return;
+    var el = app.querySelector('[' + k.key + '="' + k.id.replace(/"/g, '\\"') + '"]');
+    if (el) { el.focus(); try { el.setSelectionRange(k.s, k.e); } catch (e) {} }
+  }
+
+  function header(eyebrow, title, opts) {
+    opts = opts || {};
+    var h = '<div class="hdr"><div class="hdr-row">';
+    if (opts.back) h += '<button class="iconbtn" data-act="' + opts.back + '" aria-label="Back">' + ICON.back + '</button>';
+    h += '<div class="hdr-title"><div class="eyebrow">' + eyebrow + '</div><div class="h1">' + title + '</div></div>';
+    if (opts.right) h += opts.right;
+    h += '</div>';
+    if (opts.extra) h += opts.extra;
+    return h + '</div>';
+  }
+
+  /* ---------- HOME ---------- */
+  function vHome() {
+    var right = '<button class="iconbtn" data-act="go-feedback" aria-label="Test notes and export">' + ICON.note + '</button>';
+    var roles = '<div class="roles" role="tablist" aria-label="Play a role">' +
+      [['lead', 'Shift lead'], ['crew', 'Crew'], ['sup', 'Supervisor']].map(function (r) {
+        return '<button role="tab" aria-selected="' + (ui.role === r[0]) + '" class="' + (ui.role === r[0] ? 'on' : '') + '" data-act="role" data-id="' + r[0] + '">' + r[1] + '</button>';
+      }).join('') + '</div>';
+    var h = header('<span class="pill pill-test">TEST BUILD</span> &nbsp;You play every role', esc(CONFIG.appName), { right: right, extra: roles });
+    h += '<div class="body">';
+    var list = mem.jsas.slice().reverse();
+    if (ui.role === 'lead') {
+      h += '<div class="lead">You’re the shift lead. Build today’s JSA, sign it, then have your crew and anyone else on location sign it.</div>';
+      if (!list.length) {
+        h += '<div class="card empty">No JSAs yet on this phone.<div style="display:flex;flex-direction:column;gap:8px;margin-top:14px"><button class="btn btn-dark" data-act="new">Start a new JSA</button><button class="btn btn-ghost" data-act="sample">Load a filled-in example</button></div></div>';
+      } else {
+        h += '<div class="card list">' + list.map(function (j) {
+          var s = status(j);
+          return '<button class="row" data-act="open" data-id="' + j.id + '"><div class="grow"><div class="v">' + esc(j.basics.location) + '</div><div class="sub">' + niceDate(j.basics.date) + ' · ' + (j.basics.shift === 'night' ? 'Night' : 'Day') + ' · ' + esc(j.basics.workType) + '</div></div>' + stChip(s.kind, s.text) + '</button>';
+        }).join('') + '</div>';
+        h += '<button class="btn btn-ghost btn-sm" data-act="sample" style="align-self:flex-start">Load a filled-in example</button>';
+      }
+    } else if (ui.role === 'crew') {
+      var signed = list.filter(function (j) { return j.signedAt; });
+      h += '<div class="lead">You’re on the crew. Open a JSA your lead has signed, say who you are, read it and accept.</div>';
+      if (!signed.length) h += '<div class="card empty">Nothing to accept yet. Switch to <b>Shift lead</b> and sign a JSA first.</div>';
+      signed.forEach(function (j) {
+        h += '<div class="card"><div class="row" style="cursor:default"><div class="grow"><div class="v">' + esc(j.basics.location) + '</div><div class="sub">' + niceDate(j.basics.date) + ' · lead ' + esc(j.basics.lead) + '</div></div></div>';
+        var crew = j.crew.filter(function (c) { return c.here !== false; });
+        if (!crew.length) h += '<div class="sub" style="padding:0 16px 14px">No crew listed on this JSA.</div>';
+        h += '<div class="list" style="border-top:1px solid var(--rule-soft)">' + crew.map(function (c) {
+          var a = j.accepts[c.id];
+          return '<button class="row" data-act="crew-open" data-id="' + j.id + '" data-crew="' + c.id + '"><span class="av">' + esc(initials(c.name)) + '</span><div class="grow"><div class="v">I’m ' + esc(c.name) + '</div><div class="sub">' + esc(c.role || '') + '</div></div>' + (a ? stChip('ok', 'Accepted ' + clock(a)) : stChip('warn', 'Not yet')) + '</button>';
+        }).join('') + '</div></div>';
+      });
+    } else {
+      h += '<div class="lead">You’re the supervisor. Read any JSA and leave a comment. Nothing waits on you.</div>';
+      if (!list.length) h += '<div class="card empty">No JSAs on this phone yet.</div>';
+      else h += '<div class="card list">' + list.map(function (j) {
+        var s = status(j);
+        return '<button class="row" data-act="review-open" data-id="' + j.id + '"><div class="grow"><div class="v">' + esc(j.basics.location) + ' · ' + (j.basics.shift === 'night' ? 'Night' : 'Day') + '</div><div class="sub">Lead ' + esc(j.basics.lead || '—') + ' · ' + niceDate(j.basics.date) + '</div></div>' + stChip(s.kind, s.text) + '</button>';
+      }).join('') + '</div>';
+    }
+    h += '<div class="muted-note">Everything is saved on this phone only. Use the notes button at the top right to send your JSAs and feedback.</div>';
+    return h + '</div>';
+  }
+
+  /* ---------- WIZARD ---------- */
+  function vWizard() {
+    var j = cur(); if (!j) { ui.view = 'home'; return vHome(); }
+    var n = ui.step;
+    var segs = '<div class="segs" style="grid-template-columns:repeat(' + STEPS.length + ',minmax(0,1fr))">' + STEPS.map(function (t, i) { return '<div class="seg' + (i < n ? ' done' : (i === n ? ' cur' : '')) + '"></div>'; }).join('') + '</div>';
+    var right = '<span class="mono" style="font-size:12px;color:#F2CC4E;text-align:right;max-width:110px" data-countdown="1">' + esc(countdown(j)) + '</span>';
+    var h = header('JSA · ' + esc(j.basics.location || 'New') + ' · Step ' + (n + 1) + ' of ' + STEPS.length, STEPS[n], { back: 'wiz-back', right: right, extra: segs });
+    h += '<div class="body">';
+    h += [w0, w1, w2, w3, w4, w5, w6, w7][n](j);
+    h += '</div>';
+    var ready = stepReady(j, n);
+    var labels = ['Everything is correct', 'Crew is right', 'Handoff matches', 'Next', 'Steps are right', 'Next', 'Next', 'Sign and send to crew'];
+    h += '<div class="footer"><button class="btn ' + (ready ? (n === 7 ? 'btn-black' : 'btn-dark') : 'btn-off') + '" data-act="wiz-next" style="height:56px;font-size:17px">' + esc(ready ? labels[n] : stepBlock(j, n)) + '</button></div>';
+    return h;
+  }
+  function inp(bind, val, label, ph, type) {
+    var id = 'f-' + bind.replace(/[^a-z0-9]/gi, '-');
+    return '<div class="field"><label for="' + id + '">' + label + '</label><input id="' + id + '" class="inp" data-bind="' + bind + '" value="' + esc(val) + '" placeholder="' + esc(ph || '') + '"' + (type ? ' type="' + type + '"' : '') + '></div>';
+  }
+  function ta(bind, val, label, ph) {
+    var id = 'f-' + bind.replace(/[^a-z0-9]/gi, '-');
+    return '<div class="field"><label for="' + id + '">' + label + '</label><textarea id="' + id + '" class="inp" data-bind="' + bind + '" placeholder="' + esc(ph || '') + '">' + esc(val) + '</textarea></div>';
+  }
+  function w0(j) {
+    var b = j.basics;
+    var h = '<div class="lead">In the real app these come from the shift assignment, already filled in. Here, check them and change anything that’s wrong.</div>';
+    h += '<div class="card pad" style="display:flex;flex-direction:column;gap:12px">';
+    h += inp('basics.customer', b.customer, 'Customer');
+    h += inp('basics.location', b.location, 'Location name');
+    h += inp('basics.gps', b.gps, 'GPS coordinates');
+    h += '<div class="grid2">' + inp('basics.date', b.date, 'Date', '', 'date') +
+      '<div class="field"><label for="f-shift">Shift</label><select id="f-shift" class="inp" data-bind="basics.shift"><option value="day"' + (b.shift === 'day' ? ' selected' : '') + '>Day</option><option value="night"' + (b.shift === 'night' ? ' selected' : '') + '>Night</option></select></div></div>';
+    h += '<div class="field"><label>Work type</label><div class="chips">' + CONFIG.workTypes.map(function (w) { return '<button class="chip sm' + (b.workType === w ? ' on' : '') + '" data-act="worktype" data-id="' + esc(w) + '">' + esc(w) + '</button>'; }).join('') + '</div></div>';
+    h += inp('basics.hospital', b.hospital, 'Nearest hospital (name & city)');
+    h += inp('basics.lead', b.lead, 'Shift lead (you — approves this JSA)', 'Your full name');
+    h += inp('basics.supervisor', b.supervisor, 'Supervisor who can review it', 'Name');
+    h += '</div>';
+    return h;
+  }
+  function w1(j) {
+    var h = '<div class="lead">Who’s working this shift with you? In the real app this list comes from the assignment. Mark anyone in training.</div>';
+    h += '<div class="card list">';
+    h += '<div class="row" style="cursor:default"><span class="av">' + esc(initials(j.basics.lead)) + '</span><div class="grow"><div class="v">' + esc(j.basics.lead || 'You') + '</div><div class="sub">Shift lead · signs first</div></div></div>';
+    j.crew.forEach(function (c) {
+      h += '<div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px">' +
+        '<div style="display:flex;gap:8px;align-items:center"><label class="sr" for="cn-' + c.id + '">Name</label><input id="cn-' + c.id + '" class="inp" data-bind="crew.' + c.id + '.name" value="' + esc(c.name) + '" placeholder="Full name"><button class="iconbtn" data-act="crew-del" data-id="' + c.id + '" aria-label="Remove" style="color:var(--ink3)">' + ICON.x + '</button></div>' +
+        '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="sr" for="cr-' + c.id + '">Role</label><input id="cr-' + c.id + '" class="inp" data-bind="crew.' + c.id + '.role" value="' + esc(c.role) + '" placeholder="Role, e.g. operator" style="flex:1;min-width:140px">' +
+        '<button class="chip sm' + (c.trainee ? ' on' : '') + '" data-act="crew-trainee" data-id="' + c.id + '">Trainee</button>' +
+        '<button class="chip sm' + (c.here === false ? '' : ' on') + '" data-act="crew-here" data-id="' + c.id + '">' + (c.here === false ? 'Not here' : 'On location') + '</button></div></div>';
+    });
+    h += '</div>';
+    h += '<button class="btn btn-dash" data-act="crew-add">+ Add a crew member</button>';
+    var tr = j.crew.filter(function (c) { return c.trainee && c.here !== false; });
+    if (tr.length) {
+      h += '<div class="card pad" style="display:flex;flex-direction:column;gap:10px"><div class="label" style="padding:0">Mentoring · ' + esc(tr.map(function (c) { return c.name || 'trainee'; }).join(', ')) + '</div>';
+      h += inp('mentoring.topic', j.mentoring.topic, 'Today’s topic of instruction', 'What are we training on?');
+      h += inp('mentoring.why', j.mentoring.why, 'Why this topic', 'Why are we training on this?');
+      h += '</div>';
+    }
+    return h;
+  }
+  function w2(j) {
+    var h = '<div class="lead">In the real app the outgoing shift posts these at handoff and you confirm them. Here, type what the outgoing lead told you.</div>';
+    h += '<div class="card pad" style="display:flex;flex-direction:column;gap:12px">';
+    h += ta('handoff.status', j.handoff.status, 'Well status (pressure & rate / shut in / shut down)', 'e.g. Flowing on 18/64, 2,350 psi, ~85 bbl/hr');
+    h += ta('handoff.instructions', j.handoff.instructions, 'Instructions from the customer for this shift');
+    h += ta('handoff.plan', j.handoff.plan, 'Plan of action for this shift');
+    return h + '</div>';
+  }
+  function w3(j) {
+    var h = '<div style="font-size:17px;font-weight:600">Compared to yesterday, what’s different on this location?</div>';
+    h += '<div class="lead" style="font-size:14.5px">Your picks add hazards to the next step, marked NEW TODAY. Pick all that apply.</div>';
+    h += '<div class="chips">' + CONFIG.changes.map(function (c) { return '<button class="chip' + (j.changes.indexOf(c.id) >= 0 ? ' on' : '') + '" data-act="change" data-id="' + c.id + '">' + esc(c.label) + '</button>'; }).join('') + '</div>';
+    return h;
+  }
+  function w4(j) {
+    var p = prevOf(j);
+    var h = '<div class="lead">' + (p ? 'Carried over from the last JSA for this work type.' : 'A starting list for ' + esc(j.basics.workType) + '.') + ' Edit, remove or add, then tick each step that describes today’s work.</div>';
+    h += '<div class="card list">' + j.steps.map(function (s, i) {
+      return '<div style="display:flex;align-items:center;gap:8px;padding:10px 10px 10px 14px"><span class="mono" style="color:var(--ink3);font-size:13px;width:18px;flex:none">' + (i + 1) + '</span>' +
+        '<label class="sr" for="st-' + s.id + '">Step ' + (i + 1) + '</label><textarea id="st-' + s.id + '" class="inp" rows="2" data-bind="steps.' + s.id + '.text" style="min-height:48px">' + esc(s.text) + '</textarea>' +
+        '<button class="iconbtn" data-act="step-ok" data-id="' + s.id + '" aria-label="' + (s.ok ? 'Untick' : 'Tick') + ' step ' + (i + 1) + '">' + box(s.ok) + '</button>' +
+        '<button class="iconbtn" data-act="step-del" data-id="' + s.id + '" aria-label="Remove step ' + (i + 1) + '" style="color:var(--ink3);width:32px">' + ICON.x + '</button></div>';
+    }).join('') + '</div>';
+    h += '<button class="btn btn-dash" data-act="step-add">+ Add a step</button>';
+    return h;
+  }
+  function w5(j) {
+    var left = j.hazards.filter(function (h) { return !h.ok; }).length;
+    var h = '<div class="lead">For each hazard: is the control right, and who owns it? <b style="color:var(--ink)">' + (left ? left + ' left to confirm.' : 'All confirmed.') + '</b></div>';
+    var ppl = people(j);
+    j.hazards.forEach(function (z) {
+      h += '<div class="card pad' + (z.ok ? ' ok' : '') + '" style="display:flex;flex-direction:column;gap:10px">';
+      h += '<div class="hz-head"><label class="sr" for="hs-' + z.id + '">Applies to</label><select id="hs-' + z.id + '" class="inp" data-bind="hazards.' + z.id + '.step" style="min-height:38px;padding:4px 8px;font-size:14px;width:auto;flex:1">' +
+        '<option value="all"' + (z.step === 'all' ? ' selected' : '') + '>All steps</option>' + j.steps.map(function (s, i) { return '<option value="' + s.id + '"' + (z.step === s.id ? ' selected' : '') + '>Step ' + (i + 1) + ': ' + esc(s.text.slice(0, 34)) + (s.text.length > 34 ? '…' : '') + '</option>'; }).join('') + '</select>' +
+        (z.change ? '<span class="newtag">New today</span>' : '') +
+        '<button class="iconbtn" data-act="hz-del" data-id="' + z.id + '" aria-label="Remove hazard" style="color:var(--ink3);width:36px;height:36px">' + ICON.x + '</button></div>';
+      h += '<div class="field"><label for="hn-' + z.id + '">Hazard</label><input id="hn-' + z.id + '" class="inp" data-bind="hazards.' + z.id + '.name" value="' + esc(z.name) + '" placeholder="What could hurt someone?" style="font-weight:700"></div>';
+      h += '<div class="field"><label for="hc-' + z.id + '">Control</label><textarea id="hc-' + z.id + '" class="inp" rows="2" data-bind="hazards.' + z.id + '.control" placeholder="How we remove it, guard it, or work around it">' + esc(z.control) + '</textarea></div>';
+      h += '<div style="display:flex;gap:8px;align-items:center"><label class="sr" for="ho-' + z.id + '">Owner</label><select id="ho-' + z.id + '" class="inp" data-bind="hazards.' + z.id + '.owner" style="flex:1">' + ppl.map(function (p) { return '<option value="' + p.id + '"' + (z.owner === p.id ? ' selected' : '') + '>Owner: ' + esc(p.name || 'unnamed') + '</option>'; }).join('') + '</select>' +
+        '<button class="btn btn-sm ' + (z.ok ? 'btn-ghost' : 'btn-dark') + '" data-act="hz-ok" data-id="' + z.id + '" style="' + (z.ok ? 'color:var(--ok);border-color:var(--ok-rule);background:var(--ok-soft)' : '') + '">' + (z.ok ? 'Confirmed' : 'Confirm') + '</button></div>';
+      h += '</div>';
+    });
+    var have = j.hazards.map(function (z) { return z.name; });
+    var lib = CONFIG.library.filter(function (l) { return have.indexOf(l.name) < 0; });
+    h += '<button class="btn btn-dash" data-act="hz-add">+ Write a hazard we haven’t listed</button>';
+    if (lib.length) {
+      h += '<div class="label">Or add from the starting list</div><div class="chips">' + lib.map(function (l) { return '<button class="chip sm" data-act="hz-lib" data-id="' + esc(l.name) + '">+ ' + esc(l.name) + '</button>'; }).join('') + '</div>';
+    }
+    return h;
+  }
+  function w6(j) {
+    var h = '<div class="card pad" style="display:flex;flex-direction:column;gap:10px"><div class="label" style="padding:0">Wind now</div><div class="muted-note" style="padding:0">The real app pulls this from the weather service for the location’s GPS.</div>';
+    h += '<div class="grid2">' + inp('site.windDir', j.site.windDir, 'Blowing from', 'e.g. SW') + inp('site.windMph', j.site.windMph, 'Speed (mph)', 'e.g. 18', 'number') + '</div></div>';
+    h += '<div class="label">Muster point — pick the upwind one</div>';
+    h += '<div class="card list">' + j.site.musters.map(function (m) {
+      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px 8px 14px"><button class="iconbtn" data-act="muster" data-id="' + m.id + '" aria-label="Use this muster point"><span class="radio' + (j.site.muster === m.id ? ' on' : '') + '"></span></button>' +
+        '<label class="sr" for="mu-' + m.id + '">Muster point name</label><input id="mu-' + m.id + '" class="inp" data-bind="site.musters.' + m.id + '.name" value="' + esc(m.name) + '"></div>';
+    }).join('') + '</div>';
+    h += '<button class="btn btn-dash" data-act="muster-add">+ Add a muster point</button>';
+    h += '<div class="label">PPE for this job</div><div class="chips">' + CONFIG.ppe.concat(j.site.ppe.filter(function (p) { return CONFIG.ppe.indexOf(p) < 0; })).map(function (p) { return '<button class="chip sm' + (j.site.ppe.indexOf(p) >= 0 ? ' on' : '') + '" data-act="ppe" data-id="' + esc(p) + '">' + esc(p) + '</button>'; }).join('') + '</div>';
+    h += '<div style="display:flex;gap:8px"><label class="sr" for="ppe-new">Other PPE</label><input id="ppe-new" class="inp" data-ui="ppeNew" placeholder="Other PPE"><button class="btn btn-ghost btn-sm" data-act="ppe-add" style="height:48px">Add</button></div>';
+    return h;
+  }
+  function w7(j) {
+    var m = j.site.musters.filter(function (x) { return x.id === j.site.muster; })[0];
+    var rows = [
+      ['Job', j.basics.location + ' · ' + j.basics.workType + ' · ' + (j.basics.shift === 'night' ? 'Night' : 'Day')],
+      ['Changed', labelsFor(j.changes).join(', ') || 'Nothing'],
+      ['Steps', j.steps.length + ' steps'],
+      ['Hazards', j.hazards.length + ', each with a control and an owner'],
+      ['Muster', m ? m.name : '—'],
+      ['PPE', j.site.ppe.join(', ')],
+      ['Crew', people(j).map(function (p) { return p.name; }).join(', ')]
+    ];
+    var h = '<div class="lead">This is what your crew will read. When you sign, each of them accepts on their own phone. Anyone else on location signs on yours.</div>';
+    h += '<div class="card" style="padding:6px 0">' + rows.map(function (r) { return '<div style="display:flex;gap:12px;padding:9px 16px"><span style="width:76px;flex:none" class="k">' + r[0] + '</span><span style="flex:1;font-size:14.5px">' + esc(r[1]) + '</span></div>'; }).join('') + '</div>';
+    return h;
+  }
+
+  /* ---------- DETAIL (lead, after signing) ---------- */
+  function vDetail() {
+    var j = cur(); if (!j) { ui.view = 'home'; return vHome(); }
+    var h = header('JSA · ' + niceDate(j.basics.date) + ' · ' + (j.basics.shift === 'night' ? 'Night' : 'Day'), esc(j.basics.location), { back: 'home' });
+    h += '<div class="body">';
+    h += '<div class="banner ok">' + ICON.bigcheck + '<div><div style="font-weight:700;font-size:17px">Signed by ' + esc(j.basics.lead) + '</div><div style="font-size:14px">' + clock(j.signedAt) + ' · sent to crew</div></div></div>';
+    var crew = j.crew.filter(function (c) { return c.here !== false; });
+    h += '<div class="label">Crew</div>';
+    if (!crew.length) h += '<div class="muted-note">No crew on this JSA.</div>';
+    else h += '<div class="card list">' + crew.map(function (c) {
+      var a = j.accepts[c.id];
+      return '<div class="row" style="cursor:default"><span class="av">' + esc(initials(c.name)) + '</span><div class="grow"><div class="v">' + esc(c.name) + '</div><div class="sub">' + esc(c.role || '') + '</div></div>' + (a ? stChip('ok', 'Accepted') : '<button class="btn btn-ghost btn-sm" data-act="crew-open" data-id="' + j.id + '" data-crew="' + c.id + '">Open as ' + esc((c.name || '').split(' ')[0] || 'them') + '</button>') + '</div>';
+    }).join('') + '</div>';
+    if (crew.length) h += '<div class="muted-note">Test only: “Open as” stands in for that person opening it on their own phone.</div>';
+    if (j.concerns.length) {
+      h += '<div class="label" style="color:var(--warn)">Concerns raised</div><div class="card list">' + j.concerns.map(function (c) { return '<div style="padding:12px 16px"><div class="v">' + esc(c.by) + ' <span class="sub">· ' + clock(c.at) + '</span></div><div>' + esc(c.text) + '</div></div>'; }).join('') + '</div>';
+    }
+    if (j.comments.length) {
+      h += '<div class="label">Supervisor comments</div><div class="card list">' + j.comments.map(function (c) { var z = j.hazards.filter(function (x) { return x.id === c.hazard; })[0]; return '<div style="padding:12px 16px"><div class="sub">On “' + esc(z ? z.name : 'hazard') + '”</div><div>' + esc(c.text) + '</div></div>'; }).join('') + '</div>';
+    }
+    h += '<div class="label">Others on location · ' + j.visitors.length + '</div>';
+    h += '<div class="muted-note">Everyone who comes on location signs this JSA. Tap below and hand them your phone.</div>';
+    if (j.visitors.length) h += '<div class="card list">' + j.visitors.map(function (v) { return '<div class="row" style="cursor:default"><span class="av sq">' + esc(initials(v.company)) + '</span><div class="grow"><div class="v">' + esc(v.name) + '</div><div class="sub">' + esc(v.company) + (v.role ? ' · ' + esc(v.role) : '') + ' · signed ' + clock(v.at) + '</div></div></div>'; }).join('') + '</div>';
+    h += '<button class="btn btn-outline" data-act="vis-open">' + ICON.plus + ' Add someone on location</button>';
+    h += '<div class="label">Send it</div><div class="grid2"><button class="btn btn-ghost btn-sm" data-act="share-one" style="height:48px">Share as text</button><button class="btn btn-ghost btn-sm" data-act="dl-one" style="height:48px">Download</button></div>';
+    h += '<details class="card pad"><summary style="font-weight:700;cursor:pointer">See the whole JSA</summary><pre style="white-space:pre-wrap;font-family:inherit;font-size:13.5px;margin:10px 0 0">' + esc(jsaText(j)) + '</pre></details>';
+    return h + '</div>';
+  }
+
+  /* ---------- CREW ACCEPT ---------- */
+  function vCrew() {
+    var j = cur(); if (!j) { ui.view = 'home'; return vHome(); }
+    var me = j.crew.filter(function (c) { return c.id === ui.crewId; })[0];
+    if (!me) { ui.view = 'home'; return vHome(); }
+    var done = j.accepts[me.id];
+    var h = header('Viewing as ' + esc(me.name), 'Today’s JSA · ' + esc(j.basics.location), { back: ui.role === 'lead' ? 'to-detail' : 'home' });
+    h += '<div class="body">';
+    h += '<div style="display:flex;align-items:center;gap:10px;padding:0 4px"><span class="av" style="width:32px;height:32px;font-size:12px">' + esc(initials(j.basics.lead)) + '</span><span class="lead" style="font-size:14.5px">Written by <b style="color:var(--ink)">' + esc(j.basics.lead) + '</b> · signed ' + clock(j.signedAt) + '</span></div>';
+    if (done) h += '<div class="banner ok">' + ICON.bigcheck + '<div><div style="font-weight:700;font-size:17px">You accepted this JSA</div><div style="font-size:14px">' + clock(done) + '</div></div></div>';
+    var mineC = j.concerns.filter(function (c) { return c.by === me.name; });
+    mineC.forEach(function (c) { h += '<div class="banner warn" style="display:block"><div style="font-weight:700;color:var(--warn)">Concern sent to ' + esc(j.basics.lead) + '</div><div class="lead" style="font-size:14px">“' + esc(c.text) + '”</div></div>'; });
+    var ch = labelsFor(j.changes);
+    if (ch.length) h += '<div class="card pad"><div class="label" style="padding:0;color:var(--warn)">Different from yesterday</div><div class="v" style="margin-top:4px">' + esc(ch.join(' · ')) + '</div></div>';
+    var mine = j.hazards.filter(function (z) { return z.owner === me.id; });
+    var rest = j.hazards.filter(function (z) { return z.owner !== me.id; });
+    if (mine.length) {
+      h += '<div class="label">Assigned to you · tap each to confirm you’ve got it</div>';
+      mine.forEach(function (z) {
+        var on = done || ui.crewOk[z.id];
+        h += '<button class="card pad' + (on ? ' ok' : ' needs') + '" data-act="crew-ok" data-id="' + z.id + '" style="text-align:left;width:100%;display:flex;gap:12px;align-items:flex-start"><div class="grow" style="flex:1"><div class="sub" style="font-weight:600">' + esc(stepLabel(j, z.step)) + '</div><div class="v" style="font-weight:700;font-size:16.5px">' + esc(z.name) + '</div><div style="font-size:14.5px;color:#3A3942;margin-top:6px">' + esc(z.control) + '</div></div>' + box(on) + '</button>';
+      });
+    }
+    h += '<div class="label">' + (mine.length ? 'The rest of the hazards on location' : 'Hazards on location') + '</div>';
+    h += '<div class="card list">' + rest.map(function (z) { return '<div style="display:flex;gap:12px;padding:12px 16px"><span class="av" style="width:30px;height:30px;font-size:11px">' + esc(initials(personName(j, z.owner))) + '</span><div style="flex:1;min-width:0"><div style="font-weight:700">' + esc(z.name) + '</div><div style="font-size:13.5px;color:var(--ink2)">' + esc(z.control) + '</div></div></div>'; }).join('') + '</div>';
+    h += siteCards(j);
+    if (ui.concernOpen) {
+      h += '<div class="card pad" style="display:flex;flex-direction:column;gap:10px"><label for="concern" style="font-weight:700">What doesn’t look right?</label><textarea id="concern" class="inp" data-ui="concern" rows="3" placeholder="e.g. The sand trap is on the downwind side today">' + esc(ui.concern) + '</textarea><button class="btn btn-warn" data-act="concern-send">Send to ' + esc(j.basics.lead) + '</button></div>';
+    }
+    h += '</div>';
+    if (!done) {
+      var all = mine.every(function (z) { return ui.crewOk[z.id]; });
+      var left = mine.filter(function (z) { return !ui.crewOk[z.id]; }).length;
+      h += '<div class="footer solid"><button class="btn ' + (all ? 'btn-black' : 'btn-off') + '" data-act="crew-accept" style="height:56px">' + (all ? 'I’ve read this, I’m on location — I accept' : 'Confirm your ' + left + ' item' + (left === 1 ? '' : 's') + ' above') + '</button><button class="linkbtn" data-act="concern-open">Something’s wrong — raise a concern</button></div>';
+    }
+    return h;
+  }
+  function siteCards(j) {
+    var m = j.site.musters.filter(function (x) { return x.id === j.site.muster; })[0];
+    var h = '<div class="grid2"><div class="card pad" style="padding:12px 14px"><div class="k">Muster point</div><div style="font-weight:700">' + esc(m ? m.name : '—') + '</div></div>' +
+      '<div class="card pad" style="padding:12px 14px"><div class="k">Wind</div><div style="font-weight:700">' + esc((j.site.windDir ? 'From ' + j.site.windDir : '—') + (j.site.windMph ? ' · ' + j.site.windMph + ' mph' : '')) + '</div></div></div>';
+    h += '<div class="card pad" style="padding:12px 14px"><div class="k">PPE</div><div style="font-weight:600">' + esc(j.site.ppe.join(' · ')) + '</div></div>';
+    h += '<div class="card pad" style="padding:12px 14px"><div class="k">Nearest hospital</div><div style="font-weight:600">' + esc(j.basics.hospital) + '</div></div>';
+    return h;
+  }
+
+  /* ---------- VISITOR (hand the phone over) ---------- */
+  function vVisitor() {
+    var j = cur(); if (!j) { ui.view = 'home'; return vHome(); }
+    var v = ui.vis;
+    var h = '<div class="hdr" style="background:var(--vis)"><div class="hdr-row"><div class="hdr-title"><div class="eyebrow" style="color:#D3E0EE">Visitor sign-in · handed to you by ' + esc(j.basics.lead) + '</div><div class="h1">' + (ui.visDone ? 'Thanks — you’re signed' : 'Read our JSA, then sign') + '</div></div></div></div>';
+    h += '<div class="body">';
+    if (ui.visDone) {
+      var last = j.visitors[j.visitors.length - 1];
+      h += '<div class="banner ok">' + ICON.bigcheck + '<div><div style="font-weight:700;font-size:17px">' + esc(last.name) + ', ' + esc(last.company) + '</div><div style="font-size:14px">Verified ' + clock(last.at) + '</div></div></div>';
+      h += '<div class="lead">Hand the phone to the next person, or back to ' + esc(j.basics.lead) + '.</div>';
+      h += '<button class="btn btn-vis" data-act="vis-next">' + ICON.plus + ' Next person signs</button>';
+      h += '<button class="btn btn-ghost" data-act="vis-close">Done — back to ' + esc(j.basics.lead) + '</button>';
+      return h + '</div>';
+    }
+    h += '<div class="card pad"><div class="k">Hazards on this location</div>' + j.hazards.map(function (z) { return '<div style="padding:7px 0;border-bottom:1px solid var(--rule-soft)"><div style="font-weight:700;font-size:14.5px">' + esc(z.name) + '</div><div style="font-size:13px;color:var(--ink2)">' + esc(z.control) + '</div></div>'; }).join('') + '</div>';
+    h += siteCards(j);
+    h += '<div class="card pad" style="display:flex;flex-direction:column;gap:12px">';
+    h += '<div class="field"><label for="v-co">Your company</label><input id="v-co" class="inp" data-ui="vis.company" value="' + esc(v.company) + '" placeholder="Company name" autocomplete="organization"></div>';
+    h += '<div class="field"><label for="v-name">Your full name</label><input id="v-name" class="inp" data-ui="vis.name" value="' + esc(v.name) + '" placeholder="First and last name" autocomplete="name"></div>';
+    h += '<div class="field"><label for="v-role">What you’re here for (optional)</label><input id="v-role" class="inp" data-ui="vis.role" value="' + esc(v.role) + '" placeholder="e.g. company man, wireline, water hauler"></div>';
+    h += '</div>';
+    h += '<button class="card pad" data-act="vis-ok" style="display:flex;gap:12px;align-items:center;text-align:left;width:100%">' + box(v.ok) + '<span style="font-size:15px">I’ve reviewed this JSA, I understand the hazards and the muster point, and I’m on this location.</span></button>';
+    h += '</div>';
+    var ready = v.company.trim() && v.name.trim() && v.ok;
+    h += '<div class="footer solid" style="flex-direction:row"><button class="btn btn-ghost" data-act="vis-close" style="height:56px">Cancel</button><button class="btn ' + (ready ? 'btn-vis' : 'btn-off') + '" data-act="vis-sign" style="flex:1;height:56px">I verify and sign</button></div>';
+    return h;
+  }
+
+  /* ---------- SUPERVISOR REVIEW ---------- */
+  function vReview() {
+    var j = cur(); if (!j) { ui.view = 'home'; return vHome(); }
+    var s = status(j);
+    var h = header('Supervisor review · not a gate', esc(j.basics.location) + ' · ' + (j.basics.shift === 'night' ? 'Night' : 'Day'), { back: 'home' });
+    h += '<div class="body">';
+    h += '<div class="card pad" style="display:flex;align-items:center;gap:10px"><div style="flex:1"><div class="v">Lead ' + esc(j.basics.lead || '—') + '</div><div class="sub">' + (j.signedAt ? 'Signed ' + clock(j.signedAt) : 'Still a draft') + ' · ' + niceDate(j.basics.date) + '</div></div>' + stChip(s.kind, s.text) + '</div>';
+    var ch = labelsFor(j.changes);
+    h += '<div class="banner warn" style="display:block"><div class="label" style="padding:0;color:var(--warn)">Changed from yesterday</div><div class="v">' + esc(ch.length ? ch.join(' · ') : 'Nothing') + '</div></div>';
+    if (j.concerns.length) h += '<div class="card pad"><div class="label" style="padding:0;color:var(--warn)">Concerns from crew</div>' + j.concerns.map(function (c) { return '<div style="margin-top:6px"><b>' + esc(c.by) + ':</b> ' + esc(c.text) + '</div>'; }).join('') + '</div>';
+    h += '<div class="label">Hazards · tap the bubble to comment</div>';
+    j.hazards.forEach(function (z) {
+      var notes = j.comments.filter(function (c) { return c.hazard === z.id; });
+      h += '<div class="card pad" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;gap:8px;align-items:flex-start"><div style="flex:1;min-width:0"><div style="font-weight:700">' + esc(z.name) + (z.change ? ' <span class="newtag">New today</span>' : '') + '</div><div style="font-size:13.5px;color:var(--ink2)">' + esc(z.control) + ' · <b style="color:var(--ink)">' + esc(personName(j, z.owner)) + '</b></div></div>' +
+        '<button class="iconbtn" data-act="cmt-open" data-id="' + z.id + '" aria-label="Comment on this hazard" style="border:1px solid var(--rule);width:40px;height:40px;color:var(--ink2)">' + ICON.chat + '</button></div>';
+      notes.forEach(function (c) { h += '<div style="border-radius:10px;background:#F4F4F6;padding:8px 10px;font-size:13.5px"><b>You:</b> ' + esc(c.text) + ' <span class="sub">· sent to ' + esc(j.basics.lead) + '</span></div>'; });
+      if (ui.commentFor === z.id) h += '<div style="display:flex;gap:8px"><label class="sr" for="cmt">Comment</label><input id="cmt" class="inp" data-ui="comment" value="' + esc(ui.comment) + '" placeholder="Note to ' + esc(j.basics.lead || 'the lead') + '…"><button class="btn btn-dark btn-sm" data-act="cmt-send" style="height:48px">Send</button></div>';
+      h += '</div>';
+    });
+    h += '<div class="label">Signatures</div><div class="card list">' + people(j).map(function (p) {
+      var at = p.id === 'lead' ? j.signedAt : j.accepts[p.id];
+      return '<div class="row" style="cursor:default"><span class="av">' + esc(initials(p.name)) + '</span><div class="grow"><div class="v">' + esc(p.name) + '</div></div>' + (at ? stChip('ok', clock(at)) : stChip('warn', 'Pending')) + '</div>';
+    }).join('') + j.visitors.map(function (v) { return '<div class="row" style="cursor:default"><span class="av sq">' + esc(initials(v.company)) + '</span><div class="grow"><div class="v">' + esc(v.name) + '</div><div class="sub">' + esc(v.company) + (v.role ? ' · ' + esc(v.role) : '') + '</div></div>' + stChip('ok', clock(v.at)) + '</div>'; }).join('') + '</div>';
+    return h + '</div>';
+  }
+
+  /* ---------- FEEDBACK / EXPORT ---------- */
+  function vFeedback() {
+    var h = header('<span class="pill pill-test">TEST BUILD</span>', 'Test notes & export', { back: 'home' });
+    h += '<div class="body">';
+    h += '<div class="lead">Write down anything that slowed you down, didn’t make sense, or is missing. It saves as you type.</div>';
+    h += '<div class="card pad"><label class="sr" for="notes">Your notes</label><textarea id="notes" class="inp" data-ui="notes" rows="8" placeholder="e.g. Step 6 needs a place for the H2S monitor bump test">' + esc(mem.notes) + '</textarea></div>';
+    h += '<button class="btn btn-dark" data-act="share-all">Share notes + all JSAs</button>';
+    h += '<button class="btn btn-ghost" data-act="dl-all">Download as a text file</button>';
+    h += '<div class="muted-note">' + mem.jsas.length + ' JSA' + (mem.jsas.length === 1 ? '' : 's') + ' saved on this phone.</div>';
+    h += '<button class="linkbtn quiet" data-act="wipe" style="align-self:flex-start">Clear everything on this phone</button>';
+    return h + '</div>';
+  }
+  function allText() {
+    var parts = ['FIELD JSA TEST BUILD — TESTER NOTES', '', mem.notes || '(no notes)', ''];
+    mem.jsas.forEach(function (j, i) { parts.push('==================== JSA ' + (i + 1) + ' ===================='); parts.push(jsaText(j)); parts.push(''); });
+    return parts.join('\n');
+  }
+
+  /* =====================================================================
+     EVENTS (delegated — no inline handlers)
+     ===================================================================== */
+  function setPath(j, path, val) {
+    var seg = path.split('.'), o = j;
+    for (var i = 0; i < seg.length - 1; i++) {
+      var k = seg[i];
+      if (Array.isArray(o)) { o = o.filter(function (x) { return x.id === k; })[0]; }
+      else o = o[k];
+      if (!o) return;
+    }
+    var last = seg[seg.length - 1];
+    if (Array.isArray(o)) return;
+    o[last] = val;
+  }
+
+  app.addEventListener('input', function (e) {
+    var t = e.target;
+    var b = t.getAttribute('data-bind');
+    if (b) {
+      var j = cur(); if (!j) return;
+      setPath(j, b, t.value); save();
+      if (b === 'basics.lead' || b.indexOf('crew.') === 0 || b === 'basics.date' || b === 'basics.location') softRefreshFooter();
+      return;
+    }
+    var u = t.getAttribute('data-ui');
+    if (u === 'notes') { mem.notes = t.value; save(); return; }
+    if (u === 'concern') { ui.concern = t.value; return; }
+    if (u === 'comment') { ui.comment = t.value; return; }
+    if (u && u.indexOf('vis.') === 0) { ui.vis[u.slice(4)] = t.value; softRefreshFooter(); return; }
+  });
+  app.addEventListener('change', function (e) {
+    var t = e.target, b = t.getAttribute('data-bind');
+    if (b && t.tagName === 'SELECT') { var j = cur(); if (j) { setPath(j, b, t.value); save(); render(); } }
+  });
+  /* Re-render only the footer state without stealing focus from a text field */
+  function softRefreshFooter() {
+    var j = cur();
+    if (ui.view === 'wizard' && j) {
+      var btn = app.querySelector('[data-act="wiz-next"]'); if (!btn) return;
+      var ready = stepReady(j, ui.step);
+      var labels = ['Everything is correct', 'Crew is right', 'Handoff matches', 'Next', 'Steps are right', 'Next', 'Next', 'Sign and send to crew'];
+      btn.className = 'btn ' + (ready ? (ui.step === 7 ? 'btn-black' : 'btn-dark') : 'btn-off');
+      btn.textContent = ready ? labels[ui.step] : stepBlock(j, ui.step);
+    }
+    if (ui.view === 'visitor' && ui.vis) {
+      var vb = app.querySelector('[data-act="vis-sign"]'); if (!vb) return;
+      var ok = ui.vis.company.trim() && ui.vis.name.trim() && ui.vis.ok;
+      vb.className = 'btn ' + (ok ? 'btn-vis' : 'btn-off');
+    }
+  }
+
+  app.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-act]'); if (!el) return;
+    var act = el.getAttribute('data-act'), id = el.getAttribute('data-id');
+    var j = cur();
+    switch (act) {
+      case 'role': ui.role = id; ui.view = 'home'; break;
+      case 'home': ui.view = 'home'; ui.concernOpen = false; ui.commentFor = null; break;
+      case 'go-feedback': ui.view = 'feedback'; break;
+      case 'new': j = newJsa(); ui.id = j.id; ui.step = 0; ui.view = 'wizard'; window.scrollTo(0, 0); break;
+      case 'sample': loadSample(); ui.view = 'home'; toast('Example loaded'); return;
+      case 'open': ui.id = id; j = cur(); if (j.signedAt) { ui.view = 'detail'; } else { ui.view = 'wizard'; ui.step = 0; } window.scrollTo(0, 0); break;
+      case 'wiz-back': if (ui.step > 0) ui.step--; else ui.view = 'home'; window.scrollTo(0, 0); break;
+      case 'wiz-next':
+        if (!stepReady(j, ui.step)) { toast(stepBlock(j, ui.step)); return; }
+        if (ui.step === 7) { j.signedAt = Date.now(); save(); ui.view = 'detail'; window.scrollTo(0, 0); break; }
+        ui.step++;
+        if (ui.step === 4) seedSteps(j);
+        if (ui.step === 5) seedHazards(j);
+        window.scrollTo(0, 0); break;
+      case 'worktype': j.basics.workType = id; if (!j.signedAt) { j.stepsSeeded = false; j.hzSeeded = false; } save(); break;
+      case 'crew-add': j.crew.push({ id: uid(), name: '', role: 'Operator', trainee: false, here: true }); save(); break;
+      case 'crew-del': j.crew = j.crew.filter(function (c) { return c.id !== id; }); j.hazards.forEach(function (z) { if (z.owner === id) z.owner = 'lead'; }); save(); break;
+      case 'crew-trainee': j.crew.forEach(function (c) { if (c.id === id) c.trainee = !c.trainee; }); save(); break;
+      case 'crew-here': j.crew.forEach(function (c) { if (c.id === id) c.here = c.here === false; }); save(); break;
+      case 'change':
+        if (id === 'none') j.changes = j.changes.indexOf('none') >= 0 ? [] : ['none'];
+        else { j.changes = j.changes.filter(function (c) { return c !== 'none'; }); var k = j.changes.indexOf(id); if (k >= 0) j.changes.splice(k, 1); else j.changes.push(id); }
+        save(); break;
+      case 'step-ok': j.steps.forEach(function (s) { if (s.id === id) s.ok = !s.ok; }); save(); break;
+      case 'step-del': j.steps = j.steps.filter(function (s) { return s.id !== id; }); j.hazards.forEach(function (z) { if (z.step === id) z.step = 'all'; }); save(); break;
+      case 'step-add': j.steps.push({ id: uid(), text: '', ok: false }); save(); render(); var ins = app.querySelectorAll('[data-bind^="steps."]'); if (ins.length) ins[ins.length - 1].focus(); return;
+      case 'hz-ok': j.hazards.forEach(function (z) { if (z.id === id) z.ok = !z.ok; }); save(); break;
+      case 'hz-del': j.hazards = j.hazards.filter(function (z) { return z.id !== id; }); save(); break;
+      case 'hz-add': j.hazards.push({ id: uid(), step: 'all', name: '', control: '', owner: 'lead', ok: false }); save(); render(); var hz = app.querySelectorAll('[data-bind$=".name"][data-bind^="hazards."]'); if (hz.length) hz[hz.length - 1].focus(); return;
+      case 'hz-lib': var l = CONFIG.library.filter(function (x) { return x.name === id; })[0]; if (l) j.hazards.push({ id: uid(), step: 'all', name: l.name, control: l.control, owner: 'lead', ok: false }); save(); break;
+      case 'muster': j.site.muster = id; save(); break;
+      case 'muster-add': j.site.musters.push({ id: uid(), name: '' }); save(); break;
+      case 'ppe': var pi = j.site.ppe.indexOf(id); if (pi >= 0) j.site.ppe.splice(pi, 1); else j.site.ppe.push(id); save(); break;
+      case 'ppe-add': var pf = app.querySelector('[data-ui="ppeNew"]'); var pv = pf && pf.value.trim(); if (pv && j.site.ppe.indexOf(pv) < 0) { j.site.ppe.push(pv); save(); } break;
+      case 'to-detail': ui.view = 'detail'; ui.concernOpen = false; break;
+      case 'crew-open': ui.id = id; ui.crewId = el.getAttribute('data-crew'); ui.crewOk = {}; ui.concernOpen = false; ui.concern = ''; ui.view = 'crew'; window.scrollTo(0, 0); break;
+      case 'crew-ok': if (!j.accepts[ui.crewId]) ui.crewOk[id] = !ui.crewOk[id]; break;
+      case 'crew-accept':
+        var mineH = j.hazards.filter(function (z) { return z.owner === ui.crewId; });
+        if (!mineH.every(function (z) { return ui.crewOk[z.id]; })) { toast('Confirm your items first'); return; }
+        j.accepts[ui.crewId] = Date.now(); save(); window.scrollTo(0, 0); break;
+      case 'concern-open': ui.concernOpen = true; render(); var cf = app.querySelector('[data-ui="concern"]'); if (cf) cf.focus(); return;
+      case 'concern-send':
+        if (!ui.concern.trim()) { toast('Write the concern first'); return; }
+        var me = j.crew.filter(function (c) { return c.id === ui.crewId; })[0];
+        j.concerns.push({ by: me ? me.name : 'Crew', text: ui.concern.trim(), at: Date.now() }); ui.concern = ''; ui.concernOpen = false; save(); break;
+      case 'vis-open': case 'vis-next': ui.vis = { company: '', name: '', role: '', ok: false }; ui.visDone = false; ui.view = 'visitor'; window.scrollTo(0, 0); break;
+      case 'vis-ok': ui.vis.ok = !ui.vis.ok; break;
+      case 'vis-sign':
+        if (!(ui.vis.company.trim() && ui.vis.name.trim() && ui.vis.ok)) { toast('Company, name and the box above'); return; }
+        j.visitors.push({ company: ui.vis.company.trim(), name: ui.vis.name.trim(), role: ui.vis.role.trim(), at: Date.now() }); save(); ui.visDone = true; window.scrollTo(0, 0); break;
+      case 'vis-close': ui.view = 'detail'; window.scrollTo(0, 0); break;
+      case 'review-open': ui.id = id; ui.commentFor = null; ui.view = 'review'; window.scrollTo(0, 0); break;
+      case 'cmt-open': ui.commentFor = ui.commentFor === id ? null : id; ui.comment = ''; render(); var ci = app.querySelector('[data-ui="comment"]'); if (ci) ci.focus(); return;
+      case 'cmt-send': if (!ui.comment.trim()) return; j.comments.push({ hazard: ui.commentFor, text: ui.comment.trim(), at: Date.now() }); ui.comment = ''; ui.commentFor = null; save(); break;
+      case 'share-one': shareText('JSA ' + j.basics.location, jsaText(j)); return;
+      case 'dl-one': download('JSA-' + j.basics.date + '-' + (j.basics.location || 'location').replace(/[^a-z0-9]+/gi, '-') + '.txt', jsaText(j)); return;
+      case 'share-all': shareText('Field JSA test notes', allText()); return;
+      case 'dl-all': download('field-jsa-test-' + today() + '.txt', allText()); return;
+      case 'wipe':
+        if (el.getAttribute('data-armed') !== '1') { el.setAttribute('data-armed', '1'); el.textContent = 'Tap again to clear everything'; return; }
+        mem = { jsas: [], notes: '' }; save(); ui.view = 'home'; toast('Cleared'); return;
+    }
+    render();
+  });
+
+  /* live countdown in the wizard header */
+  setInterval(function () {
+    if (ui.view !== 'wizard') return;
+    var j = cur(); var el = app.querySelector('[data-countdown]');
+    if (j && el) el.textContent = countdown(j);
+  }, 1000);
+
+  /* ---------- example ---------- */
+  function loadSample() {
+    var crew = [{ id: uid(), name: 'Sam Ortiz', role: 'Operator', trainee: false, here: true }, { id: uid(), name: 'Dee Walker', role: 'Operator (trainee)', trainee: true, here: true }];
+    var steps = CONFIG.stepTemplates.Flowback.map(function (t) { return { id: uid(), text: t, ok: true }; });
+    var j = {
+      id: uid(), created: Date.now(), signedAt: Date.now() - 20 * 60000,
+      basics: { customer: '[Example customer]', location: 'Pad A · Well 2H', gps: '00.0000, −00.0000', date: today(), shift: 'day', workType: 'Flowback', hospital: '[Nearest hospital], [City]', lead: 'Pat Example', supervisor: 'Morgan Example' },
+      crew: crew, mentoring: { topic: 'Reading a choke', why: 'Dee runs chokes solo next hitch' },
+      handoff: { status: 'Flowing on 18/64, 2,350 psi, ~85 bbl/hr, sand light', instructions: 'Hold the choke until the company man says otherwise. Report any swing over 200 psi.', plan: 'Keep flowing. Sand trap dumps every 2 hrs. Swap tank at ~80%.' },
+      changes: ['wx', 'crew'], steps: steps, stepsSeeded: true, hzSeeded: true,
+      hazards: [
+        { id: uid(), step: 'all', name: CONFIG.changeHazards.wx.name, control: CONFIG.changeHazards.wx.control, owner: 'lead', ok: true, change: 'wx' },
+        { id: uid(), step: 'all', name: CONFIG.changeHazards.crew.name, control: CONFIG.changeHazards.crew.control, owner: 'lead', ok: true, change: 'crew' },
+        { id: uid(), step: steps[1].id, name: CONFIG.library[0].name, control: CONFIG.library[0].control, owner: 'lead', ok: true },
+        { id: uid(), step: steps[3].id, name: CONFIG.library[1].name, control: CONFIG.library[1].control, owner: crew[0].id, ok: true },
+        { id: uid(), step: steps[2].id, name: CONFIG.library[4].name, control: CONFIG.library[4].control, owner: crew[0].id, ok: true },
+        { id: uid(), step: steps[4].id, name: CONFIG.library[2].name, control: CONFIG.library[2].control, owner: crew[1].id, ok: true }
+      ],
+      site: { windDir: 'SW', windMph: '18', musters: [{ id: 'mA', name: 'A · Lease road entrance (upwind today)' }, { id: 'mB', name: 'B · Far fence line' }], muster: 'mA', ppe: CONFIG.ppeDefault.slice() },
+      accepts: {}, concerns: [], visitors: [], comments: [], prevId: null
+    };
+    j.accepts[crew[0].id] = Date.now() - 12 * 60000;
+    mem.jsas.push(j); save();
+  }
+
+  load();
+  render();
+})();
+</script>
+</body>
+</html>
