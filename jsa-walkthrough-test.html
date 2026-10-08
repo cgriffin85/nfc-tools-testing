@@ -108,7 +108,7 @@ button{cursor:pointer}
 .pill-test{background:#F2CC4E;color:#1A1A1A}
 .iconbtn{width:44px;height:44px;border:0;background:none;color:inherit;display:flex;align-items:center;justify-content:center;padding:0;border-radius:999px;flex:none}
 .roles{display:flex;gap:2px;padding:4px;border-radius:999px;background:var(--charcoal2);margin-top:10px}
-.roles button{flex:1;height:40px;border:0;border-radius:999px;background:transparent;color:#E4E2E8;font-weight:600;font-size:15px}
+.roles button{flex:1;height:44px;border:0;border-radius:999px;background:transparent;color:#E4E2E8;font-weight:600;font-size:15px}
 .roles button.on{background:#fff;color:var(--ink)}
 .segs{display:grid;gap:4px;margin-top:10px}
 .seg{height:5px;border-radius:999px;background:var(--charcoal3)}
@@ -136,7 +136,7 @@ textarea.inp{resize:vertical;min-height:72px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{min-height:44px;padding:0 16px;border-radius:999px;font-size:15px;font-weight:600;background:#fff;color:var(--ink);border:1px solid var(--rule)}
 .chip.on{background:var(--charcoal);color:#fff;border-color:var(--charcoal)}
-.chip.sm{min-height:38px;font-size:14px;padding:0 12px}
+.chip.sm{min-height:44px;font-size:14.5px;padding:0 12px}
 .btn{height:52px;border-radius:999px;border:0;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 18px;text-decoration:none}
 .btn-dark{background:var(--charcoal);color:#fff}
 .btn-black{background:#1A1A1A;color:#fff}
@@ -146,8 +146,8 @@ textarea.inp{resize:vertical;min-height:72px}
 .btn-outline{background:#fff;color:var(--ink);border:2px solid var(--charcoal)}
 .btn-dash{background:#F8F7F5;color:var(--ink);border:1px dashed #A9A7AE;height:46px;font-weight:600;font-size:15px}
 .btn-off{background:#DCDAD6;color:var(--ink3)}
-.btn-sm{height:40px;font-size:14.5px;padding:0 14px}
-.linkbtn{border:0;background:none;color:var(--warn);font-weight:700;height:40px}
+.btn-sm{height:44px;font-size:14.5px;padding:0 14px}
+.linkbtn{border:0;background:none;color:var(--warn);font-weight:700;min-height:44px}
 .linkbtn.quiet{color:var(--ink3);font-weight:600}
 .footer{position:sticky;bottom:0;padding:12px 12px calc(env(safe-area-inset-bottom) + 14px);background:linear-gradient(rgba(242,240,237,0),var(--ground) 28%);display:flex;flex-direction:column;gap:6px;z-index:4}
 .footer.solid{background:#fff;border-top:1px solid var(--rule)}
@@ -211,9 +211,14 @@ textarea.inp{resize:vertical;min-height:72px}
   function stChip(kind, text) { return '<span class="st st-' + kind + '">' + esc(text) + '</span>'; }
 
   /* ---------- UI state (not saved) ---------- */
-  var ui = { role: 'lead', view: 'home', id: null, step: 0, crewId: null, crewOk: {}, concernOpen: false, concern: '', commentFor: null, comment: '', vis: null, visDone: false, toast: '' };
+  var ui = { role: 'lead', view: 'home', id: null, step: 0, crewId: null, crewOk: {}, concernOpen: false, concern: '', commentFor: null, comment: '', vis: null, visDone: false, ppeNew: '' };
   var toastTimer = null;
-  function toast(msg) { ui.toast = msg; render(); clearTimeout(toastTimer); toastTimer = setTimeout(function () { ui.toast = ''; render(); }, 2200); }
+  function toast(msg) {
+    var old = document.getElementById('toast'); if (old) old.parentNode.removeChild(old);
+    var t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg;
+    document.body.appendChild(t);
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 2600);
+  }
 
   function cur() { for (var i = 0; i < mem.jsas.length; i++) if (mem.jsas[i].id === ui.id) return mem.jsas[i]; return null; }
 
@@ -266,6 +271,7 @@ textarea.inp{resize:vertical;min-height:72px}
       j.hazards = base.map(function (h) { return { id: uid(), step: 'all', name: h.name, control: h.control, owner: h.owner, ok: false }; });
       j.hzSeeded = true;
     }
+    j.hazards.forEach(function (h) { h.owner = validOwner(j, h.owner); });
     /* keep change-driven hazards in sync with today's picks */
     j.hazards = j.hazards.filter(function (h) { return !h.change || j.changes.indexOf(h.change) >= 0; });
     j.changes.forEach(function (c) {
@@ -282,19 +288,20 @@ textarea.inp{resize:vertical;min-height:72px}
 
   function stepReady(j, n) {
     switch (n) {
-      case 0: return !!(j.basics.lead.trim() && j.basics.location.trim() && j.basics.workType);
-      case 1: return true;
+      case 0: return !!(j.basics.lead.trim() && j.basics.location.trim() && j.basics.workType && j.basics.date);
+      case 1: return j.crew.every(function (c) { return c.name.trim(); });
       case 2: return true;
       case 3: return j.changes.length > 0;
       case 4: return j.steps.length > 0 && j.steps.every(function (s) { return s.ok && s.text.trim(); });
-      case 5: return j.hazards.length > 0 && j.hazards.every(function (h) { return h.ok && h.name.trim() && h.control.trim(); });
+      case 5: return j.hazards.length > 0 && j.hazards.every(function (h) { return h.ok && h.name.trim() && h.control.trim() && people(j).some(function (p) { return p.id === h.owner; }); });
       case 6: return !!j.site.muster;
       default: return true;
     }
   }
   function stepBlock(j, n) {
     switch (n) {
-      case 0: return !j.basics.lead.trim() ? 'Enter the shift lead' : 'Fill in the location';
+      case 0: return !j.basics.lead.trim() ? 'Enter the shift lead' : (!j.basics.location.trim() ? 'Fill in the location' : 'Pick the date');
+      case 1: return 'Every crew member needs a name';
       case 3: return 'Pick at least one';
       case 4: var a = j.steps.filter(function (s) { return !s.ok; }).length; return a ? 'Tick ' + a + ' more step' + (a === 1 ? '' : 's') : 'Fill in every step';
       case 5: var b = j.hazards.filter(function (h) { return !h.ok; }).length; return j.hazards.length === 0 ? 'Add at least one hazard' : (b ? b + ' hazard' + (b === 1 ? '' : 's') + ' to confirm' : 'Every hazard needs a name and a control');
@@ -308,8 +315,10 @@ textarea.inp{resize:vertical;min-height:72px}
     return new Date(+p[0], +p[1] - 1, +p[2], +hm[0], +hm[1]).getTime();
   }
   function countdown(j) {
-    var left = shiftDeadline(j) - Date.now();
-    if (left <= 0) return 'Past shift start';
+    var dl = shiftDeadline(j);
+    if (isNaN(dl)) return '';
+    var left = dl - Date.now();
+    if (left <= 0) return 'Shift started ' + clock(dl);
     var h = Math.floor(left / 3600000), m = Math.floor((left % 3600000) / 60000), s = Math.floor((left % 60000) / 1000);
     return (h ? h + ':' + pad(m) : pad(m)) + ':' + pad(s) + ' to shift start';
   }
@@ -369,7 +378,7 @@ textarea.inp{resize:vertical;min-height:72px}
   function stepLabel(j, sid) { if (sid === 'all') return 'All steps'; for (var i = 0; i < j.steps.length; i++) if (j.steps[i].id === sid) return 'Step ' + (i + 1); return 'All steps'; }
 
   function shareText(title, text) {
-    if (navigator.share) { navigator.share({ title: title, text: text }).catch(function () {}); return; }
+    if (navigator.share) { navigator.share({ title: title, text: text }).catch(function (err) { if (!err || err.name !== 'AbortError') copyText(text); }); return; }
     copyText(text);
   }
   function copyText(text) {
@@ -379,10 +388,13 @@ textarea.inp{resize:vertical;min-height:72px}
     fallbackCopy(text);
   }
   function fallbackCopy(text) {
-    var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
-    try { document.execCommand('copy'); toast('Copied — paste it into a text or email'); } catch (e) { toast('Could not copy on this phone'); }
+    var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.opacity = '0'; ta.style.fontSize = '16px';
+    document.body.appendChild(ta); ta.focus(); ta.select(); try { ta.setSelectionRange(0, text.length); } catch (e) {}
+    var ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    toast(ok ? 'Copied — paste it into a text or email' : 'Couldn’t copy on this phone. Use Share instead.');
     document.body.removeChild(ta);
   }
+  function isStandalone() { try { return window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches; } catch (e) { return false; } }
   function download(name, text) {
     try {
       var a = document.createElement('a');
@@ -407,7 +419,6 @@ textarea.inp{resize:vertical;min-height:72px}
       case 'feedback': html = vFeedback(); break;
       default: html = vHome();
     }
-    if (ui.toast) html += '<div class="toast" role="status">' + esc(ui.toast) + '</div>';
     app.innerHTML = html;
     restoreFocus(keep);
   }
@@ -558,12 +569,13 @@ textarea.inp{resize:vertical;min-height:72px}
   }
   function w4(j) {
     var p = prevOf(j);
-    var h = '<div class="lead">' + (p ? 'Carried over from the last JSA for this work type.' : 'A starting list for ' + esc(j.basics.workType) + '.') + ' Edit, remove or add, then tick each step that describes today’s work.</div>';
+    var carried = p && p.basics.workType === j.basics.workType && p.steps.length;
+    var h = '<div class="lead">' + (carried ? 'Carried over from your last ' + esc(j.basics.workType) + ' JSA.' : 'A starting list for ' + esc(j.basics.workType) + '.') + ' Edit, remove or add, then tick each step that describes today’s work.</div>';
     h += '<div class="card list">' + j.steps.map(function (s, i) {
       return '<div style="display:flex;align-items:center;gap:8px;padding:10px 10px 10px 14px"><span class="mono" style="color:var(--ink3);font-size:13px;width:18px;flex:none">' + (i + 1) + '</span>' +
         '<label class="sr" for="st-' + s.id + '">Step ' + (i + 1) + '</label><textarea id="st-' + s.id + '" class="inp" rows="2" data-bind="steps.' + s.id + '.text" style="min-height:48px">' + esc(s.text) + '</textarea>' +
         '<button class="iconbtn" data-act="step-ok" data-id="' + s.id + '" aria-label="' + (s.ok ? 'Untick' : 'Tick') + ' step ' + (i + 1) + '">' + box(s.ok) + '</button>' +
-        '<button class="iconbtn" data-act="step-del" data-id="' + s.id + '" aria-label="Remove step ' + (i + 1) + '" style="color:var(--ink3);width:32px">' + ICON.x + '</button></div>';
+        '<button class="iconbtn" data-act="step-del" data-id="' + s.id + '" aria-label="Remove step ' + (i + 1) + '" style="color:var(--ink3)">' + ICON.x + '</button></div>';
     }).join('') + '</div>';
     h += '<button class="btn btn-dash" data-act="step-add">+ Add a step</button>';
     return h;
@@ -574,10 +586,10 @@ textarea.inp{resize:vertical;min-height:72px}
     var ppl = people(j);
     j.hazards.forEach(function (z) {
       h += '<div class="card pad' + (z.ok ? ' ok' : '') + '" style="display:flex;flex-direction:column;gap:10px">';
-      h += '<div class="hz-head"><label class="sr" for="hs-' + z.id + '">Applies to</label><select id="hs-' + z.id + '" class="inp" data-bind="hazards.' + z.id + '.step" style="min-height:38px;padding:4px 8px;font-size:14px;width:auto;flex:1">' +
+      h += '<div class="hz-head"><label class="sr" for="hs-' + z.id + '">Applies to</label><select id="hs-' + z.id + '" class="inp" data-bind="hazards.' + z.id + '.step" style="min-height:44px;padding:4px 8px;font-size:16px;width:auto;flex:1;min-width:0">' +
         '<option value="all"' + (z.step === 'all' ? ' selected' : '') + '>All steps</option>' + j.steps.map(function (s, i) { return '<option value="' + s.id + '"' + (z.step === s.id ? ' selected' : '') + '>Step ' + (i + 1) + ': ' + esc(s.text.slice(0, 34)) + (s.text.length > 34 ? '…' : '') + '</option>'; }).join('') + '</select>' +
         (z.change ? '<span class="newtag">New today</span>' : '') +
-        '<button class="iconbtn" data-act="hz-del" data-id="' + z.id + '" aria-label="Remove hazard" style="color:var(--ink3);width:36px;height:36px">' + ICON.x + '</button></div>';
+        '<button class="iconbtn" data-act="hz-del" data-id="' + z.id + '" aria-label="Remove hazard" style="color:var(--ink3)">' + ICON.x + '</button></div>';
       h += '<div class="field"><label for="hn-' + z.id + '">Hazard</label><input id="hn-' + z.id + '" class="inp" data-bind="hazards.' + z.id + '.name" value="' + esc(z.name) + '" placeholder="What could hurt someone?" style="font-weight:700"></div>';
       h += '<div class="field"><label for="hc-' + z.id + '">Control</label><textarea id="hc-' + z.id + '" class="inp" rows="2" data-bind="hazards.' + z.id + '.control" placeholder="How we remove it, guard it, or work around it">' + esc(z.control) + '</textarea></div>';
       h += '<div style="display:flex;gap:8px;align-items:center"><label class="sr" for="ho-' + z.id + '">Owner</label><select id="ho-' + z.id + '" class="inp" data-bind="hazards.' + z.id + '.owner" style="flex:1">' + ppl.map(function (p) { return '<option value="' + p.id + '"' + (z.owner === p.id ? ' selected' : '') + '>Owner: ' + esc(p.name || 'unnamed') + '</option>'; }).join('') + '</select>' +
@@ -602,7 +614,7 @@ textarea.inp{resize:vertical;min-height:72px}
     }).join('') + '</div>';
     h += '<button class="btn btn-dash" data-act="muster-add">+ Add a muster point</button>';
     h += '<div class="label">PPE for this job</div><div class="chips">' + CONFIG.ppe.concat(j.site.ppe.filter(function (p) { return CONFIG.ppe.indexOf(p) < 0; })).map(function (p) { return '<button class="chip sm' + (j.site.ppe.indexOf(p) >= 0 ? ' on' : '') + '" data-act="ppe" data-id="' + esc(p) + '">' + esc(p) + '</button>'; }).join('') + '</div>';
-    h += '<div style="display:flex;gap:8px"><label class="sr" for="ppe-new">Other PPE</label><input id="ppe-new" class="inp" data-ui="ppeNew" placeholder="Other PPE"><button class="btn btn-ghost btn-sm" data-act="ppe-add" style="height:48px">Add</button></div>';
+    h += '<div style="display:flex;gap:8px"><label class="sr" for="ppe-new">Other PPE</label><input id="ppe-new" class="inp" data-ui="ppeNew" value="' + esc(ui.ppeNew) + '" placeholder="Other PPE"><button class="btn btn-ghost btn-sm" data-act="ppe-add" style="height:48px">Add</button></div>';
     return h;
   }
   function w7(j) {
@@ -616,7 +628,7 @@ textarea.inp{resize:vertical;min-height:72px}
       ['PPE', j.site.ppe.join(', ')],
       ['Crew', people(j).map(function (p) { return p.name; }).join(', ')]
     ];
-    var h = '<div class="lead">This is what your crew will read. When you sign, each of them accepts on their own phone. Anyone else on location signs on yours.</div>';
+    var h = '<div class="lead">This is what your crew will read. When you sign, each of them reads and accepts it (in the real app, on their own phone). Anyone else on location signs on yours.</div>';
     h += '<div class="card" style="padding:6px 0">' + rows.map(function (r) { return '<div style="display:flex;gap:12px;padding:9px 16px"><span style="width:76px;flex:none" class="k">' + r[0] + '</span><span style="flex:1;font-size:14.5px">' + esc(r[1]) + '</span></div>'; }).join('') + '</div>';
     return h;
   }
@@ -645,7 +657,7 @@ textarea.inp{resize:vertical;min-height:72px}
     h += '<div class="muted-note">Everyone who comes on location signs this JSA. Tap below and hand them your phone.</div>';
     if (j.visitors.length) h += '<div class="card list">' + j.visitors.map(function (v) { return '<div class="row" style="cursor:default"><span class="av sq">' + esc(initials(v.company)) + '</span><div class="grow"><div class="v">' + esc(v.name) + '</div><div class="sub">' + esc(v.company) + (v.role ? ' · ' + esc(v.role) : '') + ' · signed ' + clock(v.at) + '</div></div></div>'; }).join('') + '</div>';
     h += '<button class="btn btn-outline" data-act="vis-open">' + ICON.plus + ' Add someone on location</button>';
-    h += '<div class="label">Send it</div><div class="grid2"><button class="btn btn-ghost btn-sm" data-act="share-one" style="height:48px">Share as text</button><button class="btn btn-ghost btn-sm" data-act="dl-one" style="height:48px">Download</button></div>';
+    h += '<div class="label">Send it</div>' + (isStandalone() ? '<button class="btn btn-ghost" data-act="share-one">Share as text</button>' : '<div class="grid2"><button class="btn btn-ghost btn-sm" data-act="share-one" style="height:48px">Share as text</button><button class="btn btn-ghost btn-sm" data-act="dl-one" style="height:48px">Download</button></div>');
     h += '<details class="card pad"><summary style="font-weight:700;cursor:pointer">See the whole JSA</summary><pre style="white-space:pre-wrap;font-family:inherit;font-size:13.5px;margin:10px 0 0">' + esc(jsaText(j)) + '</pre></details>';
     return h + '</div>';
   }
@@ -728,7 +740,7 @@ textarea.inp{resize:vertical;min-height:72px}
   function vReview() {
     var j = cur(); if (!j) { ui.view = 'home'; return vHome(); }
     var s = status(j);
-    var h = header('Supervisor review · not a gate', esc(j.basics.location) + ' · ' + (j.basics.shift === 'night' ? 'Night' : 'Day'), { back: 'home' });
+    var h = header('Supervisor review · nothing waits on you', esc(j.basics.location) + ' · ' + (j.basics.shift === 'night' ? 'Night' : 'Day'), { back: 'home' });
     h += '<div class="body">';
     h += '<div class="card pad" style="display:flex;align-items:center;gap:10px"><div style="flex:1"><div class="v">Lead ' + esc(j.basics.lead || '—') + '</div><div class="sub">' + (j.signedAt ? 'Signed ' + clock(j.signedAt) : 'Still a draft') + ' · ' + niceDate(j.basics.date) + '</div></div>' + stChip(s.kind, s.text) + '</div>';
     var ch = labelsFor(j.changes);
@@ -757,7 +769,8 @@ textarea.inp{resize:vertical;min-height:72px}
     h += '<div class="lead">Write down anything that slowed you down, didn’t make sense, or is missing. It saves as you type.</div>';
     h += '<div class="card pad"><label class="sr" for="notes">Your notes</label><textarea id="notes" class="inp" data-ui="notes" rows="8" placeholder="e.g. Step 6 needs a place for the H2S monitor bump test">' + esc(mem.notes) + '</textarea></div>';
     h += '<button class="btn btn-dark" data-act="share-all">Share notes + all JSAs</button>';
-    h += '<button class="btn btn-ghost" data-act="dl-all">Download as a text file</button>';
+    if (!isStandalone()) h += '<button class="btn btn-ghost" data-act="dl-all">Download as a text file</button>';
+    h += '<div class="muted-note"><b>Share at the end of each day you test.</b> Your phone can clear saved data from websites it hasn’t opened in a week, and a Home Screen icon keeps its own separate copy.</div>';
     h += '<div class="muted-note">' + mem.jsas.length + ' JSA' + (mem.jsas.length === 1 ? '' : 's') + ' saved on this phone.</div>';
     h += '<button class="linkbtn quiet" data-act="wipe" style="align-self:flex-start">Clear everything on this phone</button>';
     return h + '</div>';
@@ -790,12 +803,13 @@ textarea.inp{resize:vertical;min-height:72px}
     if (b) {
       var j = cur(); if (!j) return;
       setPath(j, b, t.value); save();
-      if (b === 'basics.lead' || b.indexOf('crew.') === 0 || b === 'basics.date' || b === 'basics.location') softRefreshFooter();
+      softRefreshFooter();
       return;
     }
     var u = t.getAttribute('data-ui');
     if (u === 'notes') { mem.notes = t.value; save(); return; }
     if (u === 'concern') { ui.concern = t.value; return; }
+    if (u === 'ppeNew') { ui.ppeNew = t.value; return; }
     if (u === 'comment') { ui.comment = t.value; return; }
     if (u && u.indexOf('vis.') === 0) { ui.vis[u.slice(4)] = t.value; softRefreshFooter(); return; }
   });
@@ -820,6 +834,12 @@ textarea.inp{resize:vertical;min-height:72px}
     }
   }
 
+  function armed(el, msg) {
+    if (el.getAttribute('data-armed') === '1') return true;
+    el.setAttribute('data-armed', '1'); el.style.color = 'var(--warn)'; toast(msg);
+    setTimeout(function () { if (el) { el.removeAttribute('data-armed'); el.style.color = ''; } }, 3000);
+    return false;
+  }
   app.addEventListener('click', function (e) {
     var el = e.target.closest('[data-act]'); if (!el) return;
     var act = el.getAttribute('data-act'), id = el.getAttribute('data-id');
@@ -839,26 +859,29 @@ textarea.inp{resize:vertical;min-height:72px}
         if (ui.step === 4) seedSteps(j);
         if (ui.step === 5) seedHazards(j);
         window.scrollTo(0, 0); break;
-      case 'worktype': j.basics.workType = id; if (!j.signedAt) { j.stepsSeeded = false; j.hzSeeded = false; } save(); break;
+      case 'worktype':
+        if (id === j.basics.workType) break;
+        if ((j.stepsSeeded || j.hzSeeded) && el.getAttribute('data-armed') !== '1') { el.setAttribute('data-armed', '1'); toast('Changing work type resets your steps and hazards. Tap it again to change.'); return; }
+        j.basics.workType = id; j.stepsSeeded = false; j.hzSeeded = false; j.steps = []; j.hazards = []; save(); break;
       case 'crew-add': j.crew.push({ id: uid(), name: '', role: 'Operator', trainee: false, here: true }); save(); break;
-      case 'crew-del': j.crew = j.crew.filter(function (c) { return c.id !== id; }); j.hazards.forEach(function (z) { if (z.owner === id) z.owner = 'lead'; }); save(); break;
+      case 'crew-del': if (!armed(el, 'Tap again to remove this person')) return; j.crew = j.crew.filter(function (c) { return c.id !== id; }); j.hazards.forEach(function (z) { if (z.owner === id) z.owner = 'lead'; }); save(); break;
       case 'crew-trainee': j.crew.forEach(function (c) { if (c.id === id) c.trainee = !c.trainee; }); save(); break;
-      case 'crew-here': j.crew.forEach(function (c) { if (c.id === id) c.here = c.here === false; }); save(); break;
+      case 'crew-here': j.crew.forEach(function (c) { if (c.id === id) c.here = c.here === false; }); j.hazards.forEach(function (z) { z.owner = validOwner(j, z.owner); }); save(); break;
       case 'change':
         if (id === 'none') j.changes = j.changes.indexOf('none') >= 0 ? [] : ['none'];
         else { j.changes = j.changes.filter(function (c) { return c !== 'none'; }); var k = j.changes.indexOf(id); if (k >= 0) j.changes.splice(k, 1); else j.changes.push(id); }
         save(); break;
       case 'step-ok': j.steps.forEach(function (s) { if (s.id === id) s.ok = !s.ok; }); save(); break;
-      case 'step-del': j.steps = j.steps.filter(function (s) { return s.id !== id; }); j.hazards.forEach(function (z) { if (z.step === id) z.step = 'all'; }); save(); break;
+      case 'step-del': if (!armed(el, 'Tap again to remove this step')) return; j.steps = j.steps.filter(function (s) { return s.id !== id; }); j.hazards.forEach(function (z) { if (z.step === id) z.step = 'all'; }); save(); break;
       case 'step-add': j.steps.push({ id: uid(), text: '', ok: false }); save(); render(); var ins = app.querySelectorAll('[data-bind^="steps."]'); if (ins.length) ins[ins.length - 1].focus(); return;
       case 'hz-ok': j.hazards.forEach(function (z) { if (z.id === id) z.ok = !z.ok; }); save(); break;
-      case 'hz-del': j.hazards = j.hazards.filter(function (z) { return z.id !== id; }); save(); break;
+      case 'hz-del': if (!armed(el, 'Tap again to remove this hazard')) return; j.hazards = j.hazards.filter(function (z) { return z.id !== id; }); save(); break;
       case 'hz-add': j.hazards.push({ id: uid(), step: 'all', name: '', control: '', owner: 'lead', ok: false }); save(); render(); var hz = app.querySelectorAll('[data-bind$=".name"][data-bind^="hazards."]'); if (hz.length) hz[hz.length - 1].focus(); return;
       case 'hz-lib': var l = CONFIG.library.filter(function (x) { return x.name === id; })[0]; if (l) j.hazards.push({ id: uid(), step: 'all', name: l.name, control: l.control, owner: 'lead', ok: false }); save(); break;
       case 'muster': j.site.muster = id; save(); break;
       case 'muster-add': j.site.musters.push({ id: uid(), name: '' }); save(); break;
       case 'ppe': var pi = j.site.ppe.indexOf(id); if (pi >= 0) j.site.ppe.splice(pi, 1); else j.site.ppe.push(id); save(); break;
-      case 'ppe-add': var pf = app.querySelector('[data-ui="ppeNew"]'); var pv = pf && pf.value.trim(); if (pv && j.site.ppe.indexOf(pv) < 0) { j.site.ppe.push(pv); save(); } break;
+      case 'ppe-add': var pf = app.querySelector('[data-ui="ppeNew"]'); var pv = pf && pf.value.trim(); if (pv && j.site.ppe.indexOf(pv) < 0) { j.site.ppe.push(pv); save(); } ui.ppeNew = ''; break;
       case 'to-detail': ui.view = 'detail'; ui.concernOpen = false; break;
       case 'crew-open': ui.id = id; ui.crewId = el.getAttribute('data-crew'); ui.crewOk = {}; ui.concernOpen = false; ui.concern = ''; ui.view = 'crew'; window.scrollTo(0, 0); break;
       case 'crew-ok': if (!j.accepts[ui.crewId]) ui.crewOk[id] = !ui.crewOk[id]; break;
@@ -874,7 +897,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 'vis-open': case 'vis-next': ui.vis = { company: '', name: '', role: '', ok: false }; ui.visDone = false; ui.view = 'visitor'; window.scrollTo(0, 0); break;
       case 'vis-ok': ui.vis.ok = !ui.vis.ok; break;
       case 'vis-sign':
-        if (!(ui.vis.company.trim() && ui.vis.name.trim() && ui.vis.ok)) { toast('Company, name and the box above'); return; }
+        if (!(ui.vis.company.trim() && ui.vis.name.trim() && ui.vis.ok)) { toast('Fill in your company and name, and tick the box'); return; }
         j.visitors.push({ company: ui.vis.company.trim(), name: ui.vis.name.trim(), role: ui.vis.role.trim(), at: Date.now() }); save(); ui.visDone = true; window.scrollTo(0, 0); break;
       case 'vis-close': ui.view = 'detail'; window.scrollTo(0, 0); break;
       case 'review-open': ui.id = id; ui.commentFor = null; ui.view = 'review'; window.scrollTo(0, 0); break;
@@ -900,12 +923,12 @@ textarea.inp{resize:vertical;min-height:72px}
 
   /* ---------- example ---------- */
   function loadSample() {
-    var crew = [{ id: uid(), name: 'Sam Ortiz', role: 'Operator', trainee: false, here: true }, { id: uid(), name: 'Dee Walker', role: 'Operator (trainee)', trainee: true, here: true }];
+    var crew = [{ id: uid(), name: 'Crew A Example', role: 'Operator', trainee: false, here: true }, { id: uid(), name: 'Crew B Example', role: 'Operator (trainee)', trainee: true, here: true }];
     var steps = CONFIG.stepTemplates.Flowback.map(function (t) { return { id: uid(), text: t, ok: true }; });
     var j = {
       id: uid(), created: Date.now(), signedAt: Date.now() - 20 * 60000,
       basics: { customer: '[Example customer]', location: 'Pad A · Well 2H', gps: '00.0000, −00.0000', date: today(), shift: 'day', workType: 'Flowback', hospital: '[Nearest hospital], [City]', lead: 'Pat Example', supervisor: 'Morgan Example' },
-      crew: crew, mentoring: { topic: 'Reading a choke', why: 'Dee runs chokes solo next hitch' },
+      crew: crew, mentoring: { topic: 'Reading a choke', why: 'Runs chokes solo next hitch' },
       handoff: { status: 'Flowing on 18/64, 2,350 psi, ~85 bbl/hr, sand light', instructions: 'Hold the choke until the company man says otherwise. Report any swing over 200 psi.', plan: 'Keep flowing. Sand trap dumps every 2 hrs. Swap tank at ~80%.' },
       changes: ['wx', 'crew'], steps: steps, stepsSeeded: true, hzSeeded: true,
       hazards: [
