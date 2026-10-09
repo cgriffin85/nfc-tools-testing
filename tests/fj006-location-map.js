@@ -20,7 +20,7 @@ suite(async()=>{
     ck("the marker tools", T.acts("map-tool").map(b=>b.textContent), ["+ Muster point","+ Entrance / exit","+ Wellhead","+ Tanks","+ Our equipment"]);
     ck("first time at this location", note(), "Set this up on the first JSA for a location. It’s saved for the next one.");
     ck("no muster yet", T.acts("muster").length, 0);
-    await T.tap("wind-dir","W");
+    await T.tap("wind-dir","W"); await T.tap("ppe-ok");   /* PPE confirmed (FJ-007), so only the map is missing */
     ck("with wind, Next asks for a muster on the map", T.next(), "Put a muster point on the map");
 
     await T.padTap(50,50);

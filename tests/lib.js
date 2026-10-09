@@ -54,7 +54,7 @@ const T={
   /* the wizard step on screen, 0-based (from "Step n of 8" in the header), or -1 off the wizard */
   wizStep:()=>{ const m=/Step (\d+) of/.exec(T.text(".hdr .eyebrow")||""); return m?+m[1]-1:-1; },
   /* tap Next until the wizard is on step n (0-based), doing the least each step needs with made-up answers:
-     lead "Lead L", "Nothing changed", every task step ticked, every hazard Low and confirmed, wind from N, a muster on the map if there is none */
+     lead "Lead L", "Nothing changed", every task step ticked, every hazard Low and confirmed, wind from N, a muster on the map if there is none, the PPE confirmed */
   async wizTo(n){
     for(let guard=0;T.wizStep()<n&&guard<12;guard++){
       const s=T.wizStep();
@@ -67,6 +67,7 @@ const T={
       if(s===6&&!document.querySelector('[data-act="wind-dir"].on')) await T.tap("wind-dir","N");
       if(s===6&&!T.acts("muster").length) await T.place("muster",10,50);
       if(s===6&&!document.querySelector('[data-act="muster"] .radio.on')) await T.tap("muster");
+      if(s===6&&!document.querySelector('[data-act="ppe-ok"] .box.on')) await T.tap("ppe-ok");
       if(s<0) throw new Error("wizTo: not on the wizard ("+T.title()+")");
       await T.tap("wiz-next");
       if(T.wizStep()===s) throw new Error(`wizTo: stuck on step ${s+1}: ${T.next()}`);

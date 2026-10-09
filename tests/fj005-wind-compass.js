@@ -19,7 +19,7 @@ suite(async()=>{
     ck("nothing picked yet", on(), []);
     ck("the middle says what to do", document.querySelector(".compass .mid").innerText.replace(/\s+/g," "), "Tap where it’s coming from");
     ck("Next asks for the wind first", T.next(), "Pick the wind direction");
-    await T.place("muster",10,50);
+    await T.place("muster",10,50); await T.tap("ppe-ok");   /* PPE confirmed (FJ-007), so only the wind is missing */
     ck("a muster alone isn't enough", T.next(), "Pick the wind direction");
     await T.tap("wiz-next");
     ck("tapping Next without wind doesn't move on", T.wizStep(), 6);

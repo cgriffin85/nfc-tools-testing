@@ -203,6 +203,8 @@ textarea.inp{resize:vertical;min-height:72px}
     if (!mem.sites || typeof mem.sites !== 'object') mem.sites = {};
     /* before FJ-006 muster points were a typed list: old JSAs get an empty map and lose the list */
     mem.jsas.forEach(function (j) { if (!j.site) return; if (!j.site.map) j.site.map = { rot: 0, marks: [] }; if (j.site.musters) delete j.site.musters; });
+    /* before FJ-007 there was no PPE confirmation: a signed JSA counts as confirmed, a draft must tick it */
+    mem.jsas.forEach(function (j) { if (j.site && typeof j.site.ppeOk !== 'boolean') j.site.ppeOk = !!j.signedAt; });
     /* wind typed as text before FJ-005: keep it if it names one of the eight directions */
     mem.jsas.forEach(function (j) { if (j.site && j.site.windDir) { var w = String(j.site.windDir).trim().toUpperCase(); if (DIRS.indexOf(w) >= 0) j.site.windDir = w; } });
   }
@@ -260,7 +262,7 @@ textarea.inp{resize:vertical;min-height:72px}
       mentoring: { topic: '', why: '' },
       handoff: { status: '', instructions: '', plan: '' },
       changes: [], steps: [], stepsSeeded: false, hazards: [], hzSeeded: false,
-      site: { windDir: '', windMph: '', map: null, muster: '', ppe: CONFIG.ppeDefault.slice() },
+      site: { windDir: '', windMph: '', map: null, muster: '', ppe: CONFIG.ppeDefault.slice(), ppeOk: false },
       accepts: {}, concerns: [], visitors: [], comments: [], prevId: prev ? prev.id : null, rev: 0, revisions: []
     };
     mem.jsas.push(j); save();
@@ -321,7 +323,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 3: return j.changes.length > 0;
       case 4: return j.steps.length > 0 && j.steps.every(function (s) { return s.ok && s.text.trim(); });
       case 5: return j.hazards.length > 0 && !bareSteps(j).length && j.hazards.every(function (h) { return h.ok && h.risk && h.name.trim() && h.control.trim() && people(j).some(function (p) { return p.id === h.owner; }); });
-      case 6: return DIRS.indexOf(j.site.windDir) >= 0 && !!todayMuster(j);
+      case 6: return DIRS.indexOf(j.site.windDir) >= 0 && !!todayMuster(j) && !!j.site.ppeOk;
       default: return true;
     }
   }
@@ -334,7 +336,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 5: var nr = j.hazards.filter(function (h) { return !h.risk; }).length; var b = j.hazards.filter(function (h) { return !h.ok; }).length;
         var bare = bareSteps(j); if (bare.length) return 'Step ' + bare[0] + ' has no hazard yet';
         return j.hazards.length === 0 ? 'Add at least one hazard' : (nr ? 'Set the risk on ' + nr + ' hazard' + (nr === 1 ? '' : 's') : (b ? b + ' hazard' + (b === 1 ? '' : 's') + ' to confirm' : 'Every hazard needs a name and a control'));
-      case 6: return DIRS.indexOf(j.site.windDir) < 0 ? 'Pick the wind direction' : (!musters(j).length ? 'Put a muster point on the map' : 'Pick today\u2019s muster point');
+      case 6: return DIRS.indexOf(j.site.windDir) < 0 ? 'Pick the wind direction' : (!musters(j).length ? 'Put a muster point on the map' : (!todayMuster(j) ? 'Pick today\u2019s muster point' : 'Confirm the PPE'));
     }
     return '';
   }
@@ -756,6 +758,7 @@ textarea.inp{resize:vertical;min-height:72px}
     }).join('') + '</div>';
     h += '<div class="label">PPE for this job</div><div class="chips">' + CONFIG.ppe.concat(j.site.ppe.filter(function (p) { return CONFIG.ppe.indexOf(p) < 0; })).map(function (p) { return '<button class="chip sm' + (j.site.ppe.indexOf(p) >= 0 ? ' on' : '') + '" data-act="ppe" data-id="' + esc(p) + '">' + esc(p) + '</button>'; }).join('') + '</div>';
     h += '<div style="display:flex;gap:8px"><label class="sr" for="ppe-new">Other PPE</label><input id="ppe-new" class="inp" data-ui="ppeNew" value="' + esc(ui.ppeNew) + '" placeholder="Other PPE"><button class="btn btn-ghost btn-sm" data-act="ppe-add" style="height:48px">Add</button></div>';
+    h += '<button class="card pad' + (j.site.ppeOk ? ' ok' : ' needs') + '" data-act="ppe-ok" aria-pressed="' + !!j.site.ppeOk + '" style="display:flex;gap:12px;align-items:center;text-align:left;width:100%">' + box(j.site.ppeOk) + '<span style="font-size:15px">Everyone on location has this PPE on.</span></button>';
     return h;
   }
   function w7(j) {
@@ -996,6 +999,8 @@ textarea.inp{resize:vertical;min-height:72px}
     }
   }
 
+  /* any change to the PPE list takes back the confirmation */
+  function ppeChanged(j) { if (j.site.ppeOk) { j.site.ppeOk = false; toast('PPE changed. Confirm it again.'); } }
   function armed(el, msg) {
     if (el.getAttribute('data-armed') === '1') return true;
     el.setAttribute('data-armed', '1'); el.style.color = 'var(--warn)'; toast(msg);
@@ -1076,8 +1081,9 @@ textarea.inp{resize:vertical;min-height:72px}
         if (nm.type === 'muster' && !todayMuster(j)) j.site.muster = nm.id;
         ui.mapSel = nm.id; ui.mapTool = '';
         syncSite(j); save(); render(); var mk = app.querySelector('[data-bind="site.map.marks.' + nm.id + '.label"]'); if (mk) mk.focus(); return;
-      case 'ppe': var pi = j.site.ppe.indexOf(id); if (pi >= 0) j.site.ppe.splice(pi, 1); else j.site.ppe.push(id); save(); break;
-      case 'ppe-add': var pf = app.querySelector('[data-ui="ppeNew"]'); var pv = pf && pf.value.trim(); if (pv && j.site.ppe.indexOf(pv) < 0) { j.site.ppe.push(pv); save(); } ui.ppeNew = ''; break;
+      case 'ppe': var pi = j.site.ppe.indexOf(id); if (pi >= 0) j.site.ppe.splice(pi, 1); else j.site.ppe.push(id); ppeChanged(j); save(); break;
+      case 'ppe-add': var pf = app.querySelector('[data-ui="ppeNew"]'); var pv = pf && pf.value.trim(); if (pv && j.site.ppe.indexOf(pv) < 0) { j.site.ppe.push(pv); ppeChanged(j); save(); } ui.ppeNew = ''; break;
+      case 'ppe-ok': j.site.ppeOk = !j.site.ppeOk; save(); break;
       case 'to-detail': ui.view = 'detail'; ui.concernOpen = false; break;
       case 'crew-open': ui.id = id; ui.crewId = el.getAttribute('data-crew'); ui.crewOk = {}; ui.concernOpen = false; ui.concern = ''; ui.view = 'crew'; window.scrollTo(0, 0); break;
       case 'crew-ok': if (!j.accepts[ui.crewId]) ui.crewOk[id] = !ui.crewOk[id]; break;
@@ -1136,7 +1142,7 @@ textarea.inp{resize:vertical;min-height:72px}
         { id: uid(), step: steps[2].id, name: CONFIG.library[2].name, control: CONFIG.library[2].control, owner: crew[0].id, risk: 'med', ok: true },
         { id: uid(), step: steps[4].id, name: CONFIG.library[4].name, control: CONFIG.library[4].control, owner: crew[1].id, risk: 'low', ok: true }
       ],
-      site: { windDir: 'SW', windMph: '18', map: { rot: 0, marks: [{ id: 'mA', type: 'muster', label: 'Lease road entrance', x: 8, y: 90 }, { id: 'mB', type: 'muster', label: 'Far fence line', x: 92, y: 8 }, { id: 'e1', type: 'entrance', label: 'Lease road', x: 4, y: 52 }, { id: 'w1', type: 'wellhead', label: '2H', x: 55, y: 40 }, { id: 't1', type: 'tanks', label: 'Frac tanks', x: 85, y: 75 }] }, mapLoaded: true, muster: 'mA', ppe: CONFIG.ppeDefault.slice() },
+      site: { windDir: 'SW', windMph: '18', map: { rot: 0, marks: [{ id: 'mA', type: 'muster', label: 'Lease road entrance', x: 8, y: 90 }, { id: 'mB', type: 'muster', label: 'Far fence line', x: 92, y: 8 }, { id: 'e1', type: 'entrance', label: 'Lease road', x: 4, y: 52 }, { id: 'w1', type: 'wellhead', label: '2H', x: 55, y: 40 }, { id: 't1', type: 'tanks', label: 'Frac tanks', x: 85, y: 75 }] }, mapLoaded: true, muster: 'mA', ppe: CONFIG.ppeDefault.slice(), ppeOk: true },
       accepts: {}, concerns: [], visitors: [], comments: [], prevId: null, rev: 0, revisions: []
     };
     j.accepts[crew[0].id] = Date.now() - 12 * 60000;
