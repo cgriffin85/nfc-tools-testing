@@ -1020,7 +1020,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 'home': ui.view = 'home'; ui.concernOpen = false; ui.commentFor = null; break;
       case 'go-feedback': ui.view = 'feedback'; break;
       case 'new': j = newJsa(); ui.id = j.id; ui.step = 0; ui.view = 'wizard'; window.scrollTo(0, 0); break;
-      case 'sample': loadSample(); ui.view = 'home'; toast('Example loaded'); return;
+      case 'sample': loadSample(); ui.view = 'home'; toast('Example loaded'); break;
       case 'open': ui.id = id; j = cur(); if (j.signedAt) { ui.view = 'detail'; } else { ui.view = 'wizard'; ui.step = (j.revisions && j.revisions.length) ? 3 : 0; } window.scrollTo(0, 0); break;
       case 'wiz-back': ui.mapTool = ''; ui.mapSel = ''; if (ui.step > 0) ui.step--; else ui.view = 'home'; window.scrollTo(0, 0); break;
       case 'wiz-next':

@@ -23,7 +23,7 @@ suite(async()=>{
   ck("tapping it opens the revise screen", T.acts("revise-go").length, 1);
   await T.home();
 
-  await T.tap("sample"); await T.tap("role","lead");   /* "Load a filled-in example" doesn't redraw the list by itself (not now note) */
+  await T.tap("sample");
   await T.tap("open", T.stored().jsas.slice(-1)[0].id);
   await check("the filled-in example");
 });
