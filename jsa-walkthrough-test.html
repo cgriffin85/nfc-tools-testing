@@ -232,7 +232,7 @@ textarea.inp{resize:vertical;min-height:72px}
   function stChip(kind, text) { return '<span class="st st-' + kind + '">' + esc(text) + '</span>'; }
 
   /* ---------- UI state (not saved) ---------- */
-  var ui = { role: 'lead', view: 'home', id: null, step: 0, crewId: null, crewOk: {}, concernOpen: false, concern: '', commentFor: null, comment: '', vis: null, visDone: false, ppeNew: '', reviseWhy: '', reviseTags: {}, mapTool: '', mapSel: '' };
+  var ui = { role: 'lead', view: 'home', id: null, step: 0, crewId: null, crewOk: {}, concernOpen: false, concern: '', commentFor: null, comment: '', vis: null, visDone: false, ppeNew: '', reviseWhy: '', reviseTags: {}, mapTool: '', mapSel: '', signOk: false };
   var toastTimer = null;
   function toast(msg) {
     var old = document.getElementById('toast'); if (old) old.parentNode.removeChild(old);
@@ -324,6 +324,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 4: return j.steps.length > 0 && j.steps.every(function (s) { return s.ok && s.text.trim(); });
       case 5: return j.hazards.length > 0 && !bareSteps(j).length && j.hazards.every(function (h) { return h.ok && h.risk && h.name.trim() && h.control.trim() && people(j).some(function (p) { return p.id === h.owner; }); });
       case 6: return DIRS.indexOf(j.site.windDir) >= 0 && !!todayMuster(j) && !!j.site.ppeOk;
+      case 7: return !!ui.signOk;
       default: return true;
     }
   }
@@ -337,6 +338,7 @@ textarea.inp{resize:vertical;min-height:72px}
         var bare = bareSteps(j); if (bare.length) return 'Step ' + bare[0] + ' has no hazard yet';
         return j.hazards.length === 0 ? 'Add at least one hazard' : (nr ? 'Set the risk on ' + nr + ' hazard' + (nr === 1 ? '' : 's') : (b ? b + ' hazard' + (b === 1 ? '' : 's') + ' to confirm' : 'Every hazard needs a name and a control'));
       case 6: return DIRS.indexOf(j.site.windDir) < 0 ? 'Pick the wind direction' : (!musters(j).length ? 'Put a muster point on the map' : (!todayMuster(j) ? 'Pick today\u2019s muster point' : 'Confirm the PPE'));
+      case 7: return 'Tick your signature box above';
     }
     return '';
   }
@@ -774,6 +776,8 @@ textarea.inp{resize:vertical;min-height:72px}
     ];
     var h = '<div class="lead">This is what your crew will read. When you sign, each of them reads and accepts it (in the real app, on their own phone). Anyone else on location signs on yours.</div>';
     h += '<div class="card" style="padding:6px 0">' + rows.map(function (r) { return '<div style="display:flex;gap:12px;padding:9px 16px"><span style="width:76px;flex:none" class="k">' + r[0] + '</span><span style="flex:1;font-size:14.5px">' + esc(r[1]) + '</span></div>'; }).join('') + '</div>';
+    h += '<div class="label">Your signature</div>';
+    h += '<button class="card pad' + (ui.signOk ? ' ok' : ' needs') + '" data-act="sign-ok" aria-pressed="' + !!ui.signOk + '" style="display:flex;gap:12px;align-items:center;text-align:left;width:100%">' + box(ui.signOk) + '<span style="font-size:15px">I’m <b>' + esc(j.basics.lead || 'the shift lead') + '</b>, shift lead and supervisor of this crew. I’ve walked the crew through this JSA and I approve it.</span></button>';
     return h;
   }
 
@@ -1023,6 +1027,7 @@ textarea.inp{resize:vertical;min-height:72px}
         if (!stepReady(j, ui.step)) { toast(stepBlock(j, ui.step)); return; }
         if (ui.step === 7) { j.signedAt = Date.now(); save(); ui.view = 'detail'; window.scrollTo(0, 0); break; }
         ui.step++; ui.mapTool = ''; ui.mapSel = '';
+        if (ui.step === 7) ui.signOk = false;   /* the lead signs on purpose, every time */
         if (ui.step === 4) seedSteps(j);
         if (ui.step === 5) seedHazards(j);
         window.scrollTo(0, 0); break;
@@ -1056,6 +1061,7 @@ textarea.inp{resize:vertical;min-height:72px}
         if (!j.changes.length) j.changes = ['none'];
         j.signedAt = null; j.accepts = {};
         j.hazards.forEach(function (z) { z.ok = false; });
+        j.site.ppeOk = false; ui.signOk = false;
         save(); ui.view = 'wizard'; ui.step = 3; window.scrollTo(0, 0); break;
       case 'hz-del': if (!armed(el, 'Tap again to remove this hazard')) return; j.hazards = j.hazards.filter(function (z) { return z.id !== id; }); save(); break;
       case 'hz-add': var nz = { id: uid(), step: id || 'all', name: '', control: '', owner: 'lead', risk: '', ok: false }; j.hazards.push(nz); save(); render(); var hz = app.querySelector('[data-bind="hazards.' + nz.id + '.name"]'); if (hz) hz.focus(); return;
@@ -1084,6 +1090,7 @@ textarea.inp{resize:vertical;min-height:72px}
       case 'ppe': var pi = j.site.ppe.indexOf(id); if (pi >= 0) j.site.ppe.splice(pi, 1); else j.site.ppe.push(id); ppeChanged(j); save(); break;
       case 'ppe-add': var pf = app.querySelector('[data-ui="ppeNew"]'); var pv = pf && pf.value.trim(); if (pv && j.site.ppe.indexOf(pv) < 0) { j.site.ppe.push(pv); ppeChanged(j); save(); } ui.ppeNew = ''; break;
       case 'ppe-ok': j.site.ppeOk = !j.site.ppeOk; save(); break;
+      case 'sign-ok': ui.signOk = !ui.signOk; break;
       case 'to-detail': ui.view = 'detail'; ui.concernOpen = false; break;
       case 'crew-open': ui.id = id; ui.crewId = el.getAttribute('data-crew'); ui.crewOk = {}; ui.concernOpen = false; ui.concern = ''; ui.view = 'crew'; window.scrollTo(0, 0); break;
       case 'crew-ok': if (!j.accepts[ui.crewId]) ui.crewOk[id] = !ui.crewOk[id]; break;

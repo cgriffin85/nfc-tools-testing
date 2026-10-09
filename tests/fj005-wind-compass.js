@@ -43,7 +43,7 @@ suite(async()=>{
 
     await T.tap("wiz-next"); await T.tap("wiz-back");
     ck("the pick is kept when coming back", on(), ["NE"]);
-    await T.wizTo(7); await T.tap("wiz-next");
+    await T.sign();
     await T.tap("home"); await T.tap("role","crew"); await T.tap("crew-open");
     ck("crew sees where it's from and how fast", /From NE · 15 mph/.test(T.app().textContent), true);
     await T.tap("home"); await T.tap("role","lead");

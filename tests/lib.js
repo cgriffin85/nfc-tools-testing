@@ -32,6 +32,9 @@ const T={
   before:(a,b)=>!!(a&&b&&(a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING)),
   tall:el=>Math.round(el.getBoundingClientRect().height),
   noSideScroll:()=>document.documentElement.scrollWidth<=innerWidth,
+  /* walk to step 8, tick the signature box and sign (lands on the signed JSA) */
+  async sign(){ await T.wizTo(7); if(!document.querySelector('[data-act="sign-ok"] .box.on')) await T.tap("sign-ok"); await T.tap("wiz-next");
+    if(T.wizStep()>=0) throw new Error("sign: still on the wizard: "+T.next()); },
   /* the step 7 map: tap the pad at x, y (0-100 across / down the pad as drawn; the pad sits at 15,25 250x200 in a
      340x250 drawing), the way a finger does */
   async padTap(x,y){ const svg=document.querySelector('svg.padmap[data-act="map-tap"]'); if(!svg) throw new Error("no editable map on "+T.title());

@@ -38,7 +38,7 @@ suite(async()=>{
     await T.tap("wiz-next"); await T.tap("wiz-back");
     ck("still ticked after going on and coming back", ok(), true);
 
-    await T.wizTo(7); await T.tap("wiz-next"); await T.home();
+    await T.sign(); await T.home();
     await T.tap("new"); await T.wizTo(6);
     ck("every new JSA starts unticked", ok(), false);
 

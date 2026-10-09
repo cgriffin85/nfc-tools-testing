@@ -66,7 +66,7 @@ suite(async()=>{
   ck("add buttons 44px or taller", T.acts("hz-add").every(b=>T.tall(b)>=44), true);
   ck("no side scroll on the hazards step", T.noSideScroll(), true);
 
-  await T.wizTo(7); await T.tap("wiz-next");
+  await T.sign();
   ck("signed", T.wizStep(), -1);
 
   // next JSA on the same work type: hazards carry forward under the step with the same text

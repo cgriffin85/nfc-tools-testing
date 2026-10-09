@@ -81,7 +81,7 @@ suite(async()=>{
 
     await T.wizTo(7);
     ck("review shows today's muster with side and wind", /A · Primary · Test muster west · W side · upwind/.test(T.app().textContent), true);
-    await T.tap("wiz-next");
+    await T.sign();
     let shared=""; Object.defineProperty(navigator,"share",{configurable:true,value:o=>{ shared=o.text; return Promise.resolve(); }});
     await T.tap("share-one");
     ck("shared text: today's muster with side and wind", shared.includes("Muster point today: A · Primary · Test muster west · W side · upwind"), true);
