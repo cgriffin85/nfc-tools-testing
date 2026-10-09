@@ -45,8 +45,8 @@ const T={
     await T.padTap(x,y); const f=document.querySelector('[data-bind^="site.map.marks."]'); return f?f.getAttribute("data-bind").split(".")[3]:null; },
   /* markers drawn on the editable map */
   marks:()=>[...document.querySelectorAll('svg.padmap g.mark')],
-  /* back to home from anywhere: the header back button, the visitor screen's Done, or back through the wizard */
-  async home(){ for(let i=0;i<10;i++){ const act=["home","vis-close","wiz-back"].find(a=>T.acts(a).length); if(!act) return; await T.tap(act); } },
+  /* back to home from anywhere: the header back button, the visitor screen's Done, the revise screen's back, or back through the wizard */
+  async home(){ for(let i=0;i<10;i++){ const act=["home","vis-close","to-detail","wiz-back"].find(a=>T.acts(a).length); if(!act) return; await T.tap(act); } },
   /* which part of a reloading suite this page load is ("1" first) */
   phase:(()=>{ try{ return sessionStorage.getItem("fjPhase")||"1"; }catch(x){ return "1"; } })(),
   /* reload the page (e.g. after writing old-format data to localStorage) and run the suite again as phase `next` */

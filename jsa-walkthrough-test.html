@@ -787,7 +787,6 @@ textarea.inp{resize:vertical;min-height:72px}
     var h = header('JSA · ' + niceDate(j.basics.date) + ' · ' + (j.basics.shift === 'night' ? 'Night' : 'Day'), esc(j.basics.location), { back: 'home' });
     h += '<div class="body">';
     h += '<div class="banner ok">' + ICON.bigcheck + '<div><div style="font-weight:700;font-size:17px">Signed by ' + esc(j.basics.lead) + (j.rev ? ' \u00b7 revision ' + j.rev : '') + '</div><div style="font-size:14px">' + clock(j.signedAt) + ' \u00b7 sent to crew</div></div></div>';
-    h += '<button class="btn btn-ghost" data-act="revise-open" style="color:var(--warn);border-color:var(--warn-rule)">Conditions changed? Stop work and revise</button>';
     if (j.revisions && j.revisions.length) h += '<div class="card pad"><div class="k">Revisions</div>' + j.revisions.map(function (r) { return '<div style="margin-top:6px"><b>Rev ' + r.n + '</b> \u00b7 ' + clock(r.at) + ' \u2014 ' + esc(r.why) + '</div>'; }).join('') + '</div>';
     var crew = j.crew.filter(function (c) { return c.here !== false; });
     h += '<div class="label">Crew</div>';
@@ -807,6 +806,7 @@ textarea.inp{resize:vertical;min-height:72px}
     h += '<div class="muted-note">Everyone who comes on location signs this JSA. Tap below and hand them your phone.</div>';
     if (j.visitors.length) h += '<div class="card list">' + j.visitors.map(function (v) { var stale = (v.rev || 0) < (j.rev || 0); return '<div class="row" style="cursor:default"><span class="av sq">' + esc(initials(v.company)) + '</span><div class="grow"><div class="v">' + esc(v.name) + '</div><div class="sub">' + esc(v.company) + (v.role ? ' \u00b7 ' + esc(v.role) : '') + ' \u00b7 signed ' + clock(v.at) + '</div></div>' + (stale ? stChip('warn', 'Sign again') : '') + '</div>'; }).join('') + '</div>';
     h += '<button class="btn btn-outline" data-act="vis-open">' + ICON.plus + ' Add someone on location</button>';
+    h += '<div class="label">If conditions change</div><button class="linkbtn" data-act="revise-open" style="align-self:flex-start;padding:0 4px;font-size:16px;text-decoration:underline;text-underline-offset:3px">Conditions changed? Stop work and revise</button>';
     h += '<div class="label">Send it</div>' + (isStandalone() ? '<button class="btn btn-ghost" data-act="share-one">Share as text</button>' : '<div class="grid2"><button class="btn btn-ghost btn-sm" data-act="share-one" style="height:48px">Share as text</button><button class="btn btn-ghost btn-sm" data-act="dl-one" style="height:48px">Download</button></div>');
     h += '<details class="card pad"><summary style="font-weight:700;cursor:pointer">See the whole JSA</summary><pre style="white-space:pre-wrap;font-family:inherit;font-size:13.5px;margin:10px 0 0">' + esc(jsaText(j)) + '</pre></details>';
     return h + '</div>';
