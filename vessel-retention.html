@@ -767,7 +767,7 @@ html,body{transition:background-color .25s ease,color .25s ease;}
         <div><div class="inp-lbl">Water cut</div><div class="inp-box"><input type="number" id="wc" value="83.3" step="0.1" inputmode="decimal" aria-label="Water cut, percent"><span class="inp-unit">%</span></div><div class="ow-hint">Or type the rates above</div></div>
         <div><div class="inp-lbl">Oil chamber length</div><div class="inp-box"><input type="text" id="wp" value="30&quot;" inputmode="numeric" autocomplete="off" aria-label="Oil chamber length, inches from the weir to the oil-end head seam"></div><div class="ow-hint">Weir to the oil-end head seam</div></div>
         <div><div class="inp-lbl">Interface</div><div class="inp-box"><input type="text" id="iw" value="−1.2&quot;" inputmode="decimal" autocomplete="off" aria-label="Oil-water interface, inches from centerline"><span class="inp-unit">CL</span></div><div class="ow-hint">Where the sight glass shows it</div></div>
-        <div><div class="inp-lbl">Oil dump</div><div class="inp-box"><input type="text" id="io" value="−1.2&quot;" inputmode="decimal" autocomplete="off" aria-label="Oil dump level, inches from centerline"><span class="inp-unit">CL</span></div><div class="ow-hint">The high point where oil dumps</div></div>
+        <div><div class="inp-lbl">Oil level</div><div class="inp-box"><input type="text" id="io" value="−1.2&quot;" inputmode="decimal" autocomplete="off" aria-label="Oil level in the oil chamber, inches from centerline"><span class="inp-unit">CL</span></div><div class="ow-hint">Oil chamber sight glass, behind the weir</div></div>
       </div>
       <div class="owres" id="owres">
       <div class="clocks">
@@ -964,7 +964,7 @@ function calc() {
     $('t-c').innerHTML = fmt(tC) + '<small>min</small>';
     $('t-w-s').textContent = fmt(Vw) + ' bbl water ÷ ' + fmt(Qw * 60) + ' bbl/hr';
     $('t-o-s').textContent = fmt(Vpad) + ' bbl oil pad ÷ ' + fmt(Qo * 60) + ' bbl/hr';
-    $('t-c-s').textContent = fmt(Vch) + ' bbl to the dump level · oil inside ' + fmt(tO + tC) + ' min in all';
+    $('t-c-s').textContent = fmt(Vch) + ' bbl to the oil level · oil inside ' + fmt(tO + tC) + ' min in all';
   }
   $('r-ret').textContent = fmt(totalRet, 1);
 
@@ -1625,7 +1625,7 @@ Object.assign(PICKERS, {
   wc: viaInput('wc', { title: 'Water cut', sub: 'steps of 1% · type any value', unit: '%', lo: 0, hi: 100, step: 1, accept: v => Math.max(0, Math.min(100, v)),
     fmt: v => v + '%', live: () => liveTxt('Water retention', 't-w') }),
   iw: levelPicker('iw', 'iw', { title: 'Interface', live: () => liveTxt('Water retention', 't-w') }),
-  io: levelPicker('io', 'io', { title: 'Oil dump', live: () => liveTxt('Oil retention', 't-o') }),
+  io: levelPicker('io', 'io', { title: 'Oil level', sub: 'in the oil chamber · from CL · steps of ½″', live: () => liveTxt('Oil retention', 't-o') }),
 });
 if (TOUCH) {
   ['diam', 'len', 'r-hr', 'r-day', 'wc', 'qw', 'qo', 'wp', 'iw', 'io'].forEach(id => {
@@ -1656,7 +1656,7 @@ restoreState(); clampState(); syncSplit(); syncSetup(); update();
 
 
 <div class="footer">
-  Rev. 2026-10-23a<br>
+  Rev. 2026-10-23b<br>
   NFC Services &bull; <a href="https://www.nfcservices.com" target="_blank" rel="noopener">nfcservices.com</a>
 </div>
 
