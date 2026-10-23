@@ -87,16 +87,18 @@ body{margin:0}
 <sc-if value="{{ sFootpath }}" hint-placeholder-val="{{ false }}">
 <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
 <div style="display: flex; align-items: center; gap: 8px"><button type="button" onClick="{{ toHome }}" aria-label="back" style="width: 40px; height: 40px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; font-size: 18px; color: #1B2026; cursor: pointer">‹</button><div style="font-family: 'Saira Semi Condensed', Impact, sans-serif; font-weight: 700; font-size: 22px">My footpath</div></div>
-<div style="font-size: 13px; color: #5B6775; line-height: 1.45">The order you walk it. Drag a block, or use the arrows. One footpath per job — the night hand walks the same one. Change it any time the routine changes.</div>
+<div style="font-size: 13px; color: #5B6775; line-height: 1.45">The order you walk it. Hold the dots and drag a block, or use the arrows. One footpath per job — the night hand walks the same one. Change it any time the routine changes.</div>
+<div onPointerMove="{{ dragMove }}" onPointerUp="{{ dragEnd }}" onPointerCancel="{{ dragEnd }}" style="display: flex; flex-direction: column; gap: 10px">
 <sc-for list="{{ path }}" as="p" hint-placeholder-count="10">
-<div style="display: flex; align-items: center; gap: 10px; background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 14px; padding: 8px 8px 8px 12px">
+<div data-row="1" style="display: flex; align-items: center; gap: 6px; background: {{ p.bg }}; border: 1px solid {{ p.bd }}; border-radius: 14px; padding: 4px 8px 4px 8px; box-shadow: {{ p.shadow }}; transition: box-shadow 120ms ease, background 120ms ease">
 <span style="font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; color: #B04A17; width: 22px">{{ p.n }}</span>
-<span style="color: #B8C2CC; font-size: 18px; letter-spacing: -2px" aria-hidden="true">⋮⋮</span>
+<span onPointerDown="{{ p.grab }}" role="button" aria-label="drag to reorder" style="width: 44px; height: 52px; display: flex; align-items: center; justify-content: center; color: {{ p.grip }}; font-size: 22px; letter-spacing: -3px; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none">⋮⋮</span>
 <span style="flex: 1; display: flex; flex-direction: column; line-height: 1.2"><span style="font-weight: 600; font-size: 14px">{{ p.name }}</span><span style="font-size: 11px; color: #5B6775">{{ p.sub }}</span></span>
 <button type="button" aria-label="move up" onClick="{{ p.up }}" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #D3D9E0; background: #FFFFFF; font-size: 16px; color: #1B2026; cursor: pointer">▲</button>
 <button type="button" aria-label="move down" onClick="{{ p.down }}" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #D3D9E0; background: #FFFFFF; font-size: 16px; color: #1B2026; cursor: pointer">▼</button>
 </div>
 </sc-for>
+</div>
 <div style="font-size: 12px; color: #5B6775">Add a stop (a meter that turned up, a test gauge): + Add a stop — not drawn yet.</div>
 </div>
 <div style="flex: none; padding: 10px 16px 18px; background: #EEF0F2; border-top: 1px solid #D3D9E0"><button type="button" onClick="{{ toHome }}" style="width: 100%; font-family: 'Saira Semi Condensed', Impact, sans-serif; font-size: 22px; font-weight: 700; padding: 18px; border-radius: 22px; border: none; background: #E2662B; color: #1B2026; cursor: pointer">Save footpath</button></div>
@@ -419,7 +421,11 @@ class Component extends DCLogic {
         setSicp: setter('sicp'), setSitp: setter('sitp'), setOpened: setter('opened'), setNote: setter('note'),
         chokes: ['12/64', '16/64', '20/64', '24/64'].map(function(c){ return { t: c, on: w.choke === c, off: w.choke !== c, pick: function(){ self.mut(function(n){ n.first[k].choke = c; }); } }; })
       }; }),
-      path: s.pathOrder.map(function(idx, pos){ return { n: pos + 1, name: STOPS[idx].name, sub: STOPS[idx].where,
+      dragMove: function(e){ var d = self._drag; if (!d) return; e.preventDefault(); var steps = Math.round((e.clientY - d.y0) / d.h); var to = Math.max(0, Math.min(s.pathOrder.length - 1, d.i + steps)); if (to === d.i) return; var from = d.i; d.y0 += (to - from) * d.h; d.i = to; self.mut(function(n){ var o = n.pathOrder; var it = o.splice(from, 1)[0]; o.splice(to, 0, it); n.dragPos = to; }); },
+      dragEnd: function(){ if (!self._drag) return; self._drag = null; go({ dragPos: -1 }); },
+      path: s.pathOrder.map(function(idx, pos){ var lifted = s.dragPos === pos; return { n: pos + 1, name: STOPS[idx].name, sub: STOPS[idx].where,
+        bg: lifted ? '#FFF4EC' : '#FFFFFF', bd: lifted ? '#E2662B' : '#D3D9E0', shadow: lifted ? '0 6px 18px rgba(27,32,38,0.18)' : 'none', grip: lifted ? '#E2662B' : '#8C9BA8',
+        grab: function(e){ e.preventDefault(); var row = e.target.closest('[data-row]'); var r = row ? row.getBoundingClientRect() : { height: 60 }; try { e.target.setPointerCapture(e.pointerId); } catch (x) {} self._drag = { i: pos, y0: e.clientY, h: r.height + 10 * (r.height / (row ? row.offsetHeight || r.height : r.height)) }; go({ dragPos: pos }); },
         up: function(){ if (pos > 0) self.mut(function(n){ var o = n.pathOrder; var tmp = o[pos - 1]; o[pos - 1] = o[pos]; o[pos] = tmp; }); },
         down: function(){ if (pos < s.pathOrder.length - 1) self.mut(function(n){ var o = n.pathOrder; var tmp = o[pos + 1]; o[pos + 1] = o[pos]; o[pos] = tmp; }); } }; }),
       clock: clock, sHome: s.screen === 'home', sConfirm: s.screen === 'confirm', sStop: s.screen === 'stop', sReview: s.screen === 'review', sCheck: s.screen === 'check',

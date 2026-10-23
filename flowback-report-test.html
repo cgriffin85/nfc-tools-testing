@@ -37,15 +37,26 @@
     <div class="sub">Test build · design prototype · not for a live job</div>
   </header>
   <p>Click-through versions of the design boards. Nothing saves and every number is made up. Tap around and tell Chris what's wrong, what's missing, and what you'd never use.</p>
-  <h2>Phone</h2>
-  <a class="tool" href="#phone"><b>The flowback operator's phone</b><span>Before the first round, home, footpath, a full round, review and commit, between rounds</span></a>
-  <a class="tool" href="#padmap"><b>Footpath from above</b><span>Place the pad pieces, set the map, trace your walk (rough placeholder)</span></a>
+  <h2>Flowback operator's phone · the whole thing</h2>
+  <a class="tool" href="#phone"><b>The flowback operator's phone</b><span>Starts at home. Walk a full round, review, commit, check between rounds</span></a>
+  <h2>Flowback operator's phone · one screen at a time</h2>
+  <a class="tool" href="#first"><b>0 · Before the first round</b><span>Opened at, SICP, SITP, opening choke, per well</span></a>
+  <a class="tool" href="#home"><b>1 · Home</b><span>Complete through, last 12 hours, comment log, Start round</span></a>
+  <a class="tool" href="#footpath"><b>1a · My footpath</b><span>Hold the dots and drag the stops into your walking order</span></a>
+  <a class="tool" href="#padmap"><b>1b · Footpath from above · build the pad</b><span>Pick a piece, tap where it sits (rough placeholder)</span></a>
+  <a class="tool" href="#padtrace"><b>1c · Footpath from above · trace the walk</b><span>Map already set: tap the pieces in walking order</span></a>
+  <a class="tool" href="#hour"><b>2 · Confirm the hour</b><span>Which hour this round is for, then start the walk</span></a>
+  <a class="tool" href="#tanks"><b>3 · Tank levels</b><span>Tap feet and inches, Keep</span></a>
+  <a class="tool" href="#flag"><b>4 · Separator, a bad count caught</b><span>The keypad and the bad-reading flag</span></a>
+  <a class="tool" href="#review"><b>5 · Review and commit</b><span>Comments go here; look it over, then commit</span></a>
+  <a class="tool" href="#check"><b>6 · Between rounds</b><span>Metered rate vs tank volume rate, 12-hour scan</span></a>
+  <h2>Foreman's phone</h2>
   <a class="tool" href="#foreman"><b>Foreman's phone</b><span>Watching the pad: what needs a look, each well, 72-hour gauge stack, wells side by side</span></a>
   <h2>Desktop (best on a computer)</h2>
   <a class="tool" href="#wizard"><b>Job Setup</b><span>The administrator's eight-step setup for a new job</span></a>
   <a class="tool" href="#engineer"><b>Engineer's desk</b><span>The pad as an asset: totals, oil by well vs forecast, scorecard, trust panel</span></a>
   <a class="tool" href="#engsetup"><b>Engineer's setup</b><span>The customer's side: forecast, targets, alarm limits, what shows, who sees</span></a>
-  <p style="font-size:12px">Build 2026-10-23 · from design canvas boards 2, LIVE, 1b/1c, 15, 18, 18a.</p>
+  <p style="font-size:12px">Build 2026-10-23 · from design canvas boards 0–6, 1a–1c, LIVE, 2, 15, 18, 18a.</p>
 </div>
 <div id="bar"><a href="#">← All screens</a><span id="barTitle"></span><button type="button" id="restart">Start over</button></div>
 <div id="stage"><div id="frame"></div></div>
@@ -134,6 +145,7 @@ var DC = (function () {
     for (var n = e.target; n && n !== document; n = n.parentNode) { if (n.__h && n.__h[type]) { n.__h[type](e); return; } }
   }
   document.addEventListener('click', function (e) { fire('click', e); });
+  ['pointerdown', 'pointermove', 'pointerup', 'pointercancel'].forEach(function (t) { document.addEventListener(t, function (e) { fire(t, e); }, { passive: false }); });
   document.addEventListener('input', function (e) { if (e.target.type !== 'checkbox' && e.target.type !== 'radio') fire('change', e); });
   document.addEventListener('change', function (e) { if (e.target.type === 'checkbox' || e.target.type === 'radio' || e.target.localName === 'select') fire('change', e); });
   return { define: define, start: start, stop: stop };
@@ -715,16 +727,18 @@ return Component;
 <sc-if value="{{ sFootpath }}" hint-placeholder-val="{{ false }}">
 <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
 <div style="display: flex; align-items: center; gap: 8px"><button type="button" onClick="{{ toHome }}" aria-label="back" style="width: 40px; height: 40px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; font-size: 18px; color: #1B2026; cursor: pointer">‹</button><div style="font-family: 'Saira Semi Condensed', Impact, sans-serif; font-weight: 700; font-size: 22px">My footpath</div></div>
-<div style="font-size: 13px; color: #5B6775; line-height: 1.45">The order you walk it. Drag a block, or use the arrows. One footpath per job — the night hand walks the same one. Change it any time the routine changes.</div>
+<div style="font-size: 13px; color: #5B6775; line-height: 1.45">The order you walk it. Hold the dots and drag a block, or use the arrows. One footpath per job — the night hand walks the same one. Change it any time the routine changes.</div>
+<div onPointerMove="{{ dragMove }}" onPointerUp="{{ dragEnd }}" onPointerCancel="{{ dragEnd }}" style="display: flex; flex-direction: column; gap: 10px">
 <sc-for list="{{ path }}" as="p" hint-placeholder-count="10">
-<div style="display: flex; align-items: center; gap: 10px; background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 14px; padding: 8px 8px 8px 12px">
+<div data-row="1" style="display: flex; align-items: center; gap: 6px; background: {{ p.bg }}; border: 1px solid {{ p.bd }}; border-radius: 14px; padding: 4px 8px 4px 8px; box-shadow: {{ p.shadow }}; transition: box-shadow 120ms ease, background 120ms ease">
 <span style="font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; color: #B04A17; width: 22px">{{ p.n }}</span>
-<span style="color: #B8C2CC; font-size: 18px; letter-spacing: -2px" aria-hidden="true">⋮⋮</span>
+<span onPointerDown="{{ p.grab }}" role="button" aria-label="drag to reorder" style="width: 44px; height: 52px; display: flex; align-items: center; justify-content: center; color: {{ p.grip }}; font-size: 22px; letter-spacing: -3px; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none">⋮⋮</span>
 <span style="flex: 1; display: flex; flex-direction: column; line-height: 1.2"><span style="font-weight: 600; font-size: 14px">{{ p.name }}</span><span style="font-size: 11px; color: #5B6775">{{ p.sub }}</span></span>
 <button type="button" aria-label="move up" onClick="{{ p.up }}" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #D3D9E0; background: #FFFFFF; font-size: 16px; color: #1B2026; cursor: pointer">▲</button>
 <button type="button" aria-label="move down" onClick="{{ p.down }}" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #D3D9E0; background: #FFFFFF; font-size: 16px; color: #1B2026; cursor: pointer">▼</button>
 </div>
 </sc-for>
+</div>
 <div style="font-size: 12px; color: #5B6775">Add a stop (a meter that turned up, a test gauge): + Add a stop — not drawn yet.</div>
 </div>
 <div style="flex: none; padding: 10px 16px 18px; background: #EEF0F2; border-top: 1px solid #D3D9E0"><button type="button" onClick="{{ toHome }}" style="width: 100%; font-family: 'Saira Semi Condensed', Impact, sans-serif; font-size: 22px; font-weight: 700; padding: 18px; border-radius: 22px; border: none; background: #E2662B; color: #1B2026; cursor: pointer">Save footpath</button></div>
@@ -1047,7 +1061,11 @@ class Component extends DCLogic {
         setSicp: setter('sicp'), setSitp: setter('sitp'), setOpened: setter('opened'), setNote: setter('note'),
         chokes: ['12/64', '16/64', '20/64', '24/64'].map(function(c){ return { t: c, on: w.choke === c, off: w.choke !== c, pick: function(){ self.mut(function(n){ n.first[k].choke = c; }); } }; })
       }; }),
-      path: s.pathOrder.map(function(idx, pos){ return { n: pos + 1, name: STOPS[idx].name, sub: STOPS[idx].where,
+      dragMove: function(e){ var d = self._drag; if (!d) return; e.preventDefault(); var steps = Math.round((e.clientY - d.y0) / d.h); var to = Math.max(0, Math.min(s.pathOrder.length - 1, d.i + steps)); if (to === d.i) return; var from = d.i; d.y0 += (to - from) * d.h; d.i = to; self.mut(function(n){ var o = n.pathOrder; var it = o.splice(from, 1)[0]; o.splice(to, 0, it); n.dragPos = to; }); },
+      dragEnd: function(){ if (!self._drag) return; self._drag = null; go({ dragPos: -1 }); },
+      path: s.pathOrder.map(function(idx, pos){ var lifted = s.dragPos === pos; return { n: pos + 1, name: STOPS[idx].name, sub: STOPS[idx].where,
+        bg: lifted ? '#FFF4EC' : '#FFFFFF', bd: lifted ? '#E2662B' : '#D3D9E0', shadow: lifted ? '0 6px 18px rgba(27,32,38,0.18)' : 'none', grip: lifted ? '#E2662B' : '#8C9BA8',
+        grab: function(e){ e.preventDefault(); var row = e.target.closest('[data-row]'); var r = row ? row.getBoundingClientRect() : { height: 60 }; try { e.target.setPointerCapture(e.pointerId); } catch (x) {} self._drag = { i: pos, y0: e.clientY, h: r.height + 10 * (r.height / (row ? row.offsetHeight || r.height : r.height)) }; go({ dragPos: pos }); },
         up: function(){ if (pos > 0) self.mut(function(n){ var o = n.pathOrder; var tmp = o[pos - 1]; o[pos - 1] = o[pos]; o[pos] = tmp; }); },
         down: function(){ if (pos < s.pathOrder.length - 1) self.mut(function(n){ var o = n.pathOrder; var tmp = o[pos + 1]; o[pos + 1] = o[pos]; o[pos] = tmp; }); } }; }),
       clock: clock, sHome: s.screen === 'home', sConfirm: s.screen === 'confirm', sStop: s.screen === 'stop', sReview: s.screen === 'review', sCheck: s.screen === 'check',
@@ -1791,7 +1809,16 @@ return Component;
 (function () {
   var SCREENS = {
     phone: { c: 'Phone', w: 390, h: 844, phone: true, t: "Flowback operator's phone" },
-    padmap: { c: 'PadMap', w: 390, h: 844, phone: true, t: 'Footpath from above' },
+    first: { c: 'Phone', p: { startScreen: 'first', startStop: '0' }, w: 390, h: 844, phone: true, t: 'Before the first round' },
+    home: { c: 'Phone', p: { startScreen: 'home', startStop: '0' }, w: 390, h: 844, phone: true, t: 'Home' },
+    footpath: { c: 'Phone', p: { startScreen: 'footpath', startStop: '0' }, w: 390, h: 844, phone: true, t: 'My footpath' },
+    padmap: { c: 'PadMap', p: { startStep: '1' }, w: 390, h: 844, phone: true, t: 'Footpath from above' },
+    padtrace: { c: 'PadMap', p: { startStep: '3' }, w: 390, h: 844, phone: true, t: 'Trace the walk' },
+    hour: { c: 'Phone', p: { startScreen: 'confirm', startStop: '0' }, w: 390, h: 844, phone: true, t: 'Confirm the hour' },
+    tanks: { c: 'Phone', p: { startScreen: 'stop', startStop: '0' }, w: 390, h: 844, phone: true, t: 'Tank levels' },
+    flag: { c: 'Phone', p: { startScreen: 'stop', startStop: '4' }, w: 390, h: 844, phone: true, t: 'Separator, bad count caught' },
+    review: { c: 'Phone', p: { startScreen: 'review', startStop: '9' }, w: 390, h: 844, phone: true, t: 'Review and commit' },
+    check: { c: 'Phone', p: { startScreen: 'check', startStop: '0' }, w: 390, h: 844, phone: true, t: 'Between rounds' },
     foreman: { c: 'Foreman', w: 390, h: 844, phone: true, t: "Foreman's phone" },
     wizard: { c: 'Wizard', w: 1600, h: 900, t: 'Job Setup' },
     engineer: { c: 'Engineer', w: 1600, h: 900, t: "Engineer's desk" },
@@ -1825,9 +1852,9 @@ return Component;
     if (!sc) { cur = null; DC.stop(); menu.style.display = ''; bar.style.display = 'none'; stage.style.display = 'none'; document.title = 'Flowback Report — Test Build'; return; }
     cur = sc; menu.style.display = 'none'; bar.style.display = 'flex'; stage.style.display = 'flex'; stage.className = sc.phone ? 'phone' : '';
     document.getElementById('barTitle').textContent = sc.t; document.title = sc.t + ' — Flowback Report test';
-    DC.start(sc.c, frame, {}); fit(); window.scrollTo(0, 0);
+    DC.start(sc.c, frame, sc.p || {}); fit(); window.scrollTo(0, 0);
   }
-  document.getElementById('restart').addEventListener('click', function () { if (cur) { DC.start(cur.c, frame, {}); fit(); } });
+  document.getElementById('restart').addEventListener('click', function () { if (cur) { DC.start(cur.c, frame, cur.p || {}); fit(); } });
   window.addEventListener('hashchange', route); window.addEventListener('resize', fit);
   route();
 })();
