@@ -272,7 +272,7 @@ textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(
 </header>
 
 <main class="wrap">
-  <div class="banner" id="exBanner" hidden><b>Example job.</b> Every name and number here is made up so you can try the buttons. Setup → <b>Start a real job</b> clears it.</div>
+  <button type="button" class="banner" id="needBanner" hidden style="text-align:left;cursor:pointer;width:100%"></button>
 
   <!-- LOG -->
   <section class="view" id="v-log">
@@ -383,8 +383,8 @@ textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(
 
     <div class="card stack">
       <div class="cardh">Start fresh</div>
-      <p class="note">Clears the log and setup on this phone. The example job comes back any time from here.</p>
-      <div class="row"><button class="mbtn prim" type="button" id="realBtn">Start a real job</button><button class="mbtn" type="button" id="exBtn">Load the example</button></div>
+      <p class="note">Clears the log and setup on this phone for a new well. Make the shift picture first — it is the only copy that leaves the phone.</p>
+      <div class="row"><button class="mbtn" type="button" id="realBtn">Clear this phone for a new job</button></div>
     </div>
   </section>
 
@@ -397,6 +397,8 @@ textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(
         <div class="fld"><span class="lbl">Shift</span><div class="seg" id="sWhich"><button type="button" data-w="Day">Day</button><button type="button" data-w="Night">Night</button></div></div>
       </div>
       <div class="derived" id="shiftSum"></div>
+      <button class="mbtn" type="button" id="newShift">Start a new shift on this phone</button>
+      <p class="note">Use this when the same phone carries on into the next shift without a handoff scan. The record stays; the shift summary and picture start from now.</p>
     </div>
     <div class="card stack">
       <div class="cardh">Hand off</div>
@@ -412,7 +414,7 @@ textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(
     </div>
   </section>
 
-  <div class="ftr">Drill-Out Log · design prototype v0.1 · 2026-10-23<br>Times use the Bottoms-Up method: capacity factor 1029.4, annulus from surface to the bit.</div>
+  <div class="ftr">Drill-Out Log · field prototype v0.2 · 2026-10-23<br>Times use the Bottoms-Up method: capacity factor 1029.4, annulus from surface to the bit.</div>
 </main>
 
 <datalist id="dlCust"></datalist><datalist id="dlRegion"></datalist><datalist id="dlRig"></datalist><datalist id="dlCk"></datalist>
@@ -494,7 +496,7 @@ function sorted(){return S.events.filter(function(e){return !cur(e).d.void;}).sl
 function derive(now){
   now=now||Date.now();var u=S.setup,evs=sorted();
   var D={lastTag:null,lastThrough:0,depth:NaN,pump:NaN,ret:NaN,retAt:NaN,mani:null,mpsi:NaN,cpsi:NaN,target:0,targetBy:"",
-    etas:[],straps:0,lastStrap:null,surface:Number(u.surface),surfStart:Number(u.surface),gl:0,counts:[],pulls:0,lastPullAt:NaN,partsOz:0,sweeps:0,plugsThisShift:[]};
+    etas:[],straps:0,lastStrap:null,surface:(Number(u.surface)>0?Number(u.surface):NaN),surfStart:(Number(u.surface)>0?Number(u.surface):NaN),gl:0,counts:[],pulls:0,lastPullAt:NaN,partsOz:0,sweeps:0,plugsThisShift:[]};
   var acc=isFinite(D.surface),tPrev=NaN;
   function step(t){if(acc&&isFinite(tPrev)&&isFinite(D.pump)&&t>tPrev){var r=isFinite(D.ret)?D.ret:D.pump+D.target;var dv=(r-D.pump)*(t-tPrev)/MIN;D.surface+=dv;D.gl+=dv;}tPrev=t;}
   evs.forEach(function(e){var c=cur(e),d=c.d,t=c.t;step(t);
@@ -504,13 +506,13 @@ function derive(now){
         D.lastThrough=Math.max(D.lastThrough,d.plug);if(isFinite(d.depth))D.depth=d.depth;
         if(isFinite(d.pump))D.pump=d.pump;if(isFinite(d.ret)){D.ret=d.ret;}if(d.mani)D.mani=d.mani;if(isFinite(d.mpsi))D.mpsi=d.mpsi;if(isFinite(d.cpsi))D.cpsi=d.cpsi;
         var tm=times(D.depth,D.pump,isFinite(D.ret)?D.ret:D.pump);
-        D.etas.push({id:e.id,kind:"through",plug:d.plug,from:t,due:t+tm.sweep*MIN,bit:t+tm.up*MIN,closed:null,how:null,diff:NaN,sup:false});
+        if(isFinite(tm.sweep))D.etas.push({id:e.id,kind:"through",plug:d.plug,from:t,due:t+tm.sweep*MIN,bit:t+tm.up*MIN,closed:null,how:null,diff:NaN,sup:false});
         if(t>=S.shift.started)D.plugsThisShift.push(d.plug);break;
       case "sweep_pumped":
         if(isFinite(d.pump))D.pump=d.pump;var dd=isFinite(d.depth)?d.depth:D.depth;
         D.etas.forEach(function(x){if(!x.closed&&x.kind==="through"&&x.plug===d.plug)x.sup=true;});
         var tm2=times(dd,D.pump,isFinite(D.ret)?D.ret:D.pump);D.sweeps++;
-        D.etas.push({id:e.id,kind:"sweep",type:d.type,plug:d.plug,from:t,due:t+tm2.sweep*MIN,bit:NaN,closed:null,how:null,diff:NaN,sup:false});break;
+        if(isFinite(tm2.sweep))D.etas.push({id:e.id,kind:"sweep",type:d.type,plug:d.plug,from:t,due:t+tm2.sweep*MIN,bit:NaN,closed:null,how:null,diff:NaN,sup:false});break;
       case "sweep_seen":
         var open=D.etas.filter(function(x){return !x.closed&&!x.sup;}).sort(function(a,b){return a.due-b.due;});
         if(open.length){var x=open[0];x.closed=t;x.how="seen";x.diff=(x.due-t)/MIN;x.seenId=e.id;e._eta=x;}break;
@@ -641,11 +643,12 @@ function entry(k,e){/* open the sheet for kind k; e = existing event when correc
       var r=el("div","row");F2.pump=fRate("Pump rate",e?d.pump:(isFinite(D.pump)?D.pump:4.0));F2.ret=fRate("Return rate",isFinite(retDef)?retDef:(isFinite(D.pump)?D.pump:4.0));r.appendChild(F2.pump.node);r.appendChild(F2.ret.node);b.appendChild(r);
       F2.mani=fMani(e?d.mani:D.mani);b.appendChild(F2.mani.node);
       var r2=el("div","row");F2.mpsi=fPsi("Manifold",e?d.mpsi:D.mpsi);F2.cpsi=fPsi("Plug catcher",e?d.cpsi:D.cpsi);r2.appendChild(F2.mpsi.node);r2.appendChild(F2.cpsi.node);b.appendChild(r2);
+      if(!isFinite(dep)){F2.depth=fDepth("Bit depth",isFinite(D.depth)?D.depth:10000,3000,1);b.insertBefore(F2.depth.node,r);}
       var dv=el("div","derived");b.appendChild(dv);
-      function upd(){var tm=times(dep,F2.pump.get(),F2.ret.get()),t0=F2.time.get();var av=annAV(dep,F2.ret.get());
+      function upd(){if(F2.depth)dep=F2.depth.get();var tm=times(dep,F2.pump.get(),F2.ret.get()),t0=F2.time.get();if(!isFinite(tm.sweep)){dv.innerHTML="Sweep time needs "+(missing().filter(function(x){return /reel|casing/.test(x);}).join(" and ")||"the well in Setup")+".<br>Differential: <b>"+signed(F2.cpsi.get()-F2.mpsi.get())+" psi</b>";return;}var av=annAV(dep,F2.ret.get());
         dv.innerHTML="Depth <b>"+fnum(dep)+" ft</b><br>Sweep at surface if pumped now: <b>"+clock(t0+tm.sweep*MIN)+"</b> ("+dur(tm.sweep)+")<br>Cuttings off the bit: <b>"+clock(t0+tm.up*MIN)+"</b> ("+dur(tm.up)+")<br>Differential: <b>"+signed(F2.cpsi.get()-F2.mpsi.get())+" psi</b> · AV at the bit ≈ "+fnum(av)+" ft/min";}
       b.addEventListener("scroll",function(){clearTimeout(upd._t);upd._t=setTimeout(upd,130);},true);setTimeout(upd,150);},
-      function(){commit(F2.time.get(),{plug:n2,depth:dep,pump:F2.pump.get(),ret:F2.ret.get(),mani:F2.mani.get(),mpsi:F2.mpsi.get(),cpsi:F2.cpsi.get()});});return;}
+      function(){if(F2.depth)dep=F2.depth.get();commit(F2.time.get(),{plug:n2,depth:dep,pump:F2.pump.get(),ret:F2.ret.get(),mani:F2.mani.get(),mpsi:F2.mpsi.get(),cpsi:F2.cpsi.get()});});return;}
   if(k==="sweep_pumped"){var plug=e?d.plug:D.lastThrough;
     openSheet("Sweep pumped","Starts the clock to surface from where the bit is now.",function(b){
       F2.type=fSeg("Kind",[["gel","Gel"],["dye","Dye"],["toe","Toe"],["mid","Mid-lateral"],["heel","Heel"]],d.type||"gel");b.appendChild(F2.type.node);
@@ -710,11 +713,11 @@ function strapSheet(e){
     function calc(rd){var ok=rd.filter(function(x){return !x.skip&&isFinite(x.bbl);});if(ok.length<2)return{rate:NaN,segs:[]};var a=ok[0],z=ok[ok.length-1];var segs=[];for(var i=1;i<ok.length;i++)segs.push({a:ok[i-1].m,b:ok[i].m,r:(ok[i].bbl-ok[i-1].bbl)/(ok[i].m-ok[i-1].m)});
       var t=tk(),res=t.kind==="rect"&&isFinite(Number(t.bpi))?0.5*Number(t.bpi)/(z.m-a.m):NaN;return{rate:(z.bbl-a.bbl)/(z.m-a.m),segs:segs,span:z.m-a.m,res:res};}
     function upd(){var rd=read(),r=calc(rd);var pump=D.pump,tgt=D.target;
-      if(!isFinite(r.rate)){dv.innerHTML="Need two good readings for a rate.";g.set("");return;}
-      var h="Return rate: <b>"+fnum(r.rate,2)+" bbl/min</b> over "+r.span+" min"+(isFinite(r.res)?" (± "+fnum(r.res,2)+" from a half inch)":"")+"<br>Segments: "+r.segs.map(function(s){return s.a+"–"+s.b+"′ "+fnum(s.r,2);}).join(" · ");
+      if(!isFinite(r.rate)){var tk0=tk();dv.innerHTML=(tk0.kind==="rect"&&!(Number(tk0.bpi)>0))?"Set this tank\u2019s bbl/in in Setup to get a rate.":(tk0.kind==="chart"?"Read the chart and enter barrels for at least two readings.":"Need two good readings for a rate.");g.set("");return;}
+      var h="Return rate: <b>"+fnum(r.rate,2)+" bbl/min</b> over "+r.span+" min"+(isFinite(r.res)?" (± "+fnum(r.res,2)+" from a half inch)":"")+"<br>Segments: "+r.segs.map(function(s){return s.a+"–"+s.b+" min "+fnum(s.r,2);}).join(" · ");
       if(isFinite(pump)){var off=r.rate-pump-tgt;h+="<br>Pump "+fnum(pump,1)+(tgt?" · target "+signed(tgt,1):" · barrel in, barrel out")+": <b class='"+(Math.abs(off)<0.15?"ok":"warn")+"'>"+(Math.abs(off)<0.15?"on target":signed(off,2)+" bbl/min "+(off>0?"over":"short"))+"</b>";}
       h+="<br>Differential: <b>"+signed(F2.cpsi.get()-F2.mpsi.get())+" psi</b>";dv.innerHTML=h;
-      var prev=D.ret;g.set(isFinite(prev)&&prev>0&&Math.abs(r.rate-prev)/prev>0.3?"That's "+fnum(Math.abs(r.rate-prev)/prev*100)+"% off the last strap ("+fnum(prev,2)+" bbl/min).":"");
+      var prev=D.ret;g.set(isFinite(prev)&&prev>0&&Math.abs(r.rate-prev)/prev>0.3?"That's "+fnum(Math.abs(r.rate-prev)/prev*100)+"% off the last return rate ("+fnum(prev,2)+" bbl/min). Did every reading get rolled?":"");
       F2.res=r;F2.rd=rd;}
     F2.tank.seg.onchange=function(){setTimeout(upd,10);};
     b.addEventListener("scroll",function(){clearTimeout(upd._t);upd._t=setTimeout(upd,130);},true);setTimeout(upd,160);
@@ -732,6 +735,13 @@ function countSheet(e){var D=derive(),c=e?cur(e):null,d=c?c.d:{},u=S.setup,F2={r
     return{blocked:function(){upd();if(!isFinite(F2.tot)){toast("Enter every tank first");return true;}return false;}};},
   function(){var data={total:Math.round(F2.tot),tanks:F2.rows.map(function(r){var v=r.get();return{name:r.t.name,in:v.in,bbl:Math.round(v.bbl*10)/10};})};if(e)correct(e,F2.time.get(),data,"");else addEvent("shift_count",F2.time.get(),data);});}
 
+function missing(){var u=S.setup,m=[];
+  if(u.mode==="coil"&&!(Number(u.reel)>0))m.push("reel capacity");
+  for(var i=0;i<u.csgN;i++)if(!(Number(u.csg[i].to)>0))m.push(u.csgN>1?"casing "+(i+1)+(i<u.csgN-1?" shoe":" TD"):"casing TD");
+  if(!u.plugs.length)m.push("plug sheet");
+  if(u.tanks.some(function(t){return t.kind==="rect"&&!(Number(t.bpi)>0);}))m.push("tank bbl/in");
+  if(!(Number(u.surface)>0))m.push("surface total");
+  return m;}
 /* ================= render: LOG ================= */
 var filter="all";
 function evLine(e,D){var c=cur(e),d=c.d,k=e.k,s="",tags=[];
@@ -754,7 +764,7 @@ function evLine(e,D){var c=cur(e),d=c.d,k=e.k,s="",tags=[];
   return{title:title,s:s,tags:tags};}
 function render(){
   var D=derive(),u=S.setup,now=Date.now();
-  $("exBanner").hidden=!S.example;
+  var miss=missing();var nb=$("needBanner");nb.hidden=!miss.length;nb.innerHTML=miss.length?"<b>Setup needs:</b> "+miss.join(" · ")+". Sweep times stay blank until these are in. Tap to open Setup.":"";
   $("hsub").textContent=(u.well||"New job")+" · "+S.shift.which+" shift";
   /* status */
   var st=$("statusCard");st.innerHTML="";
@@ -858,8 +868,8 @@ function wireSetup(){var u=function(){return S.setup;};
   ["sLSmax","sRSmax"].forEach(function(id){$(id).addEventListener("change",function(){u()[id==="sLSmax"?"lsMax":"rsMax"]=+this.value;save();});});
   $("sEvery").addEventListener("change",function(){u().every=+this.value;save();render();});$("sLen").addEventListener("change",function(){u().len=+this.value;save();});
   $("ckAdd").addEventListener("click",function(){var v=$("ckNew").value.trim();if(!v)return;u().checklist=u().checklist||[];if(u().checklist.indexOf(v)<0)u().checklist.push(v);remember("ck",v);$("ckNew").value="";save();bindSetup();render();toast("Added to the Log tab checklist");});
-  $("realBtn").addEventListener("click",function(){confirmSheet("Start a real job?","This clears the example and anything logged on this phone.","Clear and start",function(){S=blankState();save();bindSetup();render();go("setup");toast("Fresh job — fill in setup");});});
-  $("exBtn").addEventListener("click",function(){confirmSheet("Load the example?","This replaces what's on this phone with the made-up job.","Load example",function(){S=example();save();bindSetup();render();go("log");});});
+  $("realBtn").addEventListener("click",function(){confirmSheet("Clear this phone?","Setup and every entry on this phone are erased. Make the shift picture first if you need it.","Clear it",function(){S=blankState();save();bindSetup();render();go("setup");toast("Cleared — fill in setup");});});
+  $("newShift").addEventListener("click",function(){confirmSheet("Start a new shift?","The summary and the next shift picture start from now. Nothing is erased.","Start new shift",function(){S.shift.started=Date.now();S.shift.which=S.shift.which==="Day"?"Night":"Day";S.shift.hand="";addEvent("note",Date.now(),{note:S.shift.which+" shift started on this phone"});bindSetup();render();});});
   $("sHand").addEventListener("input",function(){S.shift.hand=this.value;save();});
   $("sWhich").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;S.shift.which=b.getAttribute("data-w");save();bindSetup();render();});
 }
@@ -868,6 +878,7 @@ function confirmSheet(title,sub,label,fn){openSheet(title,sub,function(){},funct
 /* ================= tabs ================= */
 function go(v){document.querySelectorAll("#tabs button").forEach(function(b){var on=b.getAttribute("data-v")===v;b.classList.toggle("on",on);b.setAttribute("aria-selected",on?"true":"false");});
   ["log","setup","shift"].forEach(function(x){$("v-"+x).hidden=x!==v;});try{localStorage.setItem(KEY+"-tab",v);}catch(e){}window.scrollTo(0,0);}
+$("needBanner").addEventListener("click",function(){go("setup");});
 $("tabs").addEventListener("click",function(e){var b=e.target.closest("button");if(b)go(b.getAttribute("data-v"));});
 $("filt").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;filter=b.getAttribute("data-f");$("filt").querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b);});render();});
 
@@ -929,7 +940,7 @@ function shiftPicture(){var D=derive(),u=S.setup,sm=shiftSummary(D),W=1080,PAD=4
   cv.width=W;cv.height=H;cx.fillStyle="#FFFFFF";cx.fillRect(0,0,W,H);
   cx.fillStyle="#C00000";cx.fillRect(0,0,W,10);
   cx.fillStyle="#1A1A1A";var tfs=64;do{cx.font=tfs+"px 'Bebas Neue', Impact, sans-serif";tfs-=2;}while(cx.measureText("DRILL-OUT LOG — SHIFT RECORD").width>W-PAD*2&&tfs>30);cx.fillText("DRILL-OUT LOG — SHIFT RECORD",PAD,96);
-  cx.font="600 20px Barlow, Arial";cx.fillStyle="#C00000";cx.fillText("NFC SERVICES · "+(S.example?"EXAMPLE — MADE-UP NUMBERS":"DESIGN PROTOTYPE v0.1"),PAD,130);
+  cx.font="600 20px Barlow, Arial";cx.fillStyle="#C00000";cx.fillText("NFC SERVICES · "+(S.example?"EXAMPLE — MADE-UP NUMBERS":"FIELD PROTOTYPE v0.2"),PAD,130);
   var facts=[["Customer",u.cust],["Well",u.well],["Region",u.region],["CT co. / rig",u.rig],["Work string",u.mode==="coil"?"Coil "+u.coilOD+"″ · reel "+u.reel+" bbl":"Stick "+u.stick+"″ · ID "+u.stickID+"″"],["Plugs",u.plugs.length+" "+u.plugType+" · pull every "+(u.pullEvery||"when told")],
     ["Plug catcher",u.catcher],["Shift",S.shift.which+" · "+(S.shift.hand||"—")+" · "+new Date(S.shift.started).toLocaleDateString("en-US")+" "+clock(S.shift.started)+" to "+clock(Date.now())]];
   var y=180;facts.forEach(function(f,i){var col=i%2,x=PAD+col*(W-PAD*2)/2;if(col===0&&i)y+=58;cx.font="600 16px Barlow, Arial";cx.fillStyle="#6A6A6A";cx.fillText(f[0].toUpperCase(),x,y);cx.font="600 23px Barlow, Arial";cx.fillStyle="#1A1A1A";var tx=String(f[1]||"—");while(cx.measureText(tx).width>(W-PAD*2)/2-20&&tx.length>4)tx=tx.slice(0,-2);cx.fillText(tx,x,y+26);});
@@ -958,38 +969,11 @@ $("endShift").addEventListener("click",function(){var go2=function(){var cv=shif
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(go2);else go2();});
 var _dl=null;function dlNS(){if(_dl)return _dl;_dl=(window.claude&&window.claude.use?window.claude.use("downloads"):Promise.resolve(null)).catch(function(){return null;});return _dl;}
 
-/* ================= example job (made up) ================= */
-function example(){var s=blankState();s.example=true;var u=s.setup;
-  u.cust="[Customer]";u.well="[Well] 2H";u.region="[Region]";u.rig="[CT company]";u.catcher="PC-[n]";u.mode="coil";u.coilOD=2.375;u.reel="58.4";
-  u.csgN=1;u.csg[0]={size:"5½",id:4.778,to:"21450"};u.plugType="composite";u.pullEvery=1;u.gFirst="11200";u.gSpace="240";u.gCount="40";
-  for(var i=0;i<40;i++)u.plugs.push(String(11200+i*240));u.plugs[2]="11690";u.plugs[6]="12650";
-  u.tanks=[{name:"Tank 1",kind:"rect",bpi:"1.67"},{name:"Tank 2",kind:"rect",bpi:"1.67"},{name:"Tank 3",kind:"chart",bpi:""}];u.surface="1500";u.checklist=["Pressure test iron","Plug catcher screens in"];
-  s.shift={hand:"[Hand]",which:"Day",started:Date.now()-200*MIN};s.used={cust:["[Customer]"],region:["[Region]"],rig:["[CT company]"],ck:["Pressure test iron","Plug catcher screens in","Bleed-off line tied in"]};
-  S=s;var t0=Date.now()-195*MIN,ev=s.events;function E(k,t,d,lag){ev.push({id:uid(),k:k,t:t,ts:t+(lag||0)*MIN,d:d,corr:[]});return ev[ev.length-1];}
-  var mani={gl:false,ls:{c:24,t:"ADJ"},rs:{c:"SI",t:"ADJ"}};
-  E("check",t0-20*MIN,{item:"Pressure test iron"});E("check",t0-15*MIN,{item:"Plug catcher screens in"});
-  E("trip_in",t0,{depth:0,note:"RIH with mill"});
-  var lvl=58;for(var k=0;k<13;k++){var ts=t0+5*MIN+k*15*MIN;if(ts>Date.now()-6*MIN)break;var rate=[4.1,4.2,4.2,4.3,4.2,4.4,4.5,4.4,4.5,4.6,4.5,4.6,4.5][k];var r0=lvl;
-    var rd=[0,1,3,5].map(function(m){var x=Math.round((r0+rate*m/1.67)*2)/2;return{m:m,in:x,bbl:Math.round(x*1.67*10)/10,skip:false};});if(k===5)rd[1].skip=true;
-    var rr=Math.round((rd[3].bbl-rd[0].bbl)/5*100)/100;E("strap",ts,{tank:k%2?"Tank 2":"Tank 1",kind:"rect",r:rd,rate:rr,segs:[],mani:k>7?{gl:false,ls:{c:"W/O",t:"ADJ"},rs:{c:28,t:"ADJ"}}:mani,mpsi:380+k*4,cpsi:410+k*5+(k===7?40:0)},k===9?4:0);lvl=k%2?58:60;}
-  function plug(n,tTag,depth,pump,ret,m,mp,cp,seenOff,pullLag,lb,oz){E("tag",tTag,{plug:n,depth:depth,planned:Number(u.plugs[n-1])});var th=tTag+7*MIN;E("through",th,{plug:n,depth:depth,pump:pump,ret:ret,mani:m,mpsi:mp,cpsi:cp});
-    var tm=times(depth,pump,ret),due=th+tm.sweep*MIN;if(seenOff!=null&&due-seenOff*MIN<Date.now()-2*MIN){E("sweep_seen",due-seenOff*MIN,{how:"visc"});E("screens",due-seenOff*MIN+(pullLag||4)*MIN,{plug:n,lb:lb,oz:oz,what:"parts",note:"bag P"+n});}}
-  plug(1,t0+40*MIN,11213,4.2,4.2,mani,380,412,2,4,1,3);
-  plug(2,t0+62*MIN,11452,4.2,4.3,mani,384,418,0,5,1,9);
-  plug(3,t0+85*MIN,11705,4.3,4.3,mani,388,421,-3,3,0,14);
-  E("rate_call",t0+98*MIN,{target:0.3,by:"Tool hand",note:"fighting friction — keep AV up"});
-  E("stall",t0+104*MIN,{depth:11930,note:"stalled twice on plug 4, picked up and worked through"});
-  plug(4,t0+108*MIN,11938,4.5,4.6,{gl:false,ls:{c:"W/O",t:"ADJ"},rs:{c:28,t:"ADJ"}},392,431,1,4,2,13);
-  var swp=t0+118*MIN;E("sweep_pumped",swp,{type:"gel",plug:4,depth:11938,pump:4.5,mix:"10-20-10"});
-  plug(5,t0+150*MIN,12185,4.6,4.6,{gl:false,ls:{c:"W/O",t:"ADJ"},rs:{c:28,t:"ADJ"}},396,440,null);
-  var e6=E("tag",t0+178*MIN,{plug:6,depth:12428,planned:12410});
-  E("note",t0+186*MIN,{note:"Company man asked for a sample of returns after plug 6"});
-  return s;}
-
 /* ================= boot ================= */
-S=load()||example();
+S=load();var firstOpen=false;if(!S||S.example){S=blankState();save();firstOpen=true;}
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}
 wireSetup();bindSetup();render();
-try{var tab=localStorage.getItem(KEY+"-tab");if(tab)go(tab);}catch(e){}
+if(firstOpen||missing().length>=4)go("setup");else{try{var tab=localStorage.getItem(KEY+"-tab");if(tab)go(tab);}catch(e){}}
 setInterval(function(){if(modal.hidden)render();},30000);
 window.__dol={derive:derive,payload:payload,asciiJSON:asciiJSON,shiftPicture:shiftPicture,applyPayload:applyPayload,state:function(){return S;}};
 })();
