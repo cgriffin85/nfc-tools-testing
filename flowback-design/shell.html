@@ -38,7 +38,8 @@
   </header>
   <p>Click-through versions of the design boards. Nothing saves and every number is made up. Tap around and tell Chris what's wrong, what's missing, and what you'd never use.</p>
   <h2>Flowback operator's phone · the whole thing</h2>
-  <a class="tool" href="#phone"><b>The flowback operator's phone</b><span>Starts at home. Walk a full round, review, commit, check between rounds</span></a>
+  <a class="tool" href="#walk" style="border-color:#E2662B"><b>Walk it start to finish</b><span>Blank job. Before the first round → set your footpath → walk a round in your order → review → commit → round two shows your numbers as last hour</span></a>
+  <a class="tool" href="#phone"><b>The flowback operator's phone, mid-shift</b><span>Starts at home on a job already running, with the comment log and last 12 hours filled in</span></a>
   <h2>Flowback operator's phone · one screen at a time</h2>
   <a class="tool" href="#first"><b>0 · Before the first round</b><span>Opened at, SICP, SITP, opening choke, per well</span></a>
   <a class="tool" href="#home"><b>1 · Home</b><span>Complete through, last 12 hours, comment log, Start round</span></a>
@@ -156,6 +157,7 @@ var DC = (function () {
 (function () {
   var SCREENS = {
     phone: { c: 'Phone', w: 390, h: 844, phone: true, t: "Flowback operator's phone" },
+    walk: { c: 'Phone', p: { demo: 'walk' }, w: 390, h: 844, phone: true, t: 'Walk it start to finish' },
     first: { c: 'Phone', p: { startScreen: 'first', startStop: '0' }, w: 390, h: 844, phone: true, t: 'Before the first round' },
     home: { c: 'Phone', p: { startScreen: 'home', startStop: '0' }, w: 390, h: 844, phone: true, t: 'Home' },
     footpath: { c: 'Phone', p: { startScreen: 'footpath', startStop: '0' }, w: 390, h: 844, phone: true, t: 'My footpath' },

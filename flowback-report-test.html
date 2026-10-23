@@ -38,7 +38,8 @@
   </header>
   <p>Click-through versions of the design boards. Nothing saves and every number is made up. Tap around and tell Chris what's wrong, what's missing, and what you'd never use.</p>
   <h2>Flowback operator's phone · the whole thing</h2>
-  <a class="tool" href="#phone"><b>The flowback operator's phone</b><span>Starts at home. Walk a full round, review, commit, check between rounds</span></a>
+  <a class="tool" href="#walk" style="border-color:#E2662B"><b>Walk it start to finish</b><span>Blank job. Before the first round → set your footpath → walk a round in your order → review → commit → round two shows your numbers as last hour</span></a>
+  <a class="tool" href="#phone"><b>The flowback operator's phone, mid-shift</b><span>Starts at home on a job already running, with the comment log and last 12 hours filled in</span></a>
   <h2>Flowback operator's phone · one screen at a time</h2>
   <a class="tool" href="#first"><b>0 · Before the first round</b><span>Opened at, SICP, SITP, opening choke, per well</span></a>
   <a class="tool" href="#home"><b>1 · Home</b><span>Complete through, last 12 hours, comment log, Start round</span></a>
@@ -665,7 +666,8 @@ return Component;
 <sc-if value="{{ sHome }}" hint-placeholder-val="{{ true }}">
 <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 12px">
 <div style="display: flex; gap: 6px"><span style="padding: 6px 12px; border-radius: 999px; background: #2F3842; color: #FFFFFF; font-size: 13px; font-weight: 600">[Pad name]</span><span style="padding: 6px 12px; border-radius: 999px; background: #FFFFFF; border: 1px solid #D3D9E0; font-size: 13px; color: #5B6775">[Other pad]</span><span style="margin-left: auto; font-size: 12px; color: #5B6775; align-self: center">your reports this shift</span></div>
-<sc-if value="{{ justCommitted }}" hint-placeholder-val="{{ false }}"><div style="background: #E6ECF1; border-radius: 14px; padding: 10px 14px; font-size: 14px"><b>{{ committedThrough }} committed.</b> Put the phone away.</div></sc-if>
+<sc-if value="{{ justCommitted }}" hint-placeholder-val="{{ false }}"><div style="background: #E6ECF1; border-radius: 14px; padding: 10px 14px; font-size: 14px"><b>{{ committedThrough }} committed.</b> Put the phone away. Next round, what you just entered shows as last hour.</div></sc-if>
+<sc-if value="{{ footSaved }}" hint-placeholder-val="{{ false }}"><div style="background: #E6ECF1; border-radius: 14px; padding: 10px 14px; font-size: 14px"><b>Footpath saved.</b> Your next round walks the stops in that order.</div></sc-if>
 <button type="button" onClick="{{ toFirst }}" style="text-align: left; font-family: 'IBM Plex Sans', Arial, sans-serif; background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 14px; padding: 10px 14px; font-size: 13px; color: #1B2026; cursor: pointer; display: flex; justify-content: space-between; align-items: center"><span><b>Before the first round</b> <span style="color: #5B6775">— opened at, SICP, SITP per well</span></span><span style="color: #B04A17; font-weight: 600">{{ firstStatus }}</span></button>
 <div style="background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px">
 <div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #5B6775">Complete through</span><span style="font-size: 12px; color: #5B6775">your shift: {{ roundsDone }} of 12 rounds in</span></div>
@@ -741,7 +743,7 @@ return Component;
 </div>
 <div style="font-size: 12px; color: #5B6775">Add a stop (a meter that turned up, a test gauge): + Add a stop — not drawn yet.</div>
 </div>
-<div style="flex: none; padding: 10px 16px 18px; background: #EEF0F2; border-top: 1px solid #D3D9E0"><button type="button" onClick="{{ toHome }}" style="width: 100%; font-family: 'Saira Semi Condensed', Impact, sans-serif; font-size: 22px; font-weight: 700; padding: 18px; border-radius: 22px; border: none; background: #E2662B; color: #1B2026; cursor: pointer">Save footpath</button></div>
+<div style="flex: none; padding: 10px 16px 18px; background: #EEF0F2; border-top: 1px solid #D3D9E0"><button type="button" onClick="{{ saveFootpath }}" style="width: 100%; font-family: 'Saira Semi Condensed', Impact, sans-serif; font-size: 22px; font-weight: 700; padding: 18px; border-radius: 22px; border: none; background: #E2662B; color: #1B2026; cursor: pointer">Save footpath</button></div>
 </sc-if>
 
 <sc-if value="{{ sConfirm }}" hint-placeholder-val="{{ false }}">
@@ -927,13 +929,14 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     var scr = props.startScreen || 'home', stop = parseInt(props.startStop || '0', 10) || 0;
-    var fill = scr !== 'home' && scr !== 'confirm';
+    var walk = props.demo === 'walk'; if (walk) scr = 'first';
+    var fill = !walk && scr !== 'home' && scr !== 'confirm';
     var vals = {};
     STOPS.forEach(function(s, si){ s.fields.forEach(function(f){
       if (!fill || (scr === 'stop' && si > stop)) { vals[f.id] = f.k === 'level' ? { ft: -1, inch: -1 } : ''; return; }
       vals[f.id] = f.k === 'level' ? { ft: f.demo[0], inch: f.demo[1] } : String(f.demo);
     }); });
-    this.state = { screen: scr, stop: stop, vals: vals, ack: {}, manual: {}, hour: 16, through: '15:00', justCommitted: false, armed: false, notes: {}, marks: (fill ? { 8: true } : {}), kept: {}, whEvents: {}, pathOrder: [0,1,2,3,4,5,6,7,8,9], first: { A: { sicp: '', sitp: '', opened: '', choke: '', note: '' }, B: { sicp: '', sitp: '', opened: '', choke: '', note: '' }, C: { sicp: '', sitp: '', opened: '', choke: '', note: '' } }, padComment: '', log: [
+    this.state = { screen: scr, stop: stop, vals: vals, ack: {}, manual: {}, hour: 16, through: '15:00', justCommitted: false, armed: false, notes: {}, marks: (fill ? { 8: true } : {}), kept: {}, whEvents: {}, pathOrder: [0,1,2,3,4,5,6,7,8,9], last: {}, lastRate: {}, rounds: 0, footSaved: false, first: { A: { sicp: '', sitp: '', opened: '', choke: '', note: '' }, B: { sicp: '', sitp: '', opened: '', choke: '', note: '' }, C: { sicp: '', sitp: '', opened: '', choke: '', note: '' } }, padComment: '', log: [
       { t: '15:00', who: '[Well C]', text: 'CC to 24/64, tubing settling' },
       { t: '14:00', who: 'Pad', text: 'Battery automation back online 13:40; tanks reading true again' },
       { t: '13:00', who: '[Well A]', text: 'Sand sock heavy, dumped twice' },
@@ -957,6 +960,12 @@ class Component extends DCLogic {
   }
   renderVals() {
     var self = this, s = this.state, go = function(o){ self.setState(o); };
+    STOPS.forEach(function(st){ st.fields.forEach(function(f){
+      if (f.prev0 === undefined) { f.prev0 = f.prev; f.rate0 = f.rate; }
+      f.prev = s.last[f.id] !== undefined ? s.last[f.id] : f.prev0;
+      f.rate = s.lastRate[f.id] !== undefined ? s.lastRate[f.id] : f.rate0;
+    }); });
+    var PO = s.pathOrder, atPos = function(pos){ return PO[Math.min(pos, PO.length - 1)]; };
     var clock = '15:4' + Math.min(9, 4 + s.stop % 6);
     var allFlags = [];
     var stops = STOPS.map(function(st, si){
@@ -1016,7 +1025,7 @@ class Component extends DCLogic {
         events: ['A', 'B', 'C'].map(function(wn){ return { well: W(wn), chips: ['Choke change', 'Shut in', 'Opened'].map(function(ev){ var key = wn + '|' + ev, on = !!s.whEvents[key]; return { t: ev, on: on, off: !on, pick: function(){ self.mut(function(n){ if (n.whEvents[key]) delete n.whEvents[key]; else n.whEvents[key] = true; }); } }; }) }; })
       };
     });
-    var cur = stops[Math.min(s.stop, stops.length - 1)];
+    var cur = stops[atPos(s.stop)];
     var review = stops.map(function(st, si){
       var nf = st.fields.filter(function(f){ return f.filled; }).length;
       var fl = st.fields.filter(function(f){ return f.flagOpen; }).map(function(f){ return f.label; });
@@ -1028,7 +1037,7 @@ class Component extends DCLogic {
       if (!isTanks && sigs.length) notes.push('Big move: ' + sigs.join(', '));
       if (s.marks[si] && !(s.notes[si] && s.notes[si].trim())) notes.push('Marked on the walk');
       return {
-        n: si + 1, name: st.name, filled: nf + ' of ' + st.fields.length,
+        n: PO.indexOf(si) + 1, name: st.name, filled: nf + ' of ' + st.fields.length,
         border: fl.length ? '#E2662B' : '#D3D9E0',
         isTanks: isTanks, isNums: !isTanks,
         tanks: isTanks ? st.fields.map(function(f){ return { name: f.label.replace(' tank', ''), pct: f.tankPct, text: f.tankText, color: f.tankSig ? '#E2662B' : '#8C9BA8' }; }) : [],
@@ -1040,9 +1049,10 @@ class Component extends DCLogic {
         setComment: function(e){ var t = e.target.value; self.mut(function(n){ n.notes[si] = t; }); },
         addComment: function(){ self.mut(function(n){ if (n.marks[si]) { delete n.marks[si]; delete n.notes[si]; } else n.marks[si] = true; }); },
         quick: ['Choke change', 'Shut in', 'Meter reset', 'Truck load'].map(function(q){ return { t: q, pick: function(){ self.mut(function(n){ n.notes[si] = (n.notes[si] ? n.notes[si] + ' · ' : '') + q + ' '; }); } }; }),
-        go: function(){ go({ screen: 'stop', stop: si }); }
+        go: function(){ go({ screen: 'stop', stop: PO.indexOf(si) }); }
       };
     });
+    review = PO.map(function(si){ return review[si]; });
     var oilM = [58.4, 71.9, 49.6, 66.3, 62.0, 77.5, 54.8, 69.1], oilT = [59.2, 73.3, 50.9, 67.9, 63.6, 79.6, 56.7, 71.4], cum = 0;
     var oilRows = oilM.map(function(mv, i){ cum += oilT[i] - mv; return { h: hh(8 + i), m: fmt(mv, 1), t: fmt(oilT[i], 1), c: '+' + fmt(cum, 1), mw: Math.round(mv / 82 * 100), tw: Math.round(oilT[i] / 82 * 100) }; });
     var scanO = [22, 23, 22, 23, 22, 23, 22, 22, 23, 22, 22, 23], scanW = [41, 40, 41, 40, 40, 39, 40, 40, 39, 40, 39, 40], scanG = [10.1, 10.0, 10.2, 10.1, 10.3, 10.6, 11.0, 11.5, 11.9, 12.4, 12.9, 13.3], scanD = [16, 16, 16, 16, 16, 17, 17, 18, 19, 20, 22, 24];
@@ -1071,14 +1081,14 @@ class Component extends DCLogic {
       clock: clock, sHome: s.screen === 'home', sConfirm: s.screen === 'confirm', sStop: s.screen === 'stop', sReview: s.screen === 'review', sCheck: s.screen === 'check',
       justCommitted: s.justCommitted, committedThrough: s.through, nextHour: hh(parseInt(s.through, 10) + 1), startFrom: hh(parseInt(s.through, 10)).replace(':00', ':40'), roundsDone: parseInt(s.through, 10) - 6 + 1,
       trends: trends,
-      toConfirm: function(){ go({ screen: 'confirm', justCommitted: false, armed: false }); }, toCheck: function(){ go({ screen: 'check' }); }, toHome: function(){ go({ screen: 'home' }); },
+      toConfirm: function(){ go({ screen: 'confirm', justCommitted: false, footSaved: false, armed: false, stop: 0 }); }, toCheck: function(){ go({ screen: 'check' }); }, toHome: function(){ go({ screen: 'home' }); }, saveFootpath: function(){ go({ screen: 'home', footSaved: true, justCommitted: false }); }, footSaved: s.footSaved,
       roundHour: hh(s.hour), hourNote: hourNote, hourUp: function(){ go({ hour: s.hour + 1 }); }, hourDown: function(){ go({ hour: s.hour - 1 }); },
       beginWalk: function(){ go({ screen: 'stop', stop: 0 }); },
       stopCount: STOPS.length, stopN: Math.min(s.stop, STOPS.length - 1) + 1, stop: cur,
       ticks: STOPS.map(function(x, i){ return { done: i < s.stop, cur: i === s.stop, todo: i > s.stop }; }),
       prevStop: function(){ go(s.stop > 0 ? { stop: s.stop - 1 } : { screen: 'confirm' }); },
       nextStop: function(){ go(s.stop < STOPS.length - 1 ? { stop: s.stop + 1 } : { screen: 'review', armed: false }); },
-      nextStopLabel: s.stop < STOPS.length - 1 ? 'Next: ' + STOPS[s.stop + 1].name + ' ›' : 'Review the round ›',
+      nextStopLabel: s.stop < STOPS.length - 1 ? 'Next: ' + STOPS[atPos(s.stop + 1)].name + ' ›' : 'Review the round ›',
       review: review, openFlags: allFlags.length > 0,
       openFlagText: allFlags.length + (allFlags.length === 1 ? ' number needs' : ' numbers need') + ' a look first — fix it, or confirm it’s right.',
       canArm: allFlags.length === 0, toggleArm: function(){ go({ armed: !s.armed }); },
@@ -1090,7 +1100,15 @@ class Component extends DCLogic {
         if (s.padComment.trim()) entries.push({ t: hh(s.hour), who: 'Pad', text: s.padComment.trim() });
         Object.keys(s.notes).forEach(function(k){ if (s.notes[k] && s.notes[k].trim()) entries.push({ t: hh(s.hour), who: STOPS[k].name.replace(/ ·.*$/, ''), text: s.notes[k].trim() }); });
         Object.keys(s.whEvents).forEach(function(k){ var pr = k.split('|'); entries.push({ t: clock, who: W(pr[0]), text: pr[1] + ' (logged at the wellhead)' }); });
-        go({ screen: 'home', through: hh(s.hour), hour: s.hour + 1, justCommitted: true, armed: false, notes: {}, marks: {}, whEvents: {}, kept: {}, padComment: '', log: entries.concat(s.log).slice(0, 6) });
+        var last = Object.assign({}, s.last), lastRate = Object.assign({}, s.lastRate), blank = {};
+        STOPS.forEach(function(st){ st.fields.forEach(function(f){
+          var v = s.vals[f.id];
+          if (f.k === 'level') { if (v.ft >= 0 && v.inch >= 0) last[f.id] = [v.ft, v.inch]; blank[f.id] = { ft: -1, inch: -1 }; return; }
+          var x = parseFloat(String(v).replace(/,/g, ''));
+          if (isFinite(x)) { if (f.k === 'count' && x >= f.prev) lastRate[f.id] = (x - f.prev) / (ELAPSED / 60); last[f.id] = x; }
+          blank[f.id] = '';
+        }); });
+        go({ screen: 'home', stop: 0, vals: blank, ack: {}, manual: {}, last: last, lastRate: lastRate, rounds: s.rounds + 1, footSaved: false, through: hh(s.hour), hour: s.hour + 1, justCommitted: true, armed: false, notes: {}, marks: {}, whEvents: {}, kept: {}, padComment: '', log: entries.concat(s.log).slice(0, 6) });
       },
       oilRows: oilRows, scanRows: scanRows
     };
@@ -1809,6 +1827,7 @@ return Component;
 (function () {
   var SCREENS = {
     phone: { c: 'Phone', w: 390, h: 844, phone: true, t: "Flowback operator's phone" },
+    walk: { c: 'Phone', p: { demo: 'walk' }, w: 390, h: 844, phone: true, t: 'Walk it start to finish' },
     first: { c: 'Phone', p: { startScreen: 'first', startStop: '0' }, w: 390, h: 844, phone: true, t: 'Before the first round' },
     home: { c: 'Phone', p: { startScreen: 'home', startStop: '0' }, w: 390, h: 844, phone: true, t: 'Home' },
     footpath: { c: 'Phone', p: { startScreen: 'footpath', startStop: '0' }, w: 390, h: 844, phone: true, t: 'My footpath' },
