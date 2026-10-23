@@ -616,6 +616,21 @@ html,body{transition:background-color .25s ease,color .25s ease;}
     .vres .cmp-hdr { grid-column: 1 / -1; }
     .vres .cmp-body { grid-column: 1; padding-top: 6px; padding-bottom: 6px; }
     .vres .cmp-card .verdict { grid-column: 2; display: flex; align-items: center; justify-content: center; margin: 0; border-top: 0; }
+
+    /* ── VESSEL TYPE TILES — same pattern as Bottoms-Up's casing picker ── */
+    .vtype { display: flex; gap: 8px; }
+    .vtype button { flex: 1; min-width: 0; background: var(--vr-surface); border: 1px solid var(--vr-border); color: var(--vr-txt-2);
+      font-family: var(--fb); padding: 8px 4px 7px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px;
+      transition: background .18s, border-color .18s, color .18s; -webkit-tap-highlight-color: transparent; }
+    .vtype button .w { font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
+    .vtype button.on { background: var(--vr-accent-dim); border-color: var(--vr-accent); color: var(--vr-accent); }
+    .vtype button:focus-visible { outline: 2px solid var(--vr-accent); outline-offset: 2px; }
+    .vtype svg { display: block; flex: none; }
+    @media (max-width: 360px) { .vtype { gap: 6px; } .vtype button .w { font-size: 9.5px; letter-spacing: .4px; } }
+    /* short screens (sideways phone): icon beside the label, one slim row */
+    @media (max-height: 500px), (min-width: 900px), (orientation: landscape) and (min-width: 600px) { .vtype button { flex-direction: row; justify-content: center; gap: 8px; padding: 4px 6px; } .vtype svg { width: 34px; height: 16px; } }
+    /* The Oil & Water section is now just a heading; the tiles choose the mode */
+    .sec-ow.gone { display: none; }
   </style>
 </head>
 <body>
@@ -651,6 +666,16 @@ html,body{transition:background-color .25s ease,color .25s ease;}
   <div class="vcol" id="vcol">
   <!-- ── VESSEL — drawing is also where the vessel is set up (2026-10-02) ── -->
   <div class="sec">Vessel</div>
+  <!-- Vessel type — Bottoms-Up tile pattern. 3-phase is the default (David Mata / Spur feedback, 2026-10-23).
+       Room for more layouts later: bucket & weir, bucket-style (corner) weir. -->
+  <div class="vtype" id="vtype" role="radiogroup" aria-label="Vessel type">
+    <button type="button" data-ow="1" class="on" role="radio" aria-checked="true">
+      <svg width="46" height="22" viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="3" width="42" height="16" rx="8"/><line x1="31" y1="8" x2="31" y2="19"/><line x1="5" y1="8" x2="31" y2="8" stroke-dasharray="2.5 2"/><line x1="4" y1="13" x2="31" y2="13" stroke-width="1"/><line x1="31" y1="12" x2="42" y2="12" stroke-dasharray="2.5 2"/></svg>
+      <span class="w">3-Phase · Weir</span></button>
+    <button type="button" data-ow="0" role="radio" aria-checked="false">
+      <svg width="46" height="22" viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="3" width="42" height="16" rx="8"/><line x1="4" y1="9" x2="42" y2="9" stroke-dasharray="2.5 2"/></svg>
+      <span class="w">2-Phase</span></button>
+  </div>
   <div class="vessel-dock" id="vessel-dock">
   <div class="vessel-wrap">
     <div id="vessel-svg-container"></div>
@@ -732,10 +757,8 @@ html,body{transition:background-color .25s ease,color .25s ease;}
     * Retention = liquid volume at the level set above ÷ rate &nbsp;·&nbsp; Type the rate in either box &nbsp;·&nbsp; Time to Fill assumes the vessel goes empty to full at a constant rate
   </div>
 
-  <!-- ── OIL & WATER — optional, collapsed by default ── -->
-  <button type="button" class="sech" id="ow-toggle" aria-expanded="false" aria-controls="ow-body">
-    <span>Oil &amp; Water</span><span class="ln"></span><span class="chip act" id="ow-chip">ACTIVATE</span><span class="chev" aria-hidden="true">▾</span>
-  </button>
+  <!-- ── OIL & WATER — shown in 3-phase (the default); the vessel-type tiles switch it ── -->
+  <div class="sec sec-ow gone" id="ow-toggle">Oil &amp; Water</div>
   <div class="ow-body" id="ow-body" inert>
     <div class="card p18">
       <div class="ow-grid">
@@ -983,11 +1006,7 @@ function calc() {
     $('dres-g').textContent = cls === 'v-pass' ? '✓' : cls === 'v-warn' ? '!' : cls === 'v-fail' ? '✕' : '';
     $('dres').setAttribute('aria-label', $('dres-k').textContent + ' ' + $('dres-v').textContent + ', ' + word);
   }
-  const chip = $('ow-chip');
-  // The chip is the action, not a status: carryover is reported in the section itself
-  chip.textContent = S.ow ? 'DEACTIVATE' : 'ACTIVATE';
   const owr = $('owres'); if (owr) owr.classList.toggle('off', !!owr.closest('.vres') && !S.ow);
-  chip.className = 'chip' + (S.ow ? '' : ' act');
 }
 
 // ── VERDICT ───────────────────────────────────────────────
@@ -1011,7 +1030,7 @@ function geo() {
   let s = availW / total;
   // Two-column screens: the drawing also has to share the height with the results under it
   const twoCol = $('vcol') && getComputedStyle($('vcol')).display !== 'contents';
-  const maxD = compact ? 120 : twoCol ? Math.max(110, Math.min(180, Math.round(window.innerHeight * 0.22))) : 180;
+  const maxD = compact ? 120 : twoCol ? Math.max(110, Math.min(180, Math.round(window.innerHeight * 0.20))) : 180;
   if (Din * s > maxD) s = maxD / Din;
   const Dp = Din * s, Lp = Lin * s, Hp = hd * s, cx = padL + availW / 2;
   return { W, compact, fs: compact ? 1.15 : 1, s, Dp, Lp, Hp, x0: cx - Lp / 2, x1: cx + Lp / 2, top: padT, bot: padT + Dp, H: Math.round(padT + Dp + padB) };
@@ -1163,7 +1182,7 @@ function animateT(to) {
 function setOW(open) {
   const body = $('ow-body'), btn = $('ow-toggle');
   S.ow = open;
-  btn.setAttribute('aria-expanded', open);
+  btn.classList.toggle('gone', !open); markType();
   $('lvl-lbl').textContent = open ? 'Weir height' : 'Liquid level';
   if (open) {
     body.inert = false;
@@ -1177,7 +1196,15 @@ function setOW(open) {
   }
   calc(); animateT(open ? 1 : 0); if (typeof saveSoon === 'function') saveSoon();
 }
-$('ow-toggle').addEventListener('click', () => setOW(!S.ow));
+function markType() {
+  document.querySelectorAll('#vtype button').forEach(b => { const on = (b.dataset.ow === '1') === S.ow; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
+}
+document.querySelectorAll('#vtype button').forEach(b => b.addEventListener('click', () => { const want = b.dataset.ow === '1'; if (want !== S.ow) setOW(want); }));
+// Open 3-phase instantly (first load / restore) — no animation
+function owInstant() {
+  S.ow = true; S.t = 1; const b = $('ow-body'); b.inert = false; b.style.height = 'auto';
+  $('ow-toggle').classList.remove('gone'); $('lvl-lbl').textContent = 'Weir height'; markType();
+}
 window.addEventListener('resize', () => drawVessel());
 
 // ── INPUTS ────────────────────────────────────────────────
@@ -1329,7 +1356,8 @@ buildDrum();
 })();
 
 // ── AUTO-RESTORE — a swiped-closed phone app reopens where it left off ──
-const SAVE_KEY = 'nfc-vessel-v1';
+const SAVE_KEY = 'nfc-vessel-v2';     // v2 (2026-10-23): 3-phase became the default
+const OLD_SAVE_KEY = 'nfc-vessel-v1';
 let saveT = null;
 function saveSoon() { clearTimeout(saveT); saveT = setTimeout(saveState, 250); }
 function saveState() {
@@ -1340,8 +1368,11 @@ function saveState() {
   } catch (e) {}
 }
 function restoreState() {
-  let st = null; try { st = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) { st = null; }
-  if (!st) return false;
+  let st = null, migrated = false;
+  try { st = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) { st = null; }
+  if (!st) { try { st = JSON.parse(localStorage.getItem(OLD_SAVE_KEY) || 'null'); migrated = !!st; } catch (e) { st = null; } }
+  if (!st) { owInstant(); return false; }          // first visit: 3-phase
+  if (migrated) st.ow = true;                      // returning from v1: show the 3-phase view once
   ['D', 'Lft', 'api', 'hL', 'wc', 'wp', 'iw', 'io'].forEach(k => { if (typeof st[k] === 'number' && isFinite(st[k])) S[k] = st[k]; });
   $('diam').value = S.D; $('len').value = S.Lft; $('api-sl').value = S.api;
   if (st.hr !== undefined) $('r-hr').value = st.hr;
@@ -1349,8 +1380,7 @@ function restoreState() {
   rateSrc = st.rateSrc === 'day' ? 'day' : 'hr';
   $('box-hr').classList.toggle('hot', rateSrc === 'hr'); $('box-day').classList.toggle('hot', rateSrc === 'day');
   buildDrum();
-  if (st.ow) { S.ow = true; S.t = 1; const b = $('ow-body'); b.inert = false; b.style.height = 'auto';
-    $('ow-toggle').setAttribute('aria-expanded', 'true'); $('lvl-lbl').textContent = 'Weir height'; }
+  if (st.ow !== false) owInstant(); else markType();
   return true;
 }
 
@@ -1626,7 +1656,7 @@ restoreState(); clampState(); syncSplit(); syncSetup(); update();
 
 
 <div class="footer">
-  Rev. 2026-10-02m<br>
+  Rev. 2026-10-23a<br>
   NFC Services &bull; <a href="https://www.nfcservices.com" target="_blank" rel="noopener">nfcservices.com</a>
 </div>
 
