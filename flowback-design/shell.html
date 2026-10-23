@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Flowback Report — Test Build</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@400;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#E4E7EA; --ink:#1B2026; --mid:#5B6775; --rule:#D3D9E0; --slate:#2F3842; --accent:#E2662B; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', Arial, sans-serif; }
+  #menu { max-width: 560px; margin: 0 auto; padding: 24px 16px 48px; display: flex; flex-direction: column; gap: 12px; }
+  #menu h1 { font-family: 'Saira Semi Condensed', Impact, sans-serif; font-weight: 800; font-size: 30px; margin: 0; line-height: 1.05; }
+  #menu .sub { color: #B04A17; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; }
+  #menu p { color: var(--mid); font-size: 14px; line-height: 1.5; margin: 0; }
+  #menu h2 { font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--mid); margin: 12px 0 0; font-weight: 600; }
+  #menu a.tool { display: block; text-decoration: none; color: inherit; background: #FFFFFF; border: 1px solid var(--rule); border-radius: 14px; padding: 14px 16px; }
+  #menu a.tool:hover, #menu a.tool:focus-visible { border-color: var(--accent); outline: none; }
+  #menu a.tool b { display: block; font-size: 17px; }
+  #menu a.tool span { font-size: 13px; color: var(--mid); }
+  #bar { position: relative; z-index: 10; display: none; align-items: center; gap: 10px; padding: 8px 12px; background: var(--slate); color: #FFFFFF; font-size: 13px; }
+  #bar a { color: #FFFFFF; text-decoration: none; padding: 6px 10px; border: 1px solid rgba(255,255,255,0.3); border-radius: 999px; }
+  #bar span { color: #C9D1D9; }
+  #bar button { margin-left: auto; font: inherit; color: #FFFFFF; background: transparent; border: 1px solid rgba(255,255,255,0.3); border-radius: 999px; padding: 6px 10px; cursor: pointer; }
+  #stage { display: none; justify-content: center; padding: 0; }
+  #frame { transform-origin: top left; }
+  #stage.fill #frame > div { width: var(--fw) !important; height: var(--fh) !important; border-radius: 0 !important; }
+  @media (min-width: 600px) { #stage.phone { padding: 16px 0; } #stage.phone #frame > div { border-radius: 36px; box-shadow: 0 4px 24px rgba(0,0,0,0.15); } }
+</style>
+</head>
+<body>
+<div id="menu">
+  <header>
+    <h1>Flowback Report</h1>
+    <div class="sub">Test build · design prototype · not for a live job</div>
+  </header>
+  <p>Click-through versions of the design boards. Nothing saves and every number is made up. Tap around and tell Chris what's wrong, what's missing, and what you'd never use.</p>
+  <h2>Phone</h2>
+  <a class="tool" href="#phone"><b>The hand's phone</b><span>Before the first round, home, footpath, a full round, review and commit, between rounds</span></a>
+  <a class="tool" href="#padmap"><b>Footpath from above</b><span>Place the pad pieces, set the map, trace your walk (rough placeholder)</span></a>
+  <a class="tool" href="#foreman"><b>Foreman's phone</b><span>Watching the pad: what needs a look, each well, 72-hour gauge stack, wells side by side</span></a>
+  <h2>Desktop (best on a computer)</h2>
+  <a class="tool" href="#wizard"><b>Job Setup</b><span>The administrator's eight-step setup for a new job</span></a>
+  <a class="tool" href="#engineer"><b>Engineer's desk</b><span>The pad as an asset: totals, oil by well vs forecast, scorecard, trust panel</span></a>
+  <a class="tool" href="#engsetup"><b>Engineer's setup</b><span>The customer's side: forecast, targets, alarm limits, what shows, who sees</span></a>
+  <p style="font-size:12px">Build 2026-10-23 · from design canvas boards 2, LIVE, 1b/1c, 15, 18, 18a.</p>
+</div>
+<div id="bar"><a href="#">← All screens</a><span id="barTitle"></span><button type="button" id="restart">Start over</button></div>
+<div id="stage"><div id="frame"></div></div>
+
+<script>
+/* A small player for the design boards: {{ path }} lookups, sc-for, sc-if,
+   dc-import, onClick/onChange, renderVals() and setState(). */
+var DC = (function () {
+  var reg = {};
+  function DCLogic(props) { this.props = props || {}; this.state = {}; }
+  DCLogic.prototype.setState = function (p) {
+    var next = typeof p === 'function' ? p(this.state, this.props) : p;
+    this.state = Object.assign({}, this.state, next || {});
+    schedule();
+  };
+  var Base = (function () { class B { constructor(props) { DCLogic.call(this, props); } } B.prototype.setState = DCLogic.prototype.setState; return B; })();
+  function define(name, factory) { reg[name] = { factory: factory, cls: null }; }
+  function cls(name) { var r = reg[name]; if (!r.cls) r.cls = r.factory(Base); return r.cls; }
+  var root = null, pending = false;
+  function schedule() { if (pending) return; pending = true; Promise.resolve().then(function () { pending = false; draw(); }); }
+  function camel(s) { return s.replace(/-([a-z])/g, function (_, c) { return c.toUpperCase(); }); }
+  function look(path, scopes) {
+    var segs = path.split('.'), head = segs[0], v;
+    if (head === 'true') return true; if (head === 'false') return false;
+    for (var i = scopes.length - 1; i >= 0; i--) { if (scopes[i] && head in scopes[i]) { v = scopes[i][head]; break; } }
+    for (var j = 1; j < segs.length && v != null; j++) v = v[segs[j]];
+    return v;
+  }
+  var ONE = /^\s*\{\{\s*([\w.$]+)\s*\}\}\s*$/, ANY = /\{\{\s*([\w.$]+)\s*\}\}/g;
+  function interp(s, scopes) { return s.replace(ANY, function (_, p) { var v = look(p, scopes); return v == null || v === false || v === true ? '' : String(v); }); }
+  function renderKids(tplParent, scopes, out, ctx) { for (var c = tplParent.firstChild; c; c = c.nextSibling) renderNode(c, scopes, out, ctx); }
+  function renderNode(t, scopes, out, ctx) {
+    if (t.nodeType === 3) { out.appendChild(document.createTextNode(t.nodeValue.indexOf('{{') < 0 ? t.nodeValue : interp(t.nodeValue, scopes))); return; }
+    if (t.nodeType !== 1) return;
+    var tag = t.localName;
+    if (tag === 'sc-if') { var m = ONE.exec(t.getAttribute('value') || ''); if (m && look(m[1], scopes)) renderKids(t, scopes, out, ctx); return; }
+    if (tag === 'sc-for') {
+      var lm = ONE.exec(t.getAttribute('list') || ''), as = t.getAttribute('as') || 'item', list = lm ? look(lm[1], scopes) : null;
+      (list || []).forEach(function (item, i) { var sc = {}; sc[as] = item; sc[as + 'Index'] = i; renderKids(t, scopes.concat([sc]), out, ctx); });
+      return;
+    }
+    if (tag === 'dc-import') {
+      var props = {};
+      for (var a = 0; a < t.attributes.length; a++) { var at = t.attributes[a]; if (at.name === 'name' || at.name.indexOf('hint-') === 0) continue; var pm = ONE.exec(at.value); props[camel(at.name)] = pm ? look(pm[1], scopes) : interp(at.value, scopes); }
+      var key = ctx.n++, inst = ctx.inst.__kids[key];
+      if (!inst || inst.__name !== t.getAttribute('name')) { inst = mount(t.getAttribute('name'), props); ctx.inst.__kids[key] = inst; } else inst.props = props;
+      out.appendChild(build(inst));
+      return;
+    }
+    var el = t.namespaceURI === 'http://www.w3.org/2000/svg' ? document.createElementNS(t.namespaceURI, t.tagName) : document.createElement(tag);
+    for (var k = 0; k < t.attributes.length; k++) {
+      var att = t.attributes[k], nm = att.name;
+      if (nm.indexOf('hint-') === 0) continue;
+      if (/^on[a-z]+$/i.test(nm)) { var hm = ONE.exec(att.value); var fn = hm ? look(hm[1], scopes) : null; if (typeof fn === 'function') { el.__h = el.__h || {}; el.__h[nm.slice(2).toLowerCase()] = fn; } continue; }
+      el.setAttribute(nm, att.value.indexOf('{{') < 0 ? att.value : interp(att.value, scopes));
+    }
+    renderKids(t, scopes, el, ctx);
+    out.appendChild(el);
+  }
+  function mount(name, props) { var C = cls(name); var inst = new C(props || {}); inst.__name = name; inst.__kids = {}; return inst; }
+  function build(inst) {
+    var tpl = document.getElementById('tpl-' + inst.__name).content;
+    var vals = inst.renderVals ? inst.renderVals() : {};
+    var frag = document.createDocumentFragment();
+    renderKids(tpl, [inst.props || {}, vals], frag, { inst: inst, n: 0 });
+    return frag.childElementCount === 1 ? frag.firstElementChild : wrap(frag);
+  }
+  function wrap(frag) { var d = document.createElement('div'); d.appendChild(frag); return d; }
+  function morph(a, b) {
+    if (a.nodeType !== b.nodeType || a.nodeName !== b.nodeName) { a.parentNode.replaceChild(b, a); return; }
+    if (a.nodeType === 3) { if (a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return; }
+    var i, at;
+    for (i = a.attributes.length - 1; i >= 0; i--) { at = a.attributes[i].name; if (!b.hasAttribute(at)) a.removeAttribute(at); }
+    for (i = 0; i < b.attributes.length; i++) { at = b.attributes[i]; if (a.getAttribute(at.name) !== at.value) a.setAttribute(at.name, at.value); }
+    if (a.localName === 'input' && a.type !== 'checkbox' && document.activeElement !== a && b.hasAttribute('value') && a.value !== b.getAttribute('value')) a.value = b.getAttribute('value');
+    a.__h = b.__h;
+    var ak = a.childNodes, bk = Array.prototype.slice.call(b.childNodes);
+    for (i = 0; i < bk.length; i++) { if (i < ak.length) morph(ak[i], bk[i]); else a.appendChild(bk[i]); }
+    while (ak.length > bk.length) a.removeChild(a.lastChild);
+  }
+  var host = null;
+  function draw() { if (!root) return; var fresh = build(root); if (host.firstChild) morph(host.firstChild, fresh); else host.appendChild(fresh); }
+  function start(name, el, props) { host = el; host.innerHTML = ''; root = mount(name, props); draw(); }
+  function stop() { root = null; if (host) host.innerHTML = ''; }
+  function fire(type, e) {
+    for (var n = e.target; n && n !== document; n = n.parentNode) { if (n.__h && n.__h[type]) { n.__h[type](e); return; } }
+  }
+  document.addEventListener('click', function (e) { fire('click', e); });
+  document.addEventListener('input', function (e) { if (e.target.type !== 'checkbox' && e.target.type !== 'radio') fire('change', e); });
+  document.addEventListener('change', function (e) { if (e.target.type === 'checkbox' || e.target.type === 'radio' || e.target.localName === 'select') fire('change', e); });
+  return { define: define, start: start, stop: stop };
+})();
+</script>
+<!--BOARDS-->
+<script>
+(function () {
+  var SCREENS = {
+    phone: { c: 'Phone', w: 390, h: 844, phone: true, t: "The hand's phone" },
+    padmap: { c: 'PadMap', w: 390, h: 844, phone: true, t: 'Footpath from above' },
+    foreman: { c: 'Foreman', w: 390, h: 844, phone: true, t: "Foreman's phone" },
+    wizard: { c: 'Wizard', w: 1600, h: 900, t: 'Job Setup' },
+    engineer: { c: 'Engineer', w: 1600, h: 900, t: "Engineer's desk" },
+    engsetup: { c: 'EngSetup', w: 1600, h: 900, t: "Engineer's setup" }
+  };
+  var menu = document.getElementById('menu'), bar = document.getElementById('bar'), stage = document.getElementById('stage'), frame = document.getElementById('frame');
+  var cur = null;
+  function fit() {
+    if (!cur) return;
+    var vw = document.documentElement.clientWidth, vh = window.innerHeight, bh = bar.offsetHeight, s;
+    stage.classList.remove('fill'); frame.style.transform = ''; frame.style.marginLeft = '';
+    if (cur.phone && vw < 600) {
+      /* on a phone: fill the screen under the bar; shrink only below 390 px wide */
+      s = Math.min(1, vw / cur.w);
+      stage.classList.add('fill');
+      stage.style.setProperty('--fw', (vw / s) + 'px');
+      stage.style.setProperty('--fh', ((vh - bh) / s) + 'px');
+      frame.style.width = (vw / s) + 'px';
+      if (s < 1) frame.style.transform = 'scale(' + s + ')';
+      stage.style.height = (vh - bh) + 'px'; stage.style.justifyContent = 'flex-start';
+      return;
+    }
+    s = cur.phone ? 1 : Math.min(1, (vw - 16) / cur.w);
+    if (s < 1) frame.style.transform = 'scale(' + s + ')';
+    frame.style.width = cur.w + 'px';
+    stage.style.height = (cur.h * s + (cur.phone ? 32 : 0)) + 'px';
+    stage.style.justifyContent = s < 1 ? 'flex-start' : 'center';
+  }
+  function route() {
+    var id = location.hash.slice(1), sc = SCREENS[id];
+    if (!sc) { cur = null; DC.stop(); menu.style.display = ''; bar.style.display = 'none'; stage.style.display = 'none'; document.title = 'Flowback Report — Test Build'; return; }
+    cur = sc; menu.style.display = 'none'; bar.style.display = 'flex'; stage.style.display = 'flex'; stage.className = sc.phone ? 'phone' : '';
+    document.getElementById('barTitle').textContent = sc.t; document.title = sc.t + ' — Flowback Report test';
+    DC.start(sc.c, frame, {}); fit(); window.scrollTo(0, 0);
+  }
+  document.getElementById('restart').addEventListener('click', function () { if (cur) { DC.start(cur.c, frame, {}); fit(); } });
+  window.addEventListener('hashchange', route); window.addEventListener('resize', fit);
+  route();
+})();
+</script>
+</body>
+</html>

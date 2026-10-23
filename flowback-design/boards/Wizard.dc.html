@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Job Setup wizard</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@400;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position: relative; width: 1600px; height: 900px; box-sizing: border-box; background: #F0F1F3; font-family: 'IBM Plex Sans', Arial, sans-serif; color: #1B2026; font-size: 14px; line-height: 1.4; overflow: hidden">
+
+<div style="position: absolute; left: 0; top: 0; width: 1600px; height: 64px; box-sizing: border-box; display: flex; align-items: center; gap: 16px; padding: 0 32px; background: #2F3842; border-bottom: 3px solid #E2662B">
+<svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34" style="fill: none; stroke-width: 2.4; stroke-linecap: round"><rect x="0" y="0" width="34" height="34" rx="8" fill="#1E252D" stroke="none"></rect><path d="M 7 10 Q 12 8 17 10 T 27 10" stroke="#C9D1D9"></path><path d="M 7 15 Q 12 13 17 15 T 27 15" stroke="#D9A25E"></path><path d="M 7 20 Q 12 18 17 20 T 27 20" stroke="#E2662B"></path><path d="M 7 25 Q 12 23 17 25 T 27 25" stroke="#8C9BA8"></path></svg>
+<div style="font-family: 'Saira Semi Condensed', Impact, sans-serif; font-weight: 800; font-size: 22px; letter-spacing: 1px; color: #FFFFFF"><span style="color: #D9A25E">BASIN</span>WORKS <span style="font-weight: 400; color: #C9D1D9">LABS</span></div>
+<div style="width: 1px; height: 28px; background: rgba(255,255,255,0.25)"></div>
+<div style="font-size: 14px; color: #C9D1D9">Flowback Report · Job Setup · <span style="color: #FFFFFF; font-weight: 600">{{ customer }} — {{ pad }}</span></div>
+<div style="margin-left: auto; font-size: 13px; color: #C9D1D9">Draft — the hands can't see it until you create it</div>
+</div>
+
+<div style="position: absolute; left: 32px; top: 80px; width: 1536px; height: 52px; display: flex; align-items: center; gap: 6px">
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="8">
+<sc-if value="{{ n.cur }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ n.go }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">Step {{ n.n }} · {{ n.nm }}</button></sc-if>
+<sc-if value="{{ n.done }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ n.go }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; padding: 8px 14px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #1B2026; cursor: pointer"><span style="color: #4A6378; font-weight: 700">✓</span> Step {{ n.n }} · {{ n.nm }}</button></sc-if>
+<sc-if value="{{ n.todo }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ n.go }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; padding: 8px 14px; border-radius: 999px; border: 1px dashed #B8C2CC; background: transparent; color: #5B6775; cursor: pointer">Step {{ n.n }} · {{ n.nm }}</button></sc-if>
+<sc-if value="{{ n.skip }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ n.go }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; padding: 8px 14px; border-radius: 999px; border: 1px dashed #D3D9E0; background: transparent; color: #8A949F; text-decoration: line-through; cursor: pointer">Step {{ n.n }} · {{ n.nm }}</button></sc-if>
+</sc-for>
+<span style="margin-left: auto; font-size: 12px; color: #5B6775">Each layer narrows the next.</span>
+</div>
+
+<div style="position: absolute; left: 32px; top: 144px; width: 640px; height: 736px; box-sizing: border-box; padding: 18px 20px; background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 20px; display: flex; flex-direction: column; gap: 12px">
+<div style="font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: #5B6775">The pad so far — it fills in as the layers do</div>
+<div style="display: flex; gap: 0; flex: 1; min-height: 0">
+
+<div style="width: 136px; display: flex; flex-direction: column; gap: 10px">
+<sc-if value="{{ colW.cur }}" hint-placeholder-val="{{ false }}"><div style="font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #B04A17; font-weight: 700">Wells</div></sc-if>
+<sc-if value="{{ colW.notCur }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #5B6775">Wells</div></sc-if>
+<sc-if value="{{ colW.show }}" hint-placeholder-val="{{ true }}">
+<sc-for list="{{ wells }}" as="w" hint-placeholder-count="3"><div style="box-sizing: border-box; padding: 8px 10px; background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 700; font-size: 13px">{{ w.name }}</span><span style="font-size: 11px; color: #5B6775">{{ w.pad }}</span></div></sc-for>
+</sc-if>
+<sc-if value="{{ colW.hide }}" hint-placeholder-val="{{ false }}"><div style="padding: 10px; border: 1px dashed #B8C2CC; border-radius: 12px; font-size: 12px; color: #5B6775">set in layer 2</div></sc-if>
+</div>
+
+<div style="width: 22px; display: flex; align-items: flex-start; justify-content: center; padding-top: 40px"><svg aria-hidden="true" width="16" height="12" viewBox="0 0 16 12" style="fill: none; stroke: #4A6378; stroke-width: 2"><path d="M 0 6 L 13 6 M 9 2 L 13 6 L 9 10"></path></svg></div>
+
+<div style="width: 136px; display: flex; flex-direction: column; gap: 10px">
+<sc-if value="{{ colS.cur }}" hint-placeholder-val="{{ false }}"><div style="font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #B04A17; font-weight: 700">Separators</div></sc-if>
+<sc-if value="{{ colS.notCur }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #5B6775">Separators</div></sc-if>
+<sc-if value="{{ colS.show }}" hint-placeholder-val="{{ true }}">
+<sc-for list="{{ seps }}" as="p" hint-placeholder-count="3"><div style="box-sizing: border-box; padding: 8px 10px; background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 700; font-size: 13px">{{ p.name }}</span><span style="font-size: 11px; color: #5B6775">{{ p.sub }}</span></div></sc-for>
+</sc-if>
+<sc-if value="{{ colS.hide }}" hint-placeholder-val="{{ false }}"><div style="padding: 10px; border: 1px dashed #B8C2CC; border-radius: 12px; font-size: 12px; color: #5B6775">set in layer 3</div></sc-if>
+</div>
+
+<div style="width: 22px; display: flex; align-items: flex-start; justify-content: center; padding-top: 40px"><svg aria-hidden="true" width="16" height="12" viewBox="0 0 16 12" style="fill: none; stroke: #4A6378; stroke-width: 2"><path d="M 0 6 L 13 6 M 9 2 L 13 6 L 9 10"></path></svg></div>
+
+<div style="width: 136px; display: flex; flex-direction: column; gap: 10px">
+<sc-if value="{{ colB.cur }}" hint-placeholder-val="{{ false }}"><div style="font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #B04A17; font-weight: 700">Battery</div></sc-if>
+<sc-if value="{{ colB.notCur }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #5B6775">Battery</div></sc-if>
+<sc-if value="{{ colB.show }}" hint-placeholder-val="{{ true }}">
+<sc-for list="{{ batCards }}" as="b" hint-placeholder-count="2"><div style="box-sizing: border-box; padding: 8px 10px; background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 700; font-size: 13px">{{ b.name }}</span><span style="font-size: 11px; color: #5B6775">{{ b.sub }}</span></div></sc-for>
+</sc-if>
+<sc-if value="{{ colB.hide }}" hint-placeholder-val="{{ false }}"><div style="padding: 10px; border: 1px dashed #B8C2CC; border-radius: 12px; font-size: 12px; color: #5B6775">set in layer 4</div></sc-if>
+</div>
+
+<div style="width: 22px; display: flex; align-items: flex-start; justify-content: center; padding-top: 40px"><svg aria-hidden="true" width="16" height="12" viewBox="0 0 16 12" style="fill: none; stroke: #4A6378; stroke-width: 2"><path d="M 0 6 L 13 6 M 9 2 L 13 6 L 9 10"></path></svg></div>
+
+<div style="width: 136px; display: flex; flex-direction: column; gap: 10px">
+<sc-if value="{{ colO.cur }}" hint-placeholder-val="{{ false }}"><div style="font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #B04A17; font-weight: 700">Leaving location</div></sc-if>
+<sc-if value="{{ colO.notCur }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #5B6775">Leaving location</div></sc-if>
+<sc-if value="{{ colO.show }}" hint-placeholder-val="{{ true }}">
+<sc-for list="{{ outCards }}" as="o" hint-placeholder-count="3"><div style="box-sizing: border-box; padding: 8px 10px; background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 700; font-size: 13px">{{ o.name }}</span><span style="font-size: 11px; color: #5B6775">{{ o.sub }}</span></div></sc-for>
+</sc-if>
+<sc-if value="{{ colO.hide }}" hint-placeholder-val="{{ false }}"><div style="padding: 10px; border: 1px dashed #B8C2CC; border-radius: 12px; font-size: 12px; color: #5B6775">set in layer 5</div></sc-if>
+</div>
+</div>
+<div style="font-size: 12px; color: #5B6775; border-top: 1px solid #D3D9E0; padding-top: 10px">{{ padFoot }}</div>
+</div>
+
+<div style="position: absolute; left: 696px; top: 144px; width: 872px; height: 736px; box-sizing: border-box; background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 20px; display: flex; flex-direction: column">
+<div style="flex: 1; min-height: 0; overflow-y: auto; padding: 22px 26px 12px; display: flex; flex-direction: column; gap: 16px">
+<div><div style="font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: #B04A17; font-weight: 700">Step {{ layer }} of 8 · {{ layerName }}</div><div style="font-family: 'Saira Semi Condensed', Impact, sans-serif; font-weight: 700; font-size: 26px; margin-top: 2px">{{ layerQ }}</div></div>
+
+<sc-if value="{{ l1 }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #5B6775">Customer<input type="text" value="{{ customer }}" onChange="{{ setCustomer }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 16px; color: #1B2026; padding: 10px 12px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 10px"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #5B6775">Pad or job — as the customer writes it<input type="text" value="{{ pad }}" onChange="{{ setPad }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 16px; color: #1B2026; padding: 10px 12px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 10px"></label>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px"><div style="font-weight: 700; font-size: 16px">Flowback features — on by default</div><div style="font-size: 13px; color: #5B6775">Turn off what this job doesn't need. Anything turned off can be turned back on mid-job.</div><div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{ features }}" as="o" hint-placeholder-count="3"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">✓ {{ o.label }}</button></sc-if><sc-if value="{{ o.off }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 14px; padding: 9px 16px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #5B6775; text-decoration: line-through; cursor: pointer">{{ o.label }}</button></sc-if></sc-for>
+</div></div>
+<div style="display: flex; align-items: center; gap: 10px"><button type="button" onClick="{{ toggleSamplePolicy }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; padding: 6px 12px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #B04A17; cursor: pointer">{{ samplePolicyBtn }}</button><span style="font-size: 12px; color: #5B6775">{{ samplePolicyNote }}</span></div>
+<sc-if value="{{ showSamplePolicy }}" hint-placeholder-val="{{ false }}"><div style="border: 1px solid #D3D9E0; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px"><div style="font-size: 13px; font-weight: 700">Water-sample policy for this job</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: end">
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #5B6775">Sample every, hours<input type="text" value="{{ sampleA }}" onChange="{{ setSampleA }}" style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: #1B2026; padding: 8px 10px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 10px"></label>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #5B6775">For the first, hours<input type="text" value="{{ sampleB }}" onChange="{{ setSampleB }}" style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: #1B2026; padding: 8px 10px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 10px"></label>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #5B6775">Then every, hours<input type="text" value="{{ sampleC }}" onChange="{{ setSampleC }}" style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: #1B2026; padding: 8px 10px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 10px"></label>
+</div><div style="font-size: 12px; color: #5B6775">NFC standard is 2 / 48 / 6. Set it tighter when the customer asks.</div></div></sc-if>
+<div style="font-size: 13px; color: #5B6775; background: #F0F1F3; border-radius: 12px; padding: 10px 14px; line-height: 1.5">A <b style="color: #1B2026">well test</b> is set per well in step 2 — one well can follow a drawdown procedure while the others flow back. Going to readings every 3, 6 or 12 hours once things settle is a change to the clock mid-job, not a different kind of report.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ l2 }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; gap: 14px"><div style="font-weight: 700; font-size: 16px">How many wells</div><div style="display: flex; align-items: center; border: 1px solid #D3D9E0; border-radius: 999px; overflow: hidden"><button type="button" aria-label="one fewer well" onClick="{{ subWell }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 18px; width: 42px; height: 38px; border: none; background: #FFFFFF; color: #1B2026; cursor: pointer">−</button><span style="font-family: 'IBM Plex Mono', monospace; font-size: 16px; width: 40px; text-align: center">{{ wellCount }}</span><button type="button" aria-label="one more well" onClick="{{ addWell }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 18px; width: 42px; height: 38px; border: none; background: #FFFFFF; color: #1B2026; cursor: pointer">+</button></div><span style="font-size: 13px; color: #5B6775">no cap — wells can be added mid-job too</span></div>
+<sc-for list="{{ wells }}" as="w" hint-placeholder-count="3">
+<div style="border: 1px solid #D3D9E0; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; gap: 12px; align-items: flex-end">
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #5B6775; flex: 1">Well {{ w.idx }} — registered name<input type="text" value="{{ w.name }}" onChange="{{ w.setName }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 15px; color: #1B2026; padding: 8px 10px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 10px"></label>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #5B6775; width: 220px">Water to recover, bbl — can add later<input type="text" value="{{ w.load }}" onChange="{{ w.setLoad }}" style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: #1B2026; padding: 8px 10px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 10px"></label>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center"><span style="font-size: 12px; color: #5B6775; width: 70px">Lift</span>
+<sc-for list="{{ w.lifts }}" as="o" hint-placeholder-count="5"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if><sc-if value="{{ o.off }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; padding: 6px 12px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if></sc-for>
+<span style="font-size: 12px; color: #4A6378">{{ w.liftNote }}</span></div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center"><span style="font-size: 12px; color: #5B6775; width: 70px">Choke seat</span>
+<sc-for list="{{ w.seats }}" as="o" hint-placeholder-count="3"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; padding: 6px 12px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if><sc-if value="{{ o.off }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; padding: 6px 12px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if></sc-for>
+<span style="font-size: 12px; color: #5B6775; margin-left: 10px">Tubing gauge?</span>
+<sc-if value="{{ w.tubOn }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ w.toggleTub }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">Yes</button></sc-if><sc-if value="{{ w.tubOff }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ w.toggleTub }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; padding: 6px 12px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #1B2026; cursor: pointer">No tubing</button></sc-if>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center"><span style="font-size: 12px; color: #5B6775; width: 70px">Well test</span>
+<sc-for list="{{ w.tests }}" as="o" hint-placeholder-count="7"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if><sc-if value="{{ o.off }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 12px; padding: 5px 10px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if></sc-for>
+</div>
+<sc-if value="{{ w.onTest }}" hint-placeholder-val="{{ false }}"><div style="font-size: 12px; color: #5B6775; padding-left: 76px">{{ w.testDesc }} Can start or stop mid-job.</div></sc-if>
+</div>
+</sc-for>
+<div style="font-size: 13px; color: #5B6775; background: #F0F1F3; border-radius: 12px; padding: 10px 14px">Choke is always read in 64ths; the seat sets the ceiling. Lift can change mid-job — an ESP well that goes to gas lift trades its drive stop for an injection meter without breaking the report.</div>
+<div style="display: flex; align-items: center; gap: 10px"><button type="button" onClick="{{ toggleLiftSet }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; padding: 6px 12px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #B04A17; cursor: pointer">{{ liftSetBtn }}</button><span style="font-size: 12px; color: #5B6775">A standard set of readings for each lift type; add or drop readings when the customer wants more.</span></div>
+<sc-if value="{{ showLiftSet }}" hint-placeholder-val="{{ false }}"><div style="border: 1px solid #D3D9E0; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{ liftSets }}" as="g" hint-placeholder-count="5"><div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px"><span style="font-weight: 700; font-size: 13px; width: 110px">{{ g.lift }}</span>
+<sc-for list="{{ g.reads }}" as="o" hint-placeholder-count="4"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">✓ {{ o.label }}</button></sc-if><sc-if value="{{ o.off }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 12px; padding: 5px 10px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #5B6775; cursor: pointer">+ {{ o.label }}</button></sc-if></sc-for>
+</div></sc-for>
+</div></sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ l3 }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{ flows }}" as="o" hint-placeholder-count="3"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if><sc-if value="{{ o.off }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 14px; padding: 9px 16px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if></sc-for>
+</div>
+<div style="font-size: 13px; color: #5B6775">{{ flowNote }}</div>
+<div style="display: flex; flex-direction: column; gap: 8px"><div style="font-size: 13px; color: #5B6775">On every separator the hand reads three meter counts (oil bbl, water bbl, gas mcf) plus these gauges:</div><div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{ gauges }}" as="o" hint-placeholder-count="4"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; font-weight: 700; padding: 7px 14px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">✓ {{ o.label }}</button></sc-if><sc-if value="{{ o.off }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; padding: 7px 14px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #5B6775; cursor: pointer">+ {{ o.label }}</button></sc-if></sc-for>
+</div></div>
+<div style="font-size: 13px; color: #5B6775; background: #F0F1F3; border-radius: 12px; padding: 10px 14px; line-height: 1.5"><b style="color: #1B2026">Bad-reading check — automatic, nothing to set.</b> Each meter learns its own normal from its recent readings; a reading far outside it is flagged for the hand to confirm or fix, and the raw number is always kept. (How it learns is still to be specified — open question.)</div>
+<div style="display: flex; align-items: center; gap: 10px"><span style="font-size: 13px; color: #5B6775">Temporary test vessel or proofing meter on location now? It can be added mid-job.</span>
+<sc-if value="{{ testOn }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ toggleTest }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; font-weight: 700; padding: 7px 14px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">Yes — excluded from totals</button></sc-if><sc-if value="{{ testOff }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ toggleTest }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; padding: 7px 14px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #1B2026; cursor: pointer">No</button></sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ l4 }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{ batteries }}" as="o" hint-placeholder-count="2"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if><sc-if value="{{ o.off }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 14px; padding: 9px 16px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if></sc-for>
+</div>
+
+<sc-if value="{{ isLocal }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div style="font-size: 13px; color: #5B6775">Every separator commingles here: all oil into the oil tanks, all water into the water tanks. Each well's share of what a tank gains is its meter share — the reconciliation the hand watches between rounds.</div>
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap"><span style="font-size: 13px; color: #5B6775">Tank sizes not in hand yet?</span>
+<sc-if value="{{ tankLaterOn }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ toggleTankLater }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; font-weight: 700; padding: 7px 14px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">✓ Lead operator enters them at rig-up</button></sc-if><sc-if value="{{ tankLaterOff }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ toggleTankLater }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; padding: 7px 14px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #1B2026; cursor: pointer">Lead operator enters them at rig-up</button></sc-if>
+<span style="font-size: 12px; color: #5B6775">Tank levels are taken from round one either way. Until sizes are in, volumes show “volume unavailable until tank dimensions are entered” with a quiet flag; once they are, every earlier round is worked out and the meter-vs-tank check covers the whole job.</span></div>
+<sc-for list="{{ tankGroups }}" as="g" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; gap: 14px"><div style="font-weight: 700; font-size: 16px">{{ g.title }}</div><div style="display: flex; align-items: center; border: 1px solid #D3D9E0; border-radius: 999px; overflow: hidden"><button type="button" aria-label="one fewer tank" onClick="{{ g.sub }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 18px; width: 42px; height: 36px; border: none; background: #FFFFFF; color: #1B2026; cursor: pointer">−</button><span style="font-family: 'IBM Plex Mono', monospace; font-size: 16px; width: 36px; text-align: center">{{ g.count }}</span><button type="button" aria-label="one more tank" onClick="{{ g.add }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 18px; width: 42px; height: 36px; border: none; background: #FFFFFF; color: #1B2026; cursor: pointer">+</button></div><span style="font-size: 13px; color: #5B6775">gauged in ft + in from the HMI</span></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<sc-for list="{{ g.tanks }}" as="t" hint-placeholder-count="2">
+<div style="border: 1px solid #D3D9E0; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-weight: 700">{{ t.label }}</span><sc-if value="{{ t.canCopy }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ t.copy }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #B04A17; cursor: pointer">Same as tank 1</button></sc-if></div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<sc-for list="{{ t.methods }}" as="o" hint-placeholder-count="3"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if><sc-if value="{{ o.off }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 12px; padding: 5px 10px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #5B6775; cursor: pointer">{{ o.label }}</button></sc-if></sc-for>
+</div>
+<sc-if value="{{ t.isCap }}" hint-placeholder-val="{{ true }}"><div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<label style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #5B6775">Capacity, bbl<input type="text" value="{{ t.cap }}" onChange="{{ t.setCap }}" style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #1B2026; padding: 7px 9px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 9px"></label>
+<label style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #5B6775">Height, ft<input type="text" value="{{ t.ht }}" onChange="{{ t.setHt }}" style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #1B2026; padding: 7px 9px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 9px"></label>
+</div></sc-if>
+<sc-if value="{{ t.isDia }}" hint-placeholder-val="{{ false }}"><div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<label style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #5B6775">Inside diameter, ft<input type="text" value="{{ t.dia }}" onChange="{{ t.setDia }}" style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #1B2026; padding: 7px 9px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 9px"></label>
+<label style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #5B6775">Height, ft<input type="text" value="{{ t.ht }}" onChange="{{ t.setHt }}" style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #1B2026; padding: 7px 9px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 9px"></label>
+</div></sc-if>
+<sc-if value="{{ t.isStrap }}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 8px; align-items: flex-end">
+<label style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #5B6775; width: 110px">Strap value<input type="text" value="{{ t.strap }}" onChange="{{ t.setStrap }}" style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #1B2026; padding: 7px 9px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 9px"></label>
+<sc-for list="{{ t.units }}" as="o" hint-placeholder-count="2"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if><sc-if value="{{ o.off }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 12px; padding: 6px 10px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #5B6775; cursor: pointer">{{ o.label }}</button></sc-if></sc-for>
+</div></sc-if>
+<sc-if value="{{ t.has }}" hint-placeholder-val="{{ false }}"><div style="font-size: 12px; background: #E6ECF1; border-radius: 9px; padding: 7px 10px"><span style="font-family: 'IBM Plex Mono', monospace; font-weight: 500">{{ t.result }}</span><br><span style="color: #5B6775">{{ t.how }}</span></div></sc-if>
+<sc-if value="{{ t.hasNot }}" hint-placeholder-val="{{ true }}"><div style="font-size: 12px; background: #FCEBDD; border-radius: 9px; padding: 7px 10px; color: #8F3A12">{{ tankMissingMsg }}</div></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+<div style="display: flex; align-items: center; gap: 10px"><span style="font-size: 13px; color: #5B6775">Gun barrel on this pad?</span>
+<sc-if value="{{ gunOn }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ toggleGun }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; font-weight: 700; padding: 7px 14px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">Yes — interface level, bbl/in</button></sc-if><sc-if value="{{ gunOff }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ toggleGun }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; padding: 7px 14px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #1B2026; cursor: pointer">No</button></sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCtb }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div style="font-size: 14px; background: #F0F1F3; border-radius: 12px; padding: 12px 14px; line-height: 1.5">These wells tie into a battery shared with other pads. There's no way to correct the meters against tank volume or gauge tanks for these wells, so <b>the report collects no tank data</b>. Production comes off each well's own meters. Layer 5 is skipped: gas is metered at the CTB by them.</div>
+<div style="display: flex; flex-direction: column; gap: 8px"><div style="font-size: 13px; color: #5B6775">Where are the separators?</div><div style="display: flex; gap: 8px">
+<sc-for list="{{ sepAt }}" as="o" hint-placeholder-count="2"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if><sc-if value="{{ o.off }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 14px; padding: 9px 16px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if></sc-for>
+</div></div>
+<div style="display: flex; align-items: center; gap: 10px"><span style="font-size: 13px; color: #5B6775">Allocation meter at the tie-in?</span>
+<sc-if value="{{ allocOn }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ toggleAlloc }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; font-weight: 700; padding: 7px 14px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">Yes — a check, never added to totals</button></sc-if><sc-if value="{{ allocOff }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ toggleAlloc }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; padding: 7px 14px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #1B2026; cursor: pointer">No</button></sc-if>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ l5 }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<sc-if value="{{ isCtb }}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; background: #F0F1F3; border-radius: 12px; padding: 12px 14px">Skipped — the battery is a CTB, so nothing is measured leaving location by us. Next goes on to the clock.</div></sc-if>
+<sc-if value="{{ isLocal }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<sc-for list="{{ outGroups }}" as="g" hint-placeholder-count="3">
+<div style="display: flex; flex-direction: column; gap: 8px"><div style="font-weight: 700; font-size: 15px">{{ g.title }}</div><div style="font-size: 13px; color: #5B6775">{{ g.note }}</div><div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{ g.opts }}" as="o" hint-placeholder-count="2"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">✓ {{ o.label }}</button></sc-if><sc-if value="{{ o.off }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; padding: 8px 14px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #5B6775; cursor: pointer">+ {{ o.label }}</button></sc-if></sc-for>
+</div></div>
+</sc-for>
+<div style="font-size: 13px; color: #5B6775; background: #F0F1F3; border-radius: 12px; padding: 10px 14px">{{ glNote }}</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ l6 }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; flex-direction: column; gap: 8px"><div style="font-size: 13px; color: #5B6775">Reading interval — can change mid-job</div><div style="display: flex; gap: 8px">
+<sc-for list="{{ intervals }}" as="o" hint-placeholder-count="4"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if><sc-if value="{{ o.off }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 14px; padding: 9px 16px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if></sc-for>
+</div></div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-items: end">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #5B6775">Daily totals count from — 24 h, match the customer's day<input type="text" value="{{ dayStart }}" onChange="{{ setDayStart }}" style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: #1B2026; padding: 9px 12px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 10px"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #5B6775">Day shift takes over at<input type="text" value="{{ shiftA }}" onChange="{{ setShiftA }}" style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: #1B2026; padding: 9px 12px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 10px"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #5B6775">Night shift takes over at<input type="text" value="{{ shiftB }}" onChange="{{ setShiftB }}" style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: #1B2026; padding: 9px 12px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 10px"></label>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px"><div style="font-size: 13px; color: #5B6775">Who's on location</div><div style="display: flex; gap: 8px">
+<sc-for list="{{ coverages }}" as="o" hint-placeholder-count="3"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if><sc-if value="{{ o.off }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 14px; padding: 9px 16px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #1B2026; cursor: pointer">{{ o.label }}</button></sc-if></sc-for>
+</div></div>
+<div style="font-size: 13px; color: #5B6775; background: #F0F1F3; border-radius: 12px; padding: 10px 14px; line-height: 1.5">{{ clockNote }}</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ l7 }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #5B6775">Lead operator, days<input type="text" value="{{ leadDay }}" onChange="{{ setLeadDay }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 16px; color: #1B2026; padding: 10px 12px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 10px"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #5B6775">Lead operator, nights<input type="text" value="{{ leadNight }}" onChange="{{ setLeadNight }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 16px; color: #1B2026; padding: 10px 12px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 10px"></label>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #5B6775">Helper, days — optional<input type="text" value="{{ helperDay }}" onChange="{{ setHelperDay }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 16px; color: #1B2026; padding: 10px 12px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 10px"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #5B6775">Helper, nights — optional<input type="text" value="{{ helperNight }}" onChange="{{ setHelperNight }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 16px; color: #1B2026; padding: 10px 12px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 10px"></label>
+</div>
+<div style="font-size: 13px; color: #5B6775; background: #F0F1F3; border-radius: 12px; padding: 10px 14px; line-height: 1.5">With a helper on, the walk can be split — the helper takes wellheads and sand, the lead takes the ESP drives and the battery. Release the helper later and his stops go back to the lead. Any hand on the job can revise a reading, with a reason.</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 13px; color: #5B6775">Who else can see the job — by email. Paste a whole list at once: commas, semicolons or one per line.</div>
+<div style="display: flex; gap: 10px; align-items: stretch"><textarea aria-label="emails to add" value="{{ viewerDraft }}" onChange="{{ setViewerDraft }}" style="flex: 1; height: 56px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #1B2026; padding: 8px 10px; background: #FFFFFF; border: 1px solid #C9D0D8; border-radius: 10px; resize: none"></textarea><button type="button" onClick="{{ addViewers }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 0 20px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">Add</button></div>
+<div style="font-size: 13px; font-weight: 700">{{ viewerCount }}</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px; max-height: 110px; overflow-y: auto">
+<sc-for list="{{ viewers }}" as="v" hint-placeholder-count="3"><span style="display: flex; align-items: center; gap: 6px; padding: 4px 6px 4px 12px; border-radius: 999px; background: #F0F1F3; border: 1px solid #D3D9E0; font-family: 'IBM Plex Mono', monospace; font-size: 12px">{{ v.email }}<button type="button" aria-label="remove" onClick="{{ v.remove }}" style="border: none; background: transparent; color: #5B6775; font-size: 15px; cursor: pointer">×</button></span></sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ l8 }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
+<sc-for list="{{ summary }}" as="x" hint-placeholder-count="8"><div style="border: 1px solid #D3D9E0; border-radius: 12px; padding: 8px 12px"><div style="font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: #5B6775">{{ x.k }}</div><div style="font-weight: 700; font-size: 14px">{{ x.v }}</div></div></sc-for>
+</div>
+<div style="font-weight: 700; font-size: 15px">What the hand will walk each round — a starting footpath he can reorder at field setup</div>
+<div style="display: flex; flex-direction: column; border: 1px solid #D3D9E0; border-radius: 14px; overflow: hidden">
+<sc-for list="{{ stations }}" as="s" hint-placeholder-count="8"><div style="display: flex; gap: 14px; align-items: baseline; padding: 8px 14px; border-bottom: 1px solid #E6E9ED"><span style="font-family: 'IBM Plex Mono', monospace; color: #B04A17; width: 22px">{{ s.n }}</span><span style="font-weight: 700; width: 260px">{{ s.name }}</span><span style="font-size: 13px; color: #5B6775">{{ s.what }}</span></div></sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 26px; border-top: 1px solid #D3D9E0">
+<sc-if value="{{ canBack }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ back }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 14px; padding: 10px 18px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #1B2026; cursor: pointer">← Back</button></sc-if>
+<sc-if value="{{ noBack }}" hint-placeholder-val="{{ true }}"><span></span></sc-if>
+<span style="font-size: 12px; color: #8F3A12">{{ blockMsg }}</span>
+<sc-if value="{{ canNext }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ next }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 10px 20px; border-radius: 999px; border: 1px solid #E2662B; background: #E2662B; color: #1B2026; cursor: pointer">{{ nextLabel }}</button></sc-if>
+<sc-if value="{{ blocked }}" hint-placeholder-val="{{ false }}"><button type="button" disabled style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 14px; font-weight: 700; padding: 10px 20px; border-radius: 999px; border: 1px solid #B8C2CC; background: #E6E9ED; color: #5B6775">{{ nextLabel }}</button></sc-if>
+<sc-if value="{{ isLast }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ create }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 15px; font-weight: 700; padding: 11px 24px; border-radius: 999px; border: 1px solid #4A6378; background: #4A6378; color: #FFFFFF; cursor: pointer">{{ createLabel }}</button></sc-if>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"startLayer":{"editor":null,"tsType":"string"},"$preview":{"width":1600,"height":900}}'>
+var NAMES = ['Situation','Wells','Flow','Battery','Leaving location','The clock','People','Review and create'];
+var QS = ['What is this job?','Which wells, and how is each one lifted?','How do the wells flow to the separators?','Where does the fluid go after the separators?','What leaves location, and how is it measured?','When are readings taken, and who is on location?','Who works the job, and who can see it?','Check it, then create the job'];
+var LIFTS = ['ESP','Gas lift','HP gas lift','Natural','Plunger','Rod lift'];
+var LIFT_STOP = { 'ESP': 'ESP drives', 'Gas lift': 'Gas-lift injection', 'HP gas lift': 'HP gas-lift injection', 'Plunger': 'Plunger controllers', 'Rod lift': 'Pumping units' };
+var SEATS = [['3/4"',48],['1"',64],['2"',128]];
+var TESTS = [
+  ['IP test', 'Maximum rate the well can sustain at set choke conditions; often reported to the regulator.'],
+  ['Flow after flow', 'Rate against surface pressure at several choke settings, stabilized periods with buildup between.'],
+  ['Multirate', 'Performance under varying drawdowns; common on gas wells and high-rate producers.'],
+  ['Deliverability (gas)', 'Estimates absolute open flow; needs stabilized rates and accurate pressures.'],
+  ['Drawdown procedure', 'A customer-specified drawdown schedule this well follows while the rest flow back.'],
+  ['Allocation test', 'The well is routed to the test separator in turn to set its share.']
+];
+function tank(cap, ht){ return { method: 'cap', cap: cap || '', ht: ht || '', dia: '', strap: '', unit: 'in' }; }
+function num(v){ var x = parseFloat(String(v).replace(/,/g,'')); return isFinite(x) && x > 0 ? x : null; }
+function bpi(t){
+  if (t.method === 'cap') { var c = num(t.cap), h = num(t.ht); return c && h ? c / (h * 12) : null; }
+  if (t.method === 'dia') { var d = num(t.dia); return d ? Math.PI * Math.pow(d * 6, 2) / 9702 : null; }
+  var s = num(t.strap); return s ? (t.unit === 'in' ? s : s / 12) : null;
+}
+function wellName(i){ return '[Well ' + (i < 26 ? String.fromCharCode(65 + i) : (i + 1)) + ']'; }
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    var L = parseInt(props.startLayer || '1', 10); if (!(L >= 1 && L <= 8)) L = 1;
+    this.state = {
+      layer: L, customer: '[Customer]', pad: '[Pad name]',
+      features: { load: true, stages: true, samples: true },
+      sample: { a: '2', b: '48', c: '6' }, showSample: false, showLiftSet: false, tankLater: false,
+      liftReads: {
+        'ESP': [['Drive amps', true], ['Hz', true], ['Intake psi', true], ['Motor °F', true], ['Discharge psi', false], ['Vibration', false]],
+        'Gas lift': [['Injection meter', true], ['Injection psi', false]],
+        'HP gas lift': [['Injection meter', true], ['Injection psi', true]],
+        'Plunger': [['Cycles / arrivals', true], ['Open and close time', false]],
+        'Rod lift': [['Strokes per minute', true], ['Load', false]]
+      },
+      wells: [0,1,2].map(function(i){ return { name: wellName(i), lift: 'ESP', seat: '1"', tubing: true, load: '', test: 'none' }; }),
+      flow: 'one', gauges: { st: true, dp: true, tp: true, lp: false }, testVessel: false,
+      battery: 'local', sepAt: 'loc', alloc: true,
+      oilTanks: [tank('500','20'), tank('500','20')], waterTanks: [tank(), tank()], gun: false,
+      out: { lactPipe: true, lactTruck: false, truckOil: false, dispPump: true, truckMeter: false, truckWater: false, sales: true, flare: true },
+      interval: 'Hourly', dayStart: '06:00', shiftA: '06:00', shiftB: '18:00', coverage: 'two',
+      leadDay: '[name]', leadNight: '[name]', helperDay: '', helperNight: '',
+      viewers: ['[company.man@customer.com]', '[engineer@customer.com]'], viewerDraft: '', created: false
+    };
+  }
+  mut(fn) { this.setState(function(s){ var n = JSON.parse(JSON.stringify(s)); fn(n); return n; }); }
+  field(k) { var self = this; return function(e){ var v = e.target.value; self.setState(function(){ var o = {}; o[k] = v; return o; }); }; }
+  pills(opts, cur, pick) { return opts.map(function(o){ var v = Array.isArray(o) ? o[0] : o, l = Array.isArray(o) ? o[1] : o; return { label: l, on: cur === v, off: cur !== v, pick: function(){ pick(v); } }; }); }
+  togs(obj, keys, path) { var self = this; return keys.map(function(k){ return { label: k[1], on: !!obj[k[0]], off: !obj[k[0]], pick: function(){ self.mut(function(n){ n[path][k[0]] = !n[path][k[0]]; }); } }; }); }
+  renderVals() {
+    var self = this, s = this.state, L = s.layer, local = s.battery === 'local';
+    var go = function(n){ self.setState({ layer: n }); };
+    var readsOf = function(lift){ return (s.liftReads[lift] || []).filter(function(r){ return r[1]; }).map(function(r){ return r[0]; }); };
+    var wells = s.wells.map(function(w, i){
+      return {
+        idx: i + 1, name: w.name, load: w.load,
+        pad: w.lift + ' · seat ' + w.seat + (w.tubing ? '' : ' · no tubing') + (w.test !== 'none' ? ' · ' + w.test : ''),
+        tests: self.pills([['none','No test']].concat(TESTS.map(function(t){ return [t[0], t[0]]; })), w.test, function(v){ self.mut(function(n){ n.wells[i].test = v; }); }),
+        onTest: w.test !== 'none', testDesc: (TESTS.filter(function(t){ return t[0] === w.test; })[0] || ['', ''])[1],
+        setName: function(e){ var v = e.target.value; self.mut(function(n){ n.wells[i].name = v; }); },
+        setLoad: function(e){ var v = e.target.value; self.mut(function(n){ n.wells[i].load = v; }); },
+        lifts: self.pills(LIFTS, w.lift, function(v){ self.mut(function(n){ n.wells[i].lift = v; }); }),
+        seats: SEATS.map(function(p){ return { label: p[0] + ' → ' + p[1] + '/64', on: w.seat === p[0], off: w.seat !== p[0], pick: function(){ self.mut(function(n){ n.wells[i].seat = p[0]; }); } }; }),
+        tubOn: w.tubing, tubOff: !w.tubing, toggleTub: function(){ self.mut(function(n){ n.wells[i].tubing = !n.wells[i].tubing; }); },
+        liftNote: readsOf(w.lift).length ? 'adds a stop at the ' + LIFT_STOP[w.lift].toLowerCase() + ': ' + readsOf(w.lift).join(', ') : ''
+      };
+    });
+    var seps;
+    if (s.flow === 'one') seps = s.wells.map(function(w, i){ return { name: 'Separator ' + (i + 1), sub: '→ ' + w.name }; });
+    else { seps = [{ name: 'Bulk separator', sub: 'every well not on test' }, { name: 'Test separator 1', sub: 'one well at a time' }]; if (s.flow === 'bulk2') seps.push({ name: 'Test separator 2', sub: 'runs at the same time' }); }
+    if (s.testVessel) seps.push({ name: 'Test vessel', sub: 'proofing — excluded from totals' });
+    var mkTanks = function(kind, word){
+      return s[kind].map(function(t, i){
+        var x = bpi(t), how = '';
+        if (x) {
+          if (t.method === 'cap') how = t.cap + ' bbl ÷ (' + t.ht + ' ft × 12 in)';
+          else if (t.method === 'dia') how = 'π × (' + t.dia + ' ft × 6 in)² ÷ 9,702 in³ per bbl' + (num(t.ht) ? ' · about ' + Math.round(x * num(t.ht) * 12) + ' bbl full' : '');
+          else how = 'from the customer’s strap';
+        }
+        var setter = function(k){ return function(e){ var v = e.target.value; self.mut(function(n){ n[kind][i][k] = v; }); }; };
+        return {
+          label: word + ' tank ' + (i + 1),
+          methods: self.pills([['cap','Capacity + height'],['dia','Diameter + height'],['strap','Customer strap']], t.method, function(v){ self.mut(function(n){ n[kind][i].method = v; }); }),
+          isCap: t.method === 'cap', isDia: t.method === 'dia', isStrap: t.method === 'strap',
+          cap: t.cap, ht: t.ht, dia: t.dia, strap: t.strap,
+          setCap: setter('cap'), setHt: setter('ht'), setDia: setter('dia'), setStrap: setter('strap'),
+          units: self.pills([['in','bbl per inch'],['ft','bbl per foot']], t.unit, function(v){ self.mut(function(n){ n[kind][i].unit = v; }); }),
+          has: !!x, hasNot: !x, result: x ? x.toFixed(2) + ' bbl per inch · ' + (x * 12).toFixed(1) + ' bbl per foot' : '', how: how,
+          canCopy: i > 0, copy: function(){ self.mut(function(n){ n[kind][i] = JSON.parse(JSON.stringify(n[kind][0])); }); }
+        };
+      });
+    };
+    var grp = function(kind, title, word){
+      return { title: title, count: s[kind].length, tanks: mkTanks(kind, word),
+        add: function(){ self.mut(function(n){ n[kind].push(tank()); }); },
+        sub: function(){ self.mut(function(n){ if (n[kind].length > 1) n[kind].pop(); }); } };
+    };
+    var tankGroups = [grp('oilTanks', 'Oil tanks', 'Oil'), grp('waterTanks', 'Water tanks', 'Water')];
+    var tanksOk = s.oilTanks.concat(s.waterTanks).every(function(t){ return !!bpi(t); });
+    var sizeSub = function(list){ var xs = list.map(bpi); if (xs.some(function(x){ return !x; })) return s.tankLater ? 'sizes at rig-up' : 'sizes still to enter'; var same = xs.every(function(x){ return Math.abs(x - xs[0]) < 0.005; }); return same ? xs[0].toFixed(2) + ' bbl/in each' : 'sizes set'; };
+    var batCards = local ? [
+      { name: 'Oil tanks ×' + s.oilTanks.length, sub: sizeSub(s.oilTanks) },
+      { name: 'Water tanks ×' + s.waterTanks.length, sub: sizeSub(s.waterTanks) }
+    ].concat(s.gun ? [{ name: 'Gun barrel', sub: 'interface level' }] : []) : [{ name: 'Central tank battery', sub: 'theirs — no tank data' }].concat(s.alloc ? [{ name: 'Allocation meter', sub: 'check only' }] : []);
+    var o = s.out, outCards = [];
+    if (local) {
+      if (o.lactPipe) outCards.push({ name: 'Oil · LACT to pipeline', sub: 'count + receipt' });
+      if (o.lactTruck) outCards.push({ name: 'Oil · truck LACT', sub: 'counts as a truck pulls' });
+      if (o.truckOil) outCards.push({ name: 'Oil · trucks', sub: 'run tickets' });
+      if (o.dispPump) outCards.push({ name: 'Water · pump meter', sub: 'running count' });
+      if (o.truckMeter) outCards.push({ name: 'Water · truck meter', sub: 'trucks pull through it' });
+      if (o.truckWater) outCards.push({ name: 'Water · trucked', sub: 'gauge before + after' });
+      if (o.sales) outCards.push({ name: 'Sales gas meter', sub: 'running count' });
+      if (o.flare) outCards.push({ name: 'Flare meter', sub: 'running count' });
+    } else outCards.push({ name: 'Gas at the CTB', sub: 'metered by them' });
+    var col = function(n){ return { cur: L === n, notCur: L !== n, show: L >= n, hide: L < n }; };
+    var colO = col(5); if (!local && L >= 4) { colO.show = true; colO.hide = false; }
+    var esp = s.wells.filter(function(w){ return w.lift === 'ESP'; }).map(function(w){ return w.name; });
+    var gl = s.wells.filter(function(w){ return /gas lift/i.test(w.lift); }).map(function(w){ return w.name; });
+    var gaugeWords = []; if (s.gauges.st) gaugeWords.push('static'); if (s.gauges.dp) gaugeWords.push('diff'); if (s.gauges.tp) gaugeWords.push('temp'); if (s.gauges.lp) gaugeWords.push('line psi');
+    var st = [];
+    if (local) {
+      st.push(['Tank battery HMI', 'level of ' + s.oilTanks.length + ' oil + ' + s.waterTanks.length + ' water tanks' + (s.gun ? ', gun barrel interface' : '')]);
+      if (o.dispPump) st.push(['Water disposal pump meter', 'running count, bbl']);
+      if (o.truckMeter) st.push(['Water truck meter', 'running count, bbl']);
+      if (o.lactPipe) st.push(['Oil LACT to pipeline', 'running count, bbl — receipt per sale']);
+      if (o.lactTruck) st.push(['Oil truck LACT', 'running count, bbl — receipt per truck']);
+    } else if (s.alloc) st.push(['Allocation meter at the tie-in', 'running count — check only']);
+    seps.forEach(function(p){ st.push([p.name, 'oil · water · gas counts' + (gaugeWords.length ? ' · ' + gaugeWords.join(', ') : '')]); });
+    if (local && o.sales) st.push(['Sales gas meter', 'running count, mcf']);
+    if (local && o.flare) st.push(['Flare meter', 'running count, mcf']);
+    Object.keys(LIFT_STOP).forEach(function(lift){
+      var names = s.wells.filter(function(w){ return w.lift === lift; }).map(function(w){ return w.name; });
+      if (names.length && readsOf(lift).length) st.push([LIFT_STOP[lift], names.join(', ') + ': ' + readsOf(lift).join(' · ')]);
+    });
+    st.push(['Wellheads', s.wells.map(function(w){ return w.name + (w.tubing ? '' : ' (no tubing)'); }).join(', ') + ': tubing · casing · temp · choke /64 · status']);
+    st.push(['Sand knockouts', 'dump, weigh, enter per well']);
+    var stations = st.map(function(x, i){ return { n: i + 1, name: x[0], what: x[1] }; });
+    var flowLabels = { one: 'One to one', bulk: 'Bulk & test', bulk2: 'Bulk & test II' };
+    var summary = [
+      { k: 'Flowback features', v: ['load', 'stages', 'samples'].filter(function(k){ return s.features[k]; }).length + ' of 3 on' }, { k: 'Wells', v: s.wells.length + (s.wells.some(function(w){ return w.test !== 'none'; }) ? ' · ' + s.wells.filter(function(w){ return w.test !== 'none'; }).length + ' on a test' : '') }, { k: 'Flow', v: flowLabels[s.flow] },
+      { k: 'Battery', v: local ? 'Local · ' + s.oilTanks.length + ' oil, ' + s.waterTanks.length + ' water' : 'CTB tie-in' },
+      { k: 'Interval', v: s.interval }, { k: 'Daily totals', v: 'from ' + s.dayStart }, { k: 'Shift change', v: s.shiftA + ' / ' + s.shiftB },
+      { k: 'Coverage', v: s.coverage === 'two' ? 'Two shifts, 24 h' : (s.coverage === 'day' ? 'Days only' : 'Nights only') }
+    ];
+    var nextN = L + 1; if (nextN === 5 && !local) nextN = 6;
+    var backN = L - 1; if (backN === 5 && !local) backN = 4;
+    var block = L === 4 && local && !tanksOk && !s.tankLater;
+    var nav = NAMES.map(function(nm, i){ var n = i + 1, sk = n === 5 && !local; return { n: n, nm: nm, cur: n === L, done: n < L && !sk, todo: n > L && !sk, skip: sk && n !== L, go: function(){ go(n); } }; });
+    var clockNote = s.coverage === 'two'
+      ? 'At each shift change the incoming hand sees the last 12 hours before he takes the job. "Readings complete through" and the stale flags expect a round every ' + s.interval.toLowerCase().replace('every ', '') + ' around the clock.'
+      : 'One shift on location: rounds are expected only in that shift’s 12 hours. The overnight gap is one long interval — rates divide by the real hours, and nothing flags stale while nobody is scheduled.';
+    return {
+      layer: L, layerName: NAMES[L - 1], layerQ: QS[L - 1], nav: nav,
+      l1: L === 1, l2: L === 2, l3: L === 3, l4: L === 4, l5: L === 5, l6: L === 6, l7: L === 7, l8: L === 8,
+      customer: s.customer, pad: s.pad,
+      setCustomer: this.field('customer'), setPad: this.field('pad'),
+      features: this.togs(s.features, [['load','Load recovery against water to recover'],['stages','Stages — initial, then separation flowback'],['samples','Water samples — every ' + s.sample.a + ' h for ' + s.sample.b + ' h, then ' + s.sample.c + ' h']], 'features'),
+      showSamplePolicy: s.showSample, toggleSamplePolicy: function(){ self.setState({ showSample: !s.showSample }); },
+      samplePolicyBtn: s.showSample ? 'Done' : 'Adjust the sample policy',
+      samplePolicyNote: (s.sample.a === '2' && s.sample.b === '48' && s.sample.c === '6') ? 'NFC standard' : 'Changed for this customer',
+      sampleA: s.sample.a, sampleB: s.sample.b, sampleC: s.sample.c,
+      setSampleA: function(e){ var v = e.target.value; self.mut(function(n){ n.sample.a = v; }); },
+      setSampleB: function(e){ var v = e.target.value; self.mut(function(n){ n.sample.b = v; }); },
+      setSampleC: function(e){ var v = e.target.value; self.mut(function(n){ n.sample.c = v; }); },
+      showLiftSet: s.showLiftSet, toggleLiftSet: function(){ self.setState({ showLiftSet: !s.showLiftSet }); },
+      liftSetBtn: s.showLiftSet ? 'Done' : 'Settings — what each lift type reads',
+      liftSets: Object.keys(s.liftReads).map(function(lift){ return { lift: lift, reads: s.liftReads[lift].map(function(r, j){ return { label: r[0], on: r[1], off: !r[1], pick: function(){ self.mut(function(n){ n.liftReads[lift][j][1] = !n.liftReads[lift][j][1]; }); } }; }) }; }),
+      tankLaterOn: s.tankLater, tankLaterOff: !s.tankLater, toggleTankLater: function(){ self.setState({ tankLater: !s.tankLater }); },
+      tankMissingMsg: s.tankLater ? 'The lead operator enters this at rig-up.' : 'Enter the dimensions, or hand it to the lead operator above.',
+      next: function(){ go(nextN); },
+      wells: wells, wellCount: s.wells.length,
+      addWell: function(){ self.mut(function(n){ n.wells.push({ name: wellName(n.wells.length), lift: 'ESP', seat: '1"', tubing: true, load: '', test: 'none' }); }); },
+      subWell: function(){ self.mut(function(n){ if (n.wells.length > 1) n.wells.pop(); }); },
+      flows: this.pills([['one','Each well to its own separator'],['bulk','Bulk & test'],['bulk2','Bulk & test II — two test separators']], s.flow, function(v){ self.setState({ flow: v }); }),
+      flowNote: s.flow === 'one' ? 'One separator per well, ' + s.wells.length + ' in all. No allocation between wells at the separators.' : 'Wells share the bulk separator; each takes turns on test. The hand names the well on test each round, and the allocation splits bulk by each well’s last test.',
+      gauges: this.togs(s.gauges, [['st','Static psi'],['dp','Differential psi'],['tp','Temperature °F'],['lp','Line psi']], 'gauges'),
+      testOn: s.testVessel, testOff: !s.testVessel, toggleTest: function(){ self.setState({ testVessel: !s.testVessel }); },
+      seps: seps,
+      batteries: this.pills([['local','Local battery — this pad’s tanks only'],['ctb','Central tank battery — off location, theirs']], s.battery, function(v){ self.setState({ battery: v }); }),
+      isLocal: local, isCtb: !local, tankGroups: tankGroups,
+      gunOn: s.gun, gunOff: !s.gun, toggleGun: function(){ self.setState({ gun: !s.gun }); },
+      sepAt: this.pills([['loc','On location'],['ctb','At the CTB']], s.sepAt, function(v){ self.setState({ sepAt: v }); }),
+      allocOn: s.alloc, allocOff: !s.alloc, toggleAlloc: function(){ self.setState({ alloc: !s.alloc }); },
+      batCards: batCards, outCards: outCards,
+      outGroups: [
+        { title: 'Oil leaving location — the sale', note: 'Every sale gets a receipt. The hauler or LACT makes one even when we can’t see it; the hand records what he can. Turn on every way oil leaves this pad.', opts: this.togs(o, [['lactPipe','LACT — pumps to pipeline'],['lactTruck','Truck LACT — counts as a truck pulls'],['truckOil','Trucks — run tickets']], 'out') },
+        { title: 'Water leaving location', note: 'A battery built for a lot of water can have a meter on the pumps and another the trucks pull through. Trucks with no meter are worked out from the tank gauge before and after the load.', opts: this.togs(o, [['dispPump','Disposal pump meter'],['truckMeter','Truck meter — trucks pull through it'],['truckWater','Trucked — gauge before and after']], 'out') },
+        { title: 'Gas', note: 'Pad gas leaving = sales + flared. Checked against the separators’ gas.', opts: this.togs(o, [['sales','Sales meter'],['flare','Flare meter']], 'out') }
+      ],
+      glNote: gl.length ? 'Gas-lift wells (' + gl.join(', ') + ') carry their own injection meters, read on the walk; net gas = produced − injected.' : 'No gas-lift wells on this pad, so no injection meters.',
+      intervals: this.pills(['Hourly','Every 3 h','Every 4 h','Every 6 h','Every 12 h'], s.interval, function(v){ self.setState({ interval: v }); }),
+      dayStart: s.dayStart, shiftA: s.shiftA, shiftB: s.shiftB,
+      setDayStart: this.field('dayStart'), setShiftA: this.field('shiftA'), setShiftB: this.field('shiftB'),
+      coverages: this.pills([['two','Two shifts, 24 h'],['day','Days only'],['night','Nights only']], s.coverage, function(v){ self.setState({ coverage: v }); }),
+      clockNote: clockNote,
+      leadDay: s.leadDay, leadNight: s.leadNight, helperDay: s.helperDay, helperNight: s.helperNight,
+      setLeadDay: this.field('leadDay'), setLeadNight: this.field('leadNight'), setHelperDay: this.field('helperDay'), setHelperNight: this.field('helperNight'),
+      viewerDraft: s.viewerDraft, setViewerDraft: this.field('viewerDraft'),
+      addViewers: function(){ self.mut(function(n){ n.viewerDraft.split(/[\s,;]+/).map(function(x){ return x.trim(); }).filter(function(x){ return x.indexOf('@') > 0; }).forEach(function(x){ if (n.viewers.indexOf(x) < 0) n.viewers.push(x); }); n.viewerDraft = ''; }); },
+      viewers: s.viewers.map(function(e, i){ return { email: e, remove: function(){ self.mut(function(n){ n.viewers.splice(i, 1); }); } }; }),
+      viewerCount: s.viewers.length + (s.viewers.length === 1 ? ' person can see this job' : ' people can see this job'),
+      colW: col(2), colS: col(3), colB: col(4), colO: colO,
+      summary: summary, stations: stations,
+      padFoot: L === 8 ? stations.length + ' stops on the starting footpath.' : 'Pieces appear as you set them. Amber marks the layer you’re on.',
+      canBack: L > 1, noBack: L === 1, back: function(){ go(backN); },
+      canNext: L < 8 && !block, blocked: L < 8 && block, isLast: L === 8,
+      nextLabel: L < 8 ? 'Next: ' + nextN + ' ' + NAMES[nextN - 1] + ' →' : '',
+      blockMsg: block ? 'Every tank needs dimensions before the next layer.' : '',
+      create: function(){ self.setState({ created: true }); },
+      createLabel: s.created ? 'Created — the hands see it at sign-in' : 'Create the job'
+    };
+  }
+}
+</script>
+</body>
+</html>
