@@ -209,12 +209,16 @@ textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(
 .cardh .tag{margin-left:auto}
 .stack{display:flex;flex-direction:column;gap:10px}
 .plist{max-height:260px;overflow:auto;border:1px solid var(--rule);background:var(--surface)}
-.prow{display:grid;grid-template-columns:44px minmax(0,1fr) 30px;gap:8px;align-items:center;padding:4px 8px;border-top:1px solid var(--rule)}
+.prow{display:grid;grid-template-columns:52px minmax(0,1fr) 92px;gap:8px;align-items:center;padding:4px 8px;border-top:1px solid var(--rule)}
 .prow:first-child{border-top:none}
 .prow .n{font-family:var(--fm);font-size:13px;color:var(--text-mid)}
 .prow input{width:100%;background:transparent;border:none;border-bottom:1px solid transparent;font-family:var(--fm);font-size:15px;font-weight:600;color:var(--text);padding:6px 2px}
 .prow input:focus{outline:none;border-bottom-color:var(--accent)}
-.prow .st{font-size:12px;color:var(--ok);text-align:center}
+.prow .st{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;border:1px solid var(--rule);background:var(--surface);color:var(--text-mid);padding:6px 4px;cursor:pointer}
+.prow .st.t,.prow .st.c{color:var(--ok);border-color:var(--ok-bd);background:var(--ok-bg)}
+.prow .st.f{color:var(--warn);border-color:var(--warn-bd);background:var(--warn-bg)}
+.prow .st.d{color:var(--text-dim);border-color:transparent;background:transparent;cursor:default}
+.prow.f input{color:var(--warn)}
 .trow2{display:grid;grid-template-columns:minmax(0,1fr) 120px 86px;gap:8px;align-items:end}
 .xbtn{height:var(--ctl);width:36px;border:1px solid var(--rule);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:16px}
 .ckl{display:flex;flex-direction:column;gap:6px}
@@ -339,13 +343,17 @@ textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(
         <div class="fld"><label for="sPull">Pull screens every</label><div class="selbox"><select id="sPull"></select></div></div>
       </div>
       <div class="row">
-        <div class="fld"><label for="gFirst">First plug <span class="u">ft</span></label><div class="ibox"><input id="gFirst" inputmode="numeric"></div></div>
-        <div class="fld"><label for="gSpace">Spacing <span class="u">ft</span></label><div class="ibox"><input id="gSpace" inputmode="numeric"></div></div>
-        <div class="fld"><label for="gCount">Plugs</label><div class="ibox"><input id="gCount" inputmode="numeric"></div></div>
+        <div class="fld"><span class="lbl">Plug 1 is a kill plug</span><div class="seg" id="sKP"><button type="button" data-k="1">Yes (KP)</button><button type="button" data-k="0">No</button></div></div>
+        <div class="fld"><label for="sFrom">Sheet came from</label><div class="ibox"><input class="txt" id="sFrom" list="dlFrom" autocomplete="off" placeholder="e.g. company man"></div></div>
       </div>
-      <button class="mbtn" type="button" id="gBtn">Fill the sheet from these</button>
       <div class="plist" id="plist"></div>
-      <p class="note">Type each depth off the company man's sheet, or fill it from first plug and spacing and fix the odd ones. Depth is measured depth, in feet.</p>
+      <div class="row" style="align-items:flex-end">
+        <div class="fld"><label for="pAdd" id="pAddLbl">Plug 1 depth <span class="u">ft</span></label><div class="ibox"><input id="pAdd" inputmode="numeric" enterkeyhint="next" autocomplete="off" placeholder="0"></div></div>
+        <button class="mbtn prim" type="button" id="pAddBtn" style="flex:none;width:auto;padding:0 18px;height:var(--ctl)">Add</button>
+      </div>
+      <div class="check" id="pFill" hidden></div>
+      <div class="row"><button class="mini" type="button" id="pUndo">Remove the last plug</button></div>
+      <p class="note">Type each depth off the sheet, one plug at a time. Once the spacing looks regular, fill the rest — then go down the list and tick each filled depth against the sheet, fixing any that don't match. A sheet is only what we were told; the tagged depth is what the hole says.</p>
     </div>
 
     <div class="card stack">
@@ -414,10 +422,10 @@ textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(
     </div>
   </section>
 
-  <div class="ftr">Drill-Out Log · field prototype v0.2 · 2026-10-23<br>Times use the Bottoms-Up method: capacity factor 1029.4, annulus from surface to the bit.</div>
+  <div class="ftr">Drill-Out Log · field prototype v0.3 · 2026-10-25<br>Times use the Bottoms-Up method: capacity factor 1029.4, annulus from surface to the bit.</div>
 </main>
 
-<datalist id="dlCust"></datalist><datalist id="dlRegion"></datalist><datalist id="dlRig"></datalist><datalist id="dlCk"></datalist>
+<datalist id="dlCust"></datalist><datalist id="dlRegion"></datalist><datalist id="dlRig"></datalist><datalist id="dlCk"></datalist><datalist id="dlFrom"><option value="Company man"></option><option value="Wireline report"></option><option value="Frac report"></option><option value="Tool hand"></option></datalist>
 
 <div class="modal" id="modal" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="shTitle" id="sheet"></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -453,7 +461,7 @@ var S=null;
 function blankSetup(){return{cust:"",well:"",region:"",rig:"",catcher:"",start:new Date().toISOString().slice(0,10),
   mode:"coil",coilOD:2.375,reel:"",stick:"2⅞",stickID:2.441,
   csgN:1,csg:[{size:"5½",id:4.778,to:""},{size:"4½",id:4.000,to:""},{size:"4½",id:4.000,to:""}],
-  plugType:"composite",pullEvery:1,plugs:[],gFirst:"",gSpace:"",gCount:"",
+  plugType:"composite",pullEvery:1,plugs:[],plugSt:[],kp:true,sheetFrom:"",
   tanks:[{name:"Tank 1",kind:"rect",bpi:""}],surface:"",lsMax:64,rsMax:64,every:15,len:5,checklist:[]};}
 function blankState(){return{v:1,example:false,setup:blankSetup(),shift:{hand:"",which:new Date().getHours()>=6&&new Date().getHours()<18?"Day":"Night",started:Date.now()},events:[],used:{cust:[],region:[],rig:[],ck:[]}};}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
@@ -631,14 +639,14 @@ function entry(k,e){/* open the sheet for kind k; e = existing event when correc
   var D=derive(),c=e?cur(e):null,d=c?c.d:{};var when=c?c.t:Date.now();
   var title=KIND[k].l,sub="";var F2={};
   var commit=function(t,data){if(e)correct(e,t,data,"");else addEvent(k,t,data);};
-  if(k==="tag"){var n=e?d.plug:D.nextPlug,pl=planned(n);title="Tagged plug "+n;sub=isFinite(pl)?"Sheet says "+fnum(pl)+" ft. Roll to where the radio says you tagged.":"No depth on the plug sheet for this plug — roll to where you tagged.";
-    openSheet(title,sub,function(b){F2.time=fTime("Tagged at",when);b.appendChild(F2.time.node);var center=isFinite(d.depth)?d.depth:(isFinite(pl)?pl:(isFinite(D.depth)?D.depth+200:10000));F2.depth=fDepth("Tagged depth",center,isFinite(pl)?250:2000);b.appendChild(F2.depth.node);
-      var dv=el("div","derived");b.appendChild(dv);var g=gate(b);function upd(){var x=F2.depth.get();var off=isFinite(pl)?x-pl:NaN;dv.innerHTML=isFinite(off)?("Off the sheet by <b>"+signed(off)+" ft</b>"):"—";g.set(isFinite(off)&&Math.abs(off)>100?"That's "+fnum(Math.abs(off))+" ft from the plug sheet. Plugs are rarely off more than 100 ft.":"");}
+  if(k==="tag"){var n=e?d.plug:D.nextPlug,pl=planned(n);title="Tagged "+plugLabel(n);sub=isFinite(pl)?"Sheet says "+fnum(pl)+" ft. Roll to where the radio says you tagged.":"No depth on the plug sheet for this plug — roll to where you tagged.";
+    openSheet(title,sub,function(b){F2.time=fTime("Tagged at",when);b.appendChild(F2.time.node);var center=isFinite(d.depth)?d.depth:(isFinite(pl)?pl:(isFinite(D.depth)?D.depth+200:10000));F2.depth=fDepth("Tagged depth",center,isFinite(pl)?400:2000);b.appendChild(F2.depth.node);
+      var dv=el("div","derived");b.appendChild(dv);var g=gate(b);function upd(){var x=F2.depth.get();var off=isFinite(pl)?x-pl:NaN;dv.innerHTML=isFinite(off)?("Off the sheet by <b>"+signed(off)+" ft</b>"):"—";g.set(isFinite(off)&&Math.abs(off)>100?"That's "+fnum(Math.abs(off))+" ft from the plug sheet. Plugs are rarely off more than 100 ft — but the sheet can be wrong too. Log what was tagged.":"");}
       F2.depth.dr.node.addEventListener("scroll",function(){setTimeout(upd,120);},true);upd();return{blocked:g.blocked};},
       function(){commit(F2.time.get(),{plug:n,depth:F2.depth.get(),planned:pl});});return;}
   if(k==="through"){var n2=e?d.plug:(D.tagPending?D.lastTag:D.nextPlug);var tagEv=S.events.filter(function(x){return x.k==="tag"&&cur(x).d.plug===n2;}).pop();var dep=e&&isFinite(d.depth)?d.depth:(tagEv?cur(tagEv).d.depth:planned(n2));
     var retDef=e?d.ret:(isFinite(D.ret)?D.ret:NaN);
-    openSheet("Through plug "+n2,"Enter what's called on the radio. The sweep time is worked out as soon as you log it.",function(b){
+    openSheet("Through "+plugLabel(n2),"Enter what's called on the radio. The sweep time is worked out as soon as you log it.",function(b){
       F2.time=fTime("Through at",when);b.appendChild(F2.time.node);
       var r=el("div","row");F2.pump=fRate("Pump rate",e?d.pump:(isFinite(D.pump)?D.pump:4.0));F2.ret=fRate("Return rate",isFinite(retDef)?retDef:(isFinite(D.pump)?D.pump:4.0));r.appendChild(F2.pump.node);r.appendChild(F2.ret.node);b.appendChild(r);
       F2.mani=fMani(e?d.mani:D.mani);b.appendChild(F2.mani.node);
@@ -786,7 +794,7 @@ function render(){
   var p=$("actPad");p.innerHTML="";
   function act(k,label,sub,prim,dis){var b=el("button","act"+(prim?" primary":""));b.type="button";b.innerHTML="<b>"+esc(label)+"</b><span>"+esc(sub)+"</span>";b.disabled=!!dis;b.addEventListener("click",function(){entry(k);});p.appendChild(b);}
   var dueNow=D.open.filter(function(x){return x.due<=now+2*MIN;});
-  act("tag","Tag plug "+D.nextPlug,isFinite(D.planned)?"sheet "+fnum(D.planned)+" ft":"roll to depth",!D.tagPending&&!dueNow.length,D.tagPending);
+  act("tag","Tag "+(D.nextPlug===1&&S.setup.kp?"kill plug":"plug "+D.nextPlug),isFinite(D.planned)?"sheet "+fnum(D.planned)+" ft":"roll to depth",!D.tagPending&&!dueNow.length,D.tagPending);
   act("through","Through plug "+(D.tagPending?D.lastTag:D.nextPlug),"rates · choke · psi",D.tagPending);
   act("sweep_pumped","Sweep pumped","gel · dye · toe · heel",false);
   act("sweep_seen","Sweep at surface",D.open.length?"due "+clock(D.open[0].due):"no clock running",!!dueNow.length,!D.open.length);
@@ -836,10 +844,7 @@ function bindSetup(){var u=S.setup;
     s1.addEventListener("change",function(){c.size=s1.value;c.id=(CASING[c.size]||[[0,NaN]])[0][1];save();bindSetup();render();});
     s2.addEventListener("change",function(){c.id=parseFloat(s2.value);save();render();});inp.addEventListener("input",function(){c.to=inp.value.replace(/[^0-9.]/g,"");save();render();});})(i);
   segOn("sPlugType","data-p",u.plugType);fillSel("sPull",[[1,"plug"],[2,"2 plugs"],[3,"3 plugs"],[5,"5 plugs"],[10,"10 plugs"],[0,"when told"]],u.pullEvery);
-  $("gFirst").value=u.gFirst;$("gSpace").value=u.gSpace;$("gCount").value=u.gCount;$("plugCount").textContent=u.plugs.length+" plugs";
-  var D=derive();var pl=$("plist");pl.innerHTML="";if(!u.plugs.length)pl.appendChild(el("div","empty","No plugs yet."));
-  u.plugs.forEach(function(dp,i){var r=el("div","prow");r.appendChild(el("span","n","#"+(i+1)));var inp=el("input");inp.inputMode="numeric";inp.value=dp;inp.id="pl"+i;inp.setAttribute("aria-label","Plug "+(i+1)+" depth");inp.addEventListener("input",function(){u.plugs[i]=inp.value.replace(/[^0-9]/g,"");save();});r.appendChild(inp);
-    r.appendChild(el("span","st",i+1<=D.lastThrough?"✓":""));pl.appendChild(r);});
+  bindPlugs();
   var tr=$("tankRows");tr.innerHTML="";u.tanks.forEach(function(t,i){var r=el("div","trow2");var a=el("div","fld");a.appendChild(el("span","lbl","Tank"));var ib=el("div","ibox");var n=el("input","txt");n.value=t.name;n.id="tn"+i;ib.appendChild(n);a.appendChild(ib);
     var kk=fSeg("",[["rect","Rect"],["chart","Chart"]],t.kind);var kf=el("div","fld");kf.appendChild(el("span","lbl","Type"));kf.appendChild(kk.node);
     var c=el("div","fld");c.appendChild(el("span","lbl",'bbl/in'));var ib2=el("div","ibox");var f=el("input");f.inputMode="decimal";f.value=t.kind==="rect"?t.bpi:"";f.disabled=t.kind!=="rect";f.placeholder=t.kind==="rect"?"":"chart";f.id="tb"+i;ib2.appendChild(f);c.appendChild(ib2);
@@ -861,8 +866,10 @@ function wireSetup(){var u=function(){return S.setup;};
   $("sCsgN").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;u().csgN=+b.getAttribute("data-n");save();bindSetup();render();});
   $("sPlugType").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var v=b.getAttribute("data-p");u().plugType=v;u().pullEvery=v==="composite"?1:5;save();bindSetup();render();});
   $("sPull").addEventListener("change",function(){u().pullEvery=+this.value;save();});
-  ["gFirst","gSpace","gCount"].forEach(function(id){$(id).addEventListener("input",function(){u()[id]=$(id).value.replace(/[^0-9]/g,"");save();});});
-  $("gBtn").addEventListener("click",function(){var a=+u().gFirst,s=+u().gSpace,n=+u().gCount;if(!(a>0&&s>0&&n>0&&n<=150)){toast("Enter first plug, spacing and how many");return;}u().plugs=[];for(var i=0;i<n;i++)u().plugs.push(String(a+i*s));save();bindSetup();render();toast(n+" plugs filled — fix any odd ones");});
+  $("pAddBtn").addEventListener("click",addPlug);$("pAdd").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();addPlug();}});
+  $("pUndo").addEventListener("click",function(){var u=S.setup;if(!u.plugs.length)return;var n=u.plugs.length;confirmSheet("Remove plug "+n+"?","Takes "+fnum(Number(u.plugs[n-1]))+" ft off the end of the sheet.","Remove it",function(){u.plugs.pop();u.plugSt.pop();save();bindPlugs();render();});});
+  $("sKP").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;S.setup.kp=b.getAttribute("data-k")==="1";save();bindPlugs();render();});
+  $("sFrom").addEventListener("input",function(){S.setup.sheetFrom=this.value;save();});
   $("addTank").addEventListener("click",function(){u().tanks.push({name:"Tank "+(u().tanks.length+1),kind:"rect",bpi:u().tanks.length?u().tanks[0].bpi:""});save();bindSetup();});
   $("sSurface").addEventListener("input",function(){u().surface=this.value.replace(/[^0-9.]/g,"");save();render();});
   ["sLSmax","sRSmax"].forEach(function(id){$(id).addEventListener("change",function(){u()[id==="sLSmax"?"lsMax":"rsMax"]=+this.value;save();});});
@@ -875,6 +882,35 @@ function wireSetup(){var u=function(){return S.setup;};
 }
 function confirmSheet(title,sub,label,fn){openSheet(title,sub,function(){},function(){fn();},label);}
 
+/* ================= plug sheet entry ================= */
+function plugLabel(n){return (n===1&&S.setup.kp)?"kill plug (#1)":"plug "+n;}
+function regularRun(){/* the last plugs typed: is their spacing steady? */var u=S.setup,a=u.plugs.map(Number),start=u.kp?1:0;
+  var reg=a.slice(start);if(reg.length<3)return null;var g=[];for(var i=1;i<reg.length;i++)g.push(reg[i]-reg[i-1]);var last=g.slice(-3);
+  if(last.some(function(x){return !(x>0);}))return null;var m=last.reduce(function(s,x){return s+x;},0)/last.length;if(last.some(function(x){return Math.abs(x-m)>12;}))return null;
+  /* spacing from the whole regular run, first to last typed — steadier than the last two gaps */return{gap:Math.round((reg[reg.length-1]-reg[0])/(reg.length-1)),from:a.length};}
+function bindPlugs(){var u=S.setup;u.plugSt=u.plugSt||[];while(u.plugSt.length<u.plugs.length)u.plugSt.push("t");u.plugSt.length=u.plugs.length;
+  segOn("sKP","data-k",u.kp?"1":"0");$("sFrom").value=u.sheetFrom||"";
+  var toCheck=u.plugSt.filter(function(s){return s==="f";}).length;$("plugCount").textContent=u.plugs.length+" plugs"+(toCheck?" · "+toCheck+" to check":"");$("plugCount").className="tag"+(toCheck?" warn":u.plugs.length?" ok":"");
+  var n=u.plugs.length+1;$("pAddLbl").innerHTML=(n===1&&u.kp?"Kill plug (#1)":"Plug "+n)+' depth <span class="u">ft</span>';$("pUndo").hidden=!u.plugs.length;
+  var D=derive(),pl=$("plist");pl.innerHTML="";if(!u.plugs.length)pl.appendChild(el("div","empty","No plugs yet. Start with plug 1 below."));
+  u.plugs.forEach(function(dp,i){var st=u.plugSt[i],done=i+1<=D.lastThrough;var r=el("div","prow"+(st==="f"?" f":""));r.appendChild(el("span","n",(i===0&&u.kp)?"#1 KP":"#"+(i+1)));
+    var inp=el("input");inp.inputMode="numeric";inp.value=dp;inp.id="pl"+i;inp.setAttribute("aria-label","Plug "+(i+1)+" depth");
+    var wasFilled=st==="f";
+    inp.addEventListener("input",function(){u.plugs[i]=inp.value.replace(/[^0-9]/g,"");if(u.plugSt[i]==="f"){u.plugSt[i]="t";var b=r.querySelector(".st");b.className="st t";b.textContent="typed";r.classList.remove("f");}save();});
+    inp.addEventListener("change",function(){var moved=wasFilled?refillAfter(i):0;bindPlugs();render();if(moved)toast("Fixed — "+moved+" filled plugs below re-filled from this one");});r.appendChild(inp);
+    var b=el("button","st "+(done?"d":st),done?"drilled":(st==="f"?"check":st==="c"?"✓ checked":"typed"));b.type="button";
+    if(st==="f"&&!done)b.addEventListener("click",function(){u.plugSt[i]="c";save();bindPlugs();});
+    else if(st==="c"&&!done)b.addEventListener("click",function(){u.plugSt[i]="f";save();bindPlugs();});
+    b.setAttribute("aria-label",st==="f"?"Mark plug "+(i+1)+" as matching the sheet":"Plug "+(i+1)+" status");r.appendChild(b);pl.appendChild(r);});
+  var fb=$("pFill"),run=regularRun();if(run&&!u.plugSt.some(function(s){return s==="f";})){fb.hidden=false;fb.innerHTML='<b>Looks regular — about '+run.gap+' ft apart.</b> Fill the rest at that spacing? <div class="row" style="margin-top:8px;align-items:center"><div class="ibox" style="flex:1"><input id="pGap" inputmode="numeric" value="'+run.gap+'" aria-label="Spacing in feet"><span class="u">ft</span></div><div class="ibox" style="flex:1"><input id="pTotal" inputmode="numeric" placeholder="total plugs" aria-label="Total plugs on the sheet"></div><button class="mbtn prim" type="button" id="pFillBtn" style="flex:none;width:auto;padding:0 14px;height:var(--ctl)">Fill the rest</button></div><p class="note" style="margin-top:6px">Filled depths show <b>check</b> until you tick them against the sheet. Fix one and the unticked ones below it re-fill from your fix.</p>';
+    $("pFillBtn").addEventListener("click",function(){var tot=parseInt($("pTotal").value,10),have=u.plugs.length;if(!(tot>have&&tot<=200)){toast("Enter the total plug count from the sheet");return;}var gap=parseInt($("pGap").value,10);if(!(gap>0)){toast("Enter the spacing");return;}var last=Number(u.plugs[have-1]);for(var k=have;k<tot;k++){last+=gap;u.plugs.push(String(last));u.plugSt.push("f");}save();bindPlugs();render();toast((tot-have)+" plugs filled — tick each one against the sheet");});}
+  else fb.hidden=true;}
+function refillAfter(i){/* a filled depth was corrected: re-anchor the unchecked filled plugs below it on the corrected depth */
+  var u=S.setup,a=u.plugs.map(Number),start=u.kp?1:0;if(i<=start)return 0;var gap=Math.round((a[i]-a[start])/(i-start));if(!(gap>0))return 0;var n=0,last=a[i];
+  for(var k=i+1;k<a.length;k++){last+=gap;if(u.plugSt[k]==="f"){if(Number(u.plugs[k])!==last){u.plugs[k]=String(last);n++;}}}save();return n;}
+function addPlug(){var v=$("pAdd").value.replace(/[^0-9]/g,"");if(!v){toast("Type the depth first");return;}var u=S.setup,prev=Number(u.plugs[u.plugs.length-1]);
+  if(isFinite(prev)&&Number(v)<=prev){toast("That's shallower than the plug before it — check the sheet");return;}
+  u.plugs.push(v);u.plugSt=u.plugSt||[];u.plugSt.push("t");$("pAdd").value="";save();bindPlugs();render();try{$("pAdd").focus({preventScroll:true});}catch(e){}var pl=$("plist");pl.scrollTop=pl.scrollHeight;}
 /* ================= tabs ================= */
 function go(v){document.querySelectorAll("#tabs button").forEach(function(b){var on=b.getAttribute("data-v")===v;b.classList.toggle("on",on);b.setAttribute("aria-selected",on?"true":"false");});
   ["log","setup","shift"].forEach(function(x){$("v-"+x).hidden=x!==v;});try{localStorage.setItem(KEY+"-tab",v);}catch(e){}window.scrollTo(0,0);}
@@ -889,7 +925,7 @@ $("filt").addEventListener("click",function(e){var b=e.target.closest("button");
 /* ================= handoff payload & QR ================= */
 function payload(){var D=derive(),u=S.setup;var open=D.open.map(function(x){return{k:x.kind,p:x.plug,f:x.from,d:Math.round(x.due)};});
   return{nfc:"dol",v:1,s:{cu:u.cust,w:u.well,re:u.region,ri:u.rig,ca:u.catcher,st:u.start,m:u.mode,od:u.coilOD,rl:u.reel,sk:u.stick,si:u.stickID,
-    cn:u.csgN,cs:u.csg.slice(0,u.csgN).map(function(c){return[c.size,c.id,c.to];}),pt:u.plugType,pe:u.pullEvery,pl:u.plugs.map(Number),
+    cn:u.csgN,cs:u.csg.slice(0,u.csgN).map(function(c){return[c.size,c.id,c.to];}),pt:u.plugType,pe:u.pullEvery,pl:u.plugs.map(Number),ps:(u.plugSt||[]).join(""),kp:u.kp?1:0,sf:u.sheetFrom||"",
     tk:u.tanks.map(function(t){return[t.name,t.kind,t.bpi];}),ls:u.lsMax,rs:u.rsMax,ev:u.every,ln:u.len,ck:u.checklist||[]},
     l:{through:D.lastThrough,tag:D.lastTag,depth:D.depth,pump:D.pump,ret:D.ret,mani:D.mani,mpsi:D.mpsi,cpsi:D.cpsi,target:D.target,surface:Math.round(D.surface),strapAt:D.lastStrap?D.lastStrap.t:null,etas:open},
     f:{hand:S.shift.hand,which:S.shift.which,end:Date.now()}};}
@@ -899,7 +935,7 @@ function drawQR(ctx,q,x,y,size){var n=q.getModuleCount(),quiet=4,cell=size/(n+qu
   for(var r=0;r<n;r++)for(var c=0;c<n;c++)if(q.isDark(r,c))ctx.fillRect(Math.floor(x+(c+quiet)*cell),Math.floor(y+(r+quiet)*cell),Math.ceil(cell),Math.ceil(cell));}
 function applyPayload(p){var s=p.s,L=p.l;var u=blankSetup();
   u.cust=s.cu||"";u.well=s.w||"";u.region=s.re||"";u.rig=s.ri||"";u.catcher=s.ca||"";u.start=s.st||u.start;u.mode=s.m||"coil";u.coilOD=s.od||2.375;u.reel=s.rl||"";u.stick=s.sk||"2⅞";u.stickID=s.si||2.441;
-  u.csgN=s.cn||1;(s.cs||[]).forEach(function(c,i){u.csg[i]={size:c[0],id:c[1],to:c[2]};});u.plugType=s.pt||"composite";u.pullEvery=s.pe==null?1:s.pe;u.plugs=(s.pl||[]).map(String);
+  u.csgN=s.cn||1;(s.cs||[]).forEach(function(c,i){u.csg[i]={size:c[0],id:c[1],to:c[2]};});u.plugType=s.pt||"composite";u.pullEvery=s.pe==null?1:s.pe;u.plugs=(s.pl||[]).map(String);u.plugSt=(s.ps||"").split("");while(u.plugSt.length<u.plugs.length)u.plugSt.push("t");u.kp=s.kp!==0;u.sheetFrom=s.sf||"";
   u.tanks=(s.tk||[]).map(function(t){return{name:t[0],kind:t[1],bpi:t[2]};});u.lsMax=s.ls||64;u.rsMax=s.rs||64;u.every=s.ev||15;u.len=s.ln||5;u.checklist=s.ck||[];u.surface=L&&isFinite(L.surface)?String(L.surface):"";
   var st=blankState();st.setup=u;st.shift={hand:"",which:(p.f&&p.f.which)==="Day"?"Night":"Day",started:Date.now()};
   st.events.push({id:uid(),k:"handoff_in",t:Date.now(),ts:Date.now(),d:{from:p.f||{},left:L||{}},corr:[]});S=st;save();bindSetup();render();go("log");toast("Job loaded — you're on from plug "+((L&&L.through||0)+1));}
@@ -940,8 +976,8 @@ function shiftPicture(){var D=derive(),u=S.setup,sm=shiftSummary(D),W=1080,PAD=4
   cv.width=W;cv.height=H;cx.fillStyle="#FFFFFF";cx.fillRect(0,0,W,H);
   cx.fillStyle="#C00000";cx.fillRect(0,0,W,10);
   cx.fillStyle="#1A1A1A";var tfs=64;do{cx.font=tfs+"px 'Bebas Neue', Impact, sans-serif";tfs-=2;}while(cx.measureText("DRILL-OUT LOG — SHIFT RECORD").width>W-PAD*2&&tfs>30);cx.fillText("DRILL-OUT LOG — SHIFT RECORD",PAD,96);
-  cx.font="600 20px Barlow, Arial";cx.fillStyle="#C00000";cx.fillText("NFC SERVICES · "+(S.example?"EXAMPLE — MADE-UP NUMBERS":"FIELD PROTOTYPE v0.2"),PAD,130);
-  var facts=[["Customer",u.cust],["Well",u.well],["Region",u.region],["CT co. / rig",u.rig],["Work string",u.mode==="coil"?"Coil "+u.coilOD+"″ · reel "+u.reel+" bbl":"Stick "+u.stick+"″ · ID "+u.stickID+"″"],["Plugs",u.plugs.length+" "+u.plugType+" · pull every "+(u.pullEvery||"when told")],
+  cx.font="600 20px Barlow, Arial";cx.fillStyle="#C00000";cx.fillText("NFC SERVICES · "+(S.example?"EXAMPLE — MADE-UP NUMBERS":"FIELD PROTOTYPE v0.3"),PAD,130);
+  var facts=[["Customer",u.cust],["Well",u.well],["Region",u.region],["CT co. / rig",u.rig],["Work string",u.mode==="coil"?"Coil "+u.coilOD+"″ · reel "+u.reel+" bbl":"Stick "+u.stick+"″ · ID "+u.stickID+"″"],["Plugs",u.plugs.length+" "+u.plugType+(u.kp?" (#1 kill plug)":"")+" · sheet from "+(u.sheetFrom||"—")],
     ["Plug catcher",u.catcher],["Shift",S.shift.which+" · "+(S.shift.hand||"—")+" · "+new Date(S.shift.started).toLocaleDateString("en-US")+" "+clock(S.shift.started)+" to "+clock(Date.now())]];
   var y=180;facts.forEach(function(f,i){var col=i%2,x=PAD+col*(W-PAD*2)/2;if(col===0&&i)y+=58;cx.font="600 16px Barlow, Arial";cx.fillStyle="#6A6A6A";cx.fillText(f[0].toUpperCase(),x,y);cx.font="600 23px Barlow, Arial";cx.fillStyle="#1A1A1A";var tx=String(f[1]||"—");while(cx.measureText(tx).width>(W-PAD*2)/2-20&&tx.length>4)tx=tx.slice(0,-2);cx.fillText(tx,x,y+26);});
   y=headH;cx.fillStyle="#DCDCDC";cx.fillRect(PAD,y-20,W-PAD*2,2);
