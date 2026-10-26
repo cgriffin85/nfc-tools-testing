@@ -162,10 +162,10 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .foot b{font-family:var(--fd);font-weight:700;font-size:13px;letter-spacing:.6px;color:var(--text-mid)}
 .stamp{margin-top:10px;padding-top:8px;border-top:1px solid var(--rule);font-family:var(--fd);font-weight:600;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-dim)}
 .home-sh{position:sticky;top:0;z-index:5}
+.home-sh .ttl{flex:1;min-width:0;font-family:var(--fd);font-weight:700;font-size:19px;color:#fff}
 .home-sh .mark{width:30px;height:30px;flex:none;margin-left:4px}
 .ttlbtn{flex:1;min-width:0;display:flex;align-items:center;gap:6px;background:none;border:none;padding:4px 0;color:#fff;text-align:left}
 .ttlbtn svg{width:15px;height:15px;flex:none;color:var(--on-slate-mid)}
-#tank{flex:1;min-width:0;height:38px;border-radius:10px;border:2px solid var(--accent);background:#fff;color:#1B2026;font:600 16px var(--fb);padding:0 10px}
 .cs{font-size:.42em;font-weight:700;margin-left:2px;letter-spacing:0}
 .rd .tm .cs,.crow .cs,.tbl .cs{font-size:.75em;color:var(--text-mid);margin-left:1px}
 .hapt{position:absolute;left:-9999px;top:0;opacity:0;pointer-events:none}
@@ -177,8 +177,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 <div id="home">
   <div class="sh home-sh">
     <svg class="mark" aria-hidden="true" viewBox="0 0 34 34" style="fill:none;stroke-width:2.6;stroke-linecap:round"><rect x="0" y="0" width="34" height="34" rx="8" fill="#1E252D" stroke="none"></rect><path d="M 7 10 Q 12 8 17 10 T 27 10" stroke="#C9D1D9"></path><path d="M 7 15 Q 12 13 17 15 T 27 15" stroke="#D9A25E"></path><path d="M 7 20 Q 12 18 17 20 T 27 20" stroke="#E2662B"></path><path d="M 7 25 Q 12 23 17 25 T 27 25" stroke="#8C9BA8"></path></svg>
-    <button type="button" class="ttlbtn" id="tankBtn" aria-label="Rename the tank"><span class="ttl">Strap · <span id="tankName">Tank 1</span></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button>
-    <input id="tank" type="text" autocomplete="off" placeholder="Tank 1" maxlength="24" aria-label="Tank name" hidden>
+    <span class="ttl">Strap App</span>
     <button class="pill" id="themeBtn" type="button" aria-label="Switch light or dark"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg></button>
   </div>
   <div class="band" id="homeBand"><span class="clk" id="homeClk" style="color:#8C9BA8">0:00<small class="cs">.00</small></span><span class="sub" id="homeSub"></span></div>
@@ -305,13 +304,9 @@ var toastT=null;function toast(m){var t=$("toast");if(!t){t=document.createEleme
 function drawKinds(){var h="";KINDS.forEach(function(k){h+='<button type="button" class="kind'+(k.id===S.kind?" on":"")+'" data-k="'+k.id+'"><b>'+k.big+'</b><span>'+k.small+'</span></button>'});$("kinds").innerHTML=h;
   var k=kindOf(S.kind);$("homeSub").textContent=k.plan.length?((k.plan.length>1?"reads at "+k.plan.slice(0,-1).join(", ")+" and "+k.plan[k.plan.length-1]+" min":"one read at "+k.plan[0]+" min")+" · last one is Finish"):"Free strap — Mark as you go, Finish when you're done"}
 $("kinds").addEventListener("click",function(e){var b=e.target.closest(".kind");if(!b)return;S.kind=b.getAttribute("data-k");save();drawKinds()});
-function drawTank(){$("tankName").textContent=S.tank||"Tank 1"}
-$("tankBtn").addEventListener("click",function(){var i=$("tank");i.value=S.tank;$("tankBtn").hidden=true;i.hidden=false;i.focus();i.select()});
-function endTank(){var i=$("tank");S.tank=i.value.trim();save();i.hidden=true;$("tankBtn").hidden=false;drawTank()}
-$("tank").addEventListener("blur",endTank);$("tank").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();this.blur()}});
-drawTank();
+
 function drawHist(){var h="";S.hist.slice(0,15).forEach(function(r,i){var n=r.reads.length,last=r.reads[n-1],first=r.reads[0];var hr=useHr(r);var rt=(first.bbl!=null&&last.bbl!=null)?rateTxt(last.bbl-first.bbl,last.t-first.t,hr):"–";
-  h+='<button type="button" class="hitem" data-h="'+i+'"><span class="t">'+esc(r.tank||"Tank")+' · '+kindOf(r.kind).big+'</span><span class="r">'+rt+'<small>'+(hr?"bbl/hr":"bbl/min")+'</small></span><span class="s">'+new Date(r.startAt).toLocaleDateString()+' '+wall(r.startAt)+' · '+fracIn(first.v)+' → '+fracIn(last.v)+' in '+clock(last.t)+'</span></button>'});
+  h+='<button type="button" class="hitem" data-h="'+i+'"><span class="t">'+kindOf(r.kind).big+' strap</span><span class="r">'+rt+'<small>'+(hr?"bbl/hr":"bbl/min")+'</small></span><span class="s">'+new Date(r.startAt).toLocaleDateString()+' '+wall(r.startAt)+' · '+fracIn(first.v)+' → '+fracIn(last.v)+' in '+clock(last.t)+'</span></button>'});
   $("hist").innerHTML=h;$("histWrap").hidden=!S.hist.length}
 $("hist").addEventListener("click",function(e){var b=e.target.closest(".hitem");if(!b)return;viewRun=S.hist[+b.getAttribute("data-h")];openScr("res")});
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
@@ -328,7 +323,7 @@ function nextIsFinish(){var p=plan();if(!p.length)return false;var n=nextPlanned
 $("startBtn").addEventListener("click",function(){
   unlockAudio();tick(false);
   if(S.run&&S.run.stopAt==null){openScr(S.run.stage||"run");return}
-  S.run={startAt:now(),kind:S.kind,tank:S.tank||"Tank 1",reads:[],stopAt:null,stage:"ruler",pend:{t:0,fin:false},alerted:[]};
+  S.run={startAt:now(),kind:S.kind,reads:[],stopAt:null,stage:"ruler",pend:{t:0,fin:false},alerted:[]};
   curV=S.lastV!=null?S.lastV:60;save();wake(true);openScr("ruler")});
 
 function markOrFinish(fin){
@@ -359,7 +354,7 @@ function openScr(v){view=v;
   ["vRun","vRuler","vChart","vRes"].forEach(function(id){$(id).hidden=true});
   var band=$("band");band.className="band";
   var run=v==="res"?viewRun:S.run;
-  $("sTtl").textContent="Strap · "+(run.tank||"Tank")+" · "+kindOf(run.kind).big.replace(/ /g,"");
+  $("sTtl").textContent="Strap · "+kindOf(run.kind).big.replace(/ /g,"");
   $("restartBtn").hidden=false;$("restartBtn").textContent=v==="res"?"Close":"Restart";$("restartBtn").classList.remove("arm");
   $("backBtn").hidden=v==="res";
   if(v==="run"){$("vRun").hidden=false;drawRun()}
@@ -368,7 +363,7 @@ function openScr(v){view=v;
   if(v==="res"){band.classList.add("thin");$("vRes").hidden=false;drawRes()}
   tickClock()}
 function drawResume(){var on=!!(S.run&&S.run.stopAt==null)||!!(S.run&&S.run.stage==="chart");$("resumeBtn").hidden=!on;
-  if(on){$("resumeTxt").textContent=(S.run.tank||"Tank")+" · "+kindOf(S.run.kind).big+(S.run.stage==="chart"?" · barrels to fill":" · tap to go back");$("startBtn").textContent=S.run.stage==="chart"?"Fill barrels":"Back to strap"}else $("startBtn").textContent="Start"}
+  if(on){$("resumeTxt").textContent=kindOf(S.run.kind).big+" strap"+(S.run.stage==="chart"?" · barrels to fill":" · tap to go back");$("startBtn").textContent=S.run.stage==="chart"?"Fill barrels":"Back to strap"}else $("startBtn").textContent="Start"}
 
 function readRows(run,pendName){var h="",r=run.reads;for(var i=0;i<r.length;i++){
   h+='<div class="rd"><span class="n">'+readName(i,run)+'</span><b class="tm">'+clockCs(r[i].t)+'</b><b class="in">'+fracIn(r[i].v)+'</b><span class="d">'+(i?rise(r[i].v-r[0].v)+" from start":ftIn(r[i].v))+'</span></div>'}return h}
@@ -453,7 +448,7 @@ function updRates(){var run=S.run,r=run.reads,hr=useHr(run),u=hr?"bbl/hr":"bbl/m
   var a=r[0],z=r[r.length-1];
   $("cSum").innerHTML=(a.bbl!=null&&z.bbl!=null&&r.length>1)?"Strap rate, start → finish: <b>"+rateTxt(z.bbl-a.bbl,z.t-a.t,hr)+" "+u+"</b> · "+(z.bbl-a.bbl)+" bbl in "+clock(z.t-a.t):"Each rate is barrels from Start to that read, per "+(hr?"hour":"minute")+", to the whole barrel. Fill Start and Finish for the strap rate."}
 $("doneBtn").addEventListener("click",function(){var run=S.run;document.activeElement&&document.activeElement.blur&&document.activeElement.blur();
-  var rec={startAt:run.startAt,kind:run.kind,tank:run.tank,reads:run.reads.map(function(x){return{t:x.t,v:x.v,bbl:x.bbl,fin:x.fin}})};
+  var rec={startAt:run.startAt,kind:run.kind,reads:run.reads.map(function(x){return{t:x.t,v:x.v,bbl:x.bbl,fin:x.fin}})};
   if(run.histIdx!=null&&S.hist[run.histIdx]&&S.hist[run.histIdx].startAt===run.startAt)S.hist[run.histIdx]=rec;else S.hist.unshift(rec);
   S.hist=S.hist.slice(0,30);S.run=null;save();viewRun=rec;openScr("res")});
 
@@ -467,7 +462,7 @@ function drawRes(){var run=viewRun,r=run.reads,hr=useHr(run),u=hr?"bbl/hr":"bbl/
   r.forEach(function(x,i){h+="<tr><td>"+readName(i,run)+"</td><td>"+clockCs(x.t)+"</td><td>"+fracIn(x.v)+"</td><td>"+(x.bbl!=null?x.bbl:"–")+"</td><td>"+(i&&x.bbl!=null&&r[0].bbl!=null?rateTxt(x.bbl-r[0].bbl,x.t-r[0].t,hr):"")+"</td></tr>"});
   $("resTbl").innerHTML=h;$("editBtn").hidden=!!(S.run&&S.run.stopAt==null)}
 function summary(run){var r=run.reads,hr=useHr(run),u=hr?"bbl/hr":"bbl/min",a=r[0],z=r[r.length-1];
-  var s="Strap · "+(run.tank||"Tank")+" · "+kindOf(run.kind).big+" · "+new Date(run.startAt).toLocaleDateString()+" "+wall(run.startAt)+"\n";
+  var s="Strap · "+kindOf(run.kind).big+" · "+new Date(run.startAt).toLocaleDateString()+" "+wall(run.startAt)+"\n";
   r.forEach(function(x,i){s+=readName(i,run)+"  "+clock(x.t)+"  "+fracIn(x.v)+"  "+(x.bbl!=null?x.bbl+" bbl":"")+(i&&x.bbl!=null&&r[0].bbl!=null?"  "+rateTxt(x.bbl-r[0].bbl,x.t-r[0].t,hr)+" "+u+" from start":"")+"\n"});
   if(a.bbl!=null&&z.bbl!=null&&r.length>1)s+="Strap rate: "+rateTxt(z.bbl-a.bbl,z.t-a.t,hr)+" "+u+" ("+(z.bbl-a.bbl)+" bbl in "+clock(z.t-a.t)+")";
   return s+"\n— Strap App · BasinWorks Labs"}
@@ -475,7 +470,7 @@ $("copyBtn").addEventListener("click",function(){var t=summary(viewRun);
   function fb(){var ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("Copied")}catch(e){toast("Couldn't copy")}document.body.removeChild(ta)}
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){toast("Copied")},fb);else fb()});
 $("editBtn").addEventListener("click",function(){var idx=S.hist.indexOf(viewRun);
-  S.run={startAt:viewRun.startAt,kind:viewRun.kind,tank:viewRun.tank,reads:viewRun.reads.map(function(x){return{t:x.t,v:x.v,bbl:x.bbl,fin:x.fin}}),stopAt:viewRun.startAt+viewRun.reads[viewRun.reads.length-1].t,stage:"chart",pend:null,alerted:[],histIdx:idx};save();openScr("chart")});
+  S.run={startAt:viewRun.startAt,kind:viewRun.kind,reads:viewRun.reads.map(function(x){return{t:x.t,v:x.v,bbl:x.bbl,fin:x.fin}}),stopAt:viewRun.startAt+viewRun.reads[viewRun.reads.length-1].t,stage:"chart",pend:null,alerted:[],histIdx:idx};save();openScr("chart")});
 $("newBtn").addEventListener("click",function(){openScr("home")});
 
 /* ---------- boot ---------- */
