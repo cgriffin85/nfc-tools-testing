@@ -108,7 +108,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .band.alert .sub,.band.alert .sub b{color:#1B2026}
 .body{flex:1;min-height:0;display:flex;flex-direction:column;gap:6px;padding:10px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));max-width:560px;width:100%;margin:0 auto}
 .reads{display:flex;flex-direction:column;gap:5px;overflow-y:auto;min-height:0;flex:0 1 auto}
-.rd{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:6px 12px;display:grid;grid-template-columns:62px 52px minmax(0,1fr) auto;gap:8px;align-items:baseline;font-family:var(--fm)}
+.rd{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:6px 12px;display:grid;grid-template-columns:58px 70px minmax(0,1fr) auto;gap:8px;align-items:baseline;font-family:var(--fm)}
 .rd .n{font:600 12px var(--fb);color:var(--text-mid)}
 .rd .tm{font-weight:700;font-size:15px}
 .rd .in{font-weight:700;font-size:19px}
@@ -161,6 +161,13 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .foot svg{width:20px;height:20px}
 .foot b{font-family:var(--fd);font-weight:700;font-size:13px;letter-spacing:.6px;color:var(--text-mid)}
 .stamp{margin-top:10px;padding-top:8px;border-top:1px solid var(--rule);font-family:var(--fd);font-weight:600;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-dim)}
+.home-sh{position:sticky;top:0;z-index:5}
+.home-sh .mark{width:30px;height:30px;flex:none;margin-left:4px}
+.ttlbtn{flex:1;min-width:0;display:flex;align-items:center;gap:6px;background:none;border:none;padding:4px 0;color:#fff;text-align:left}
+.ttlbtn svg{width:15px;height:15px;flex:none;color:var(--on-slate-mid)}
+#tank{flex:1;min-width:0;height:38px;border-radius:10px;border:2px solid var(--accent);background:#fff;color:#1B2026;font:600 16px var(--fb);padding:0 10px}
+.cs{font-size:.42em;font-weight:700;margin-left:2px;letter-spacing:0}
+.rd .tm .cs,.crow .cs,.tbl .cs{font-size:.75em;color:var(--text-mid);margin-left:1px}
 .hapt{position:absolute;left:-9999px;top:0;opacity:0;pointer-events:none}
 </style>
 </head>
@@ -168,21 +175,21 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 
 <!-- HOME -->
 <div id="home">
-  <header class="hdr"><div class="hrow">
+  <div class="sh home-sh">
     <svg class="mark" aria-hidden="true" viewBox="0 0 34 34" style="fill:none;stroke-width:2.6;stroke-linecap:round"><rect x="0" y="0" width="34" height="34" rx="8" fill="#1E252D" stroke="none"></rect><path d="M 7 10 Q 12 8 17 10 T 27 10" stroke="#C9D1D9"></path><path d="M 7 15 Q 12 13 17 15 T 27 15" stroke="#D9A25E"></path><path d="M 7 20 Q 12 18 17 20 T 27 20" stroke="#E2662B"></path><path d="M 7 25 Q 12 23 17 25 T 27 25" stroke="#8C9BA8"></path></svg>
-    <div><h1>Strap App</h1><div class="hsub">BasinWorks Labs · test build</div></div>
-    <button class="icon" id="themeBtn" type="button" aria-label="Switch light or dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg></button>
-  </div></header>
+    <button type="button" class="ttlbtn" id="tankBtn" aria-label="Rename the tank"><span class="ttl">Strap · <span id="tankName">Tank 1</span></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button>
+    <input id="tank" type="text" autocomplete="off" placeholder="Tank 1" maxlength="24" aria-label="Tank name" hidden>
+    <button class="pill" id="themeBtn" type="button" aria-label="Switch light or dark"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg></button>
+  </div>
+  <div class="band" id="homeBand"><span class="clk" id="homeClk" style="color:#8C9BA8">0:00<small class="cs">.00</small></span><span class="sub" id="homeSub"></span></div>
   <main class="wrap">
     <button type="button" class="resume" id="resumeBtn" hidden><span style="flex:1"><span class="lbl" style="display:block">Strap running</span><span id="resumeTxt"></span></span><b class="num" id="resumeClk">0:00</b></button>
-    <div class="field"><span class="lbl">Strap tank</span><input id="tank" type="text" autocomplete="off" placeholder="Tank 1" maxlength="24"></div>
     <span class="lbl">Kind of strap</span>
     <div class="kinds" id="kinds"></div>
-    <p class="note" id="kindNote"></p>
-    <p class="note">Isolate the tank. Stick in the fluid, phone in the other hand. Tap <b>Start</b> as you lift the stick, then match the first line on the ruler. The screen stays awake while the strap runs.</p>
+    <p class="note">To prepare, isolate your tank and have your stick and the app ready. Tap <b>Start</b> as you lift the stick, then match the first line on the ruler. The screen stays awake while the strap runs.</p>
     <button type="button" class="big" id="startBtn">Start</button>
     <div id="histWrap" hidden>
-      <div class="lbl" style="margin:10px 0 8px">Past straps on this phone</div>
+      <div class="lbl" style="margin:14px 0 8px">Past straps on this phone</div>
       <div class="hist" id="hist"></div>
     </div>
     <footer class="foot"><svg viewBox="0 0 34 34" aria-hidden="true" style="fill:none;stroke-width:2.6;stroke-linecap:round"><path d="M 7 10 Q 12 8 17 10 T 27 10" stroke="#8C9BA8"></path><path d="M 7 15 Q 12 13 17 15 T 27 15" stroke="#D9A25E"></path><path d="M 7 20 Q 12 18 17 20 T 27 20" stroke="#E2662B"></path><path d="M 7 25 Q 12 23 17 25 T 27 25" stroke="#8C9BA8"></path></svg><span>Made in the Permian by <b>BasinWorks Labs</b></span></footer>
@@ -266,6 +273,8 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function fracIn(v){var neg=v<0;v=Math.abs(Math.round(v*4)/4);var w=Math.floor(v),q=Math.round((v-w)*4);var f=["","¼","½","¾"][q];return (neg?"−":"")+(w===0&&f?"":String(w))+f+"″"}
 function ftIn(v){v=Math.round(v*4)/4;var f=Math.floor(v/12),r=v-f*12;return f+"′ "+fracIn(r)}
 function clock(ms){if(ms<0)ms=0;var s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;return (h?h+":"+(m<10?"0":""):"")+m+":"+(x<10?"0":"")+x}
+function cs(ms){if(ms<0)ms=0;var c=Math.floor(ms/10)%100;return '<small class="cs">.'+(c<10?"0":"")+c+"</small>"}
+function clockCs(ms){return clock(ms)+cs(ms)}
 function mmss(min){return clock(min*60000)}
 function rise(d){return (d>=0?"+":"")+fracIn(d)}
 function wall(ts){var d=new Date(ts),h=d.getHours(),m=d.getMinutes();return (h%12||12)+":"+(m<10?"0":"")+m+(h<12?" AM":" PM")}
@@ -294,9 +303,13 @@ var toastT=null;function toast(m){var t=$("toast");if(!t){t=document.createEleme
 
 /* ---------- home ---------- */
 function drawKinds(){var h="";KINDS.forEach(function(k){h+='<button type="button" class="kind'+(k.id===S.kind?" on":"")+'" data-k="'+k.id+'"><b>'+k.big+'</b><span>'+k.small+'</span></button>'});$("kinds").innerHTML=h;
-  var k=kindOf(S.kind);$("kindNote").textContent=k.plan.length?("Reads are guides, not locks: every read before the last is a Mark, the last is Finish. You can Mark early, add an extra read, or Finish when you're ready."):"No set times. Mark as often as you like; tap Finish for the last read."}
+  var k=kindOf(S.kind);$("homeSub").textContent=k.plan.length?((k.plan.length>1?"reads at "+k.plan.slice(0,-1).join(", ")+" and "+k.plan[k.plan.length-1]+" min":"one read at "+k.plan[0]+" min")+" · last one is Finish"):"Free strap — Mark as you go, Finish when you're done"}
 $("kinds").addEventListener("click",function(e){var b=e.target.closest(".kind");if(!b)return;S.kind=b.getAttribute("data-k");save();drawKinds()});
-$("tank").value=S.tank;$("tank").addEventListener("input",function(){S.tank=this.value.trim();save()});
+function drawTank(){$("tankName").textContent=S.tank||"Tank 1"}
+$("tankBtn").addEventListener("click",function(){var i=$("tank");i.value=S.tank;$("tankBtn").hidden=true;i.hidden=false;i.focus();i.select()});
+function endTank(){var i=$("tank");S.tank=i.value.trim();save();i.hidden=true;$("tankBtn").hidden=false;drawTank()}
+$("tank").addEventListener("blur",endTank);$("tank").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();this.blur()}});
+drawTank();
 function drawHist(){var h="";S.hist.slice(0,15).forEach(function(r,i){var n=r.reads.length,last=r.reads[n-1],first=r.reads[0];var hr=useHr(r);var rt=(first.bbl!=null&&last.bbl!=null)?rateTxt(last.bbl-first.bbl,last.t-first.t,hr):"–";
   h+='<button type="button" class="hitem" data-h="'+i+'"><span class="t">'+esc(r.tank||"Tank")+' · '+kindOf(r.kind).big+'</span><span class="r">'+rt+'<small>'+(hr?"bbl/hr":"bbl/min")+'</small></span><span class="s">'+new Date(r.startAt).toLocaleDateString()+' '+wall(r.startAt)+' · '+fracIn(first.v)+' → '+fracIn(last.v)+' in '+clock(last.t)+'</span></button>'});
   $("hist").innerHTML=h;$("histWrap").hidden=!S.hist.length}
@@ -315,7 +328,7 @@ function nextIsFinish(){var p=plan();if(!p.length)return false;var n=nextPlanned
 $("startBtn").addEventListener("click",function(){
   unlockAudio();tick(false);
   if(S.run&&S.run.stopAt==null){openScr(S.run.stage||"run");return}
-  S.run={startAt:now(),kind:S.kind,tank:S.tank||"Tank",reads:[],stopAt:null,stage:"ruler",pend:{t:0,fin:false},alerted:[]};
+  S.run={startAt:now(),kind:S.kind,tank:S.tank||"Tank 1",reads:[],stopAt:null,stage:"ruler",pend:{t:0,fin:false},alerted:[]};
   curV=S.lastV!=null?S.lastV:60;save();wake(true);openScr("ruler")});
 
 function markOrFinish(fin){
@@ -326,7 +339,7 @@ $("markBtn").addEventListener("click",function(){markOrFinish(nextIsFinish())});
 $("altBtn").addEventListener("click",function(){markOrFinish(!nextIsFinish())});
 
 $("confBtn").addEventListener("click",function(){
-  tick(false);var p=S.run.pend||{t:lastT(),fin:false};var v=Math.round(curV*4)/4;
+  cancelAnimationFrame(anim);anim=null;tick(false);var p=S.run.pend||{t:lastT(),fin:false};var v=Math.round(curV*4)/4;
   S.run.reads.push({t:p.t,v:v,fin:!!p.fin});S.run.pend=null;S.lastV=v;
   if(p.fin){S.run.stage="chart";wake(false);save();openScr("chart")}else{S.run.stage="run";save();openScr("run")}});
 
@@ -358,7 +371,7 @@ function drawResume(){var on=!!(S.run&&S.run.stopAt==null)||!!(S.run&&S.run.stag
   if(on){$("resumeTxt").textContent=(S.run.tank||"Tank")+" · "+kindOf(S.run.kind).big+(S.run.stage==="chart"?" · barrels to fill":" · tap to go back");$("startBtn").textContent=S.run.stage==="chart"?"Fill barrels":"Back to strap"}else $("startBtn").textContent="Start"}
 
 function readRows(run,pendName){var h="",r=run.reads;for(var i=0;i<r.length;i++){
-  h+='<div class="rd"><span class="n">'+readName(i,run)+'</span><b class="tm">'+clock(r[i].t)+'</b><b class="in">'+fracIn(r[i].v)+'</b><span class="d">'+(i?rise(r[i].v-r[i-1].v)+" in "+clock(r[i].t-r[i-1].t):ftIn(r[i].v))+'</span></div>'}return h}
+  h+='<div class="rd"><span class="n">'+readName(i,run)+'</span><b class="tm">'+clockCs(r[i].t)+'</b><b class="in">'+fracIn(r[i].v)+'</b><span class="d">'+(i?rise(r[i].v-r[i-1].v)+" in "+clock(r[i].t-r[i-1].t):ftIn(r[i].v))+'</span></div>'}return h}
 function drawRun(){var run=S.run,h=readRows(run);
   var p=plan(),i0=run.reads.length-1;for(var k=Math.max(0,i0);k<p.length;k++){h+='<div class="slot">'+(k===p.length-1?"Last read at "+mmss(p[k])+" — that's Finish":"Read lands here at "+mmss(p[k]))+'</div>'}
   $("runReads").innerHTML=h;var el=$("runReads");el.scrollTop=el.scrollHeight;
@@ -368,12 +381,12 @@ function drawRun(){var run=S.run,h=readRows(run);
 
 function drawRulerScreen(){var run=S.run,p=run.pend||{t:0};var i=run.reads.length;
   var name=i===0?"Starting read":(p.fin?"Finish read":ordinal(i)+" read");
-  $("rWhich").textContent=name+" · "+clock(p.t);$("rulReads").innerHTML=readRows(run);var el=$("rulReads");el.scrollTop=el.scrollHeight;
+  $("rWhich").innerHTML=name+" · "+clockCs(p.t);$("rulReads").innerHTML=readRows(run);var el=$("rulReads");el.scrollTop=el.scrollHeight;
   requestAnimationFrame(function(){sizeCanvas();drawStick()});updReadout()}
 
 /* ---------- clock loop ---------- */
-function tickClock(){var run=view==="res"?viewRun:S.run;if(!run||view==="home"){if(S.run&&S.run.stopAt==null)$("resumeClk").textContent=clock(elapsed());return}
-  var e=view==="res"?(run.reads.length?run.reads[run.reads.length-1].t:0):elapsed();$("clk").textContent=clock(e);
+function tickClock(){var run=view==="res"?viewRun:S.run;if(!run||view==="home"){if(S.run&&S.run.stopAt==null)$("resumeClk").innerHTML=clockCs(elapsed());return}
+  var e=view==="res"?(run.reads.length?run.reads[run.reads.length-1].t:0):elapsed();$("clk").innerHTML=clockCs(e);
   var sub="",band=$("band"),alert=false;
   if(view==="res"){sub="finished "+wall(run.startAt+e)}
   else if(run.stopAt!=null){sub=view==="chart"?"stopped · "+run.reads.length+" reads":"stopped · finish read is stamped "+clock(run.stopAt-run.startAt)}
@@ -384,6 +397,7 @@ function tickClock(){var run=view==="res"?viewRun:S.run;if(!run||view==="home"){
   if(view==="run"&&Math.floor(e/1000)!==lastSec){lastSec=Math.floor(e/1000);var fin=nextIsFinish();if($("markBtn").textContent!==(fin?"Finish":"Mark"))drawRun()}}
 var lastSec=-1;
 setInterval(tickClock,250);
+(function raf(){if(S.run&&S.run.stopAt==null){var c=view==="home"?$("resumeClk"):(view==="run"||view==="ruler")?$("clk"):null;if(c)c.innerHTML=clockCs(elapsed())}requestAnimationFrame(raf)})();
 
 /* ---------- the stick ---------- */
 var cv=$("cv"),ctx=cv.getContext("2d"),PX=88,W=0,H=0,DPR=1;
@@ -407,18 +421,27 @@ function drawStick(){if(!W)return;ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRec
   ctx.fillStyle="#fff";ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText("wet line",16,cy+1)}
 function updReadout(){var v=Math.round(curV*4)/4;$("rVal").textContent=fracIn(v);$("rFt").textContent=ftIn(v);$("confBtn").textContent="Confirm "+fracIn(v)}
 var drag=null,lastQ=null,anim=null;
-function setV(v,fromDrag){v=Math.max(0,Math.min(160,v));var q=Math.round(v*4);if(lastQ!==null&&q!==lastQ&&fromDrag)tick(false);lastQ=q;curV=v;drawStick();updReadout()}
-function snap(){cancelAnimationFrame(anim);var from=curV,to=Math.round(curV*4)/4,t0=performance.now();(function step(t){var k=Math.min(1,(t-t0)/140);curV=from+(to-from)*(1-Math.pow(1-k,3));drawStick();updReadout();if(k<1)anim=requestAnimationFrame(step);else curV=to})(t0)}
-$("rwin").addEventListener("pointerdown",function(e){if(e.target.closest(".nudge"))return;cancelAnimationFrame(anim);drag={y:e.clientY,v:curV,vel:0,lt:performance.now(),ly:e.clientY};lastQ=Math.round(curV*4);try{this.setPointerCapture(e.pointerId)}catch(x){}e.preventDefault()});
-$("rwin").addEventListener("pointermove",function(e){if(!drag)return;var dy=e.clientY-drag.y;setV(drag.v+dy/PX,true);e.preventDefault()});
-function endDrag(){if(!drag)return;drag=null;snap()}
+/* Feel of the stick: like the roller pickers — it keeps sliding after a flick and settles on a quarter-inch mark.
+   Distance comes from flick speed in screen pixels and is turned into inches at the stick's own scale (PX per inch),
+   so a flick moves the drawn stick the way your thumb threw it. TAU sets how quickly it slows (iOS-like). */
+var TAU=260, MAXIN=18;
+function setV(v,ticks){v=Math.max(0,Math.min(160,v));var q=Math.round(v*4);if(lastQ!==null&&q!==lastQ&&ticks)tick(false);lastQ=q;curV=v;drawStick();updReadout()}
+function glideTo(to){cancelAnimationFrame(anim);to=Math.max(0,Math.min(160,Math.round(to*4)/4));var from=curV,t0=performance.now(),d=to-from;
+  var tau=Math.abs(d)<0.3?70:TAU;
+  (function step(t){var k=1-Math.exp(-(t-t0)/tau);var v=from+d*k;if(Math.abs(to-v)<0.004){setV(to,true);anim=null;return}setV(v,true);anim=requestAnimationFrame(step)})(t0)}
+$("rwin").addEventListener("pointerdown",function(e){if(e.target.closest(".nudge"))return;cancelAnimationFrame(anim);anim=null;drag={y:e.clientY,v:curV,s:[{t:performance.now(),y:e.clientY}]};lastQ=Math.round(curV*4);try{this.setPointerCapture(e.pointerId)}catch(x){}e.preventDefault()});
+$("rwin").addEventListener("pointermove",function(e){if(!drag)return;var n=performance.now();drag.s.push({t:n,y:e.clientY});while(drag.s.length>2&&n-drag.s[0].t>100)drag.s.shift();setV(drag.v+(e.clientY-drag.y)/PX,true);e.preventDefault()});
+function endDrag(){if(!drag)return;var s=drag.s,n=performance.now(),a=s[0],b=s[s.length-1];drag=null;
+  var vel=(b.t-a.t>0&&n-b.t<60)?(b.y-a.y)/(b.t-a.t):0; /* px per ms, + = stick moving down = higher reading */
+  var throwIn=vel*TAU/PX; if(Math.abs(vel)<0.15)throwIn=0; throwIn=Math.max(-MAXIN,Math.min(MAXIN,throwIn));
+  glideTo(curV+throwIn)}
 $("rwin").addEventListener("pointerup",endDrag);$("rwin").addEventListener("pointercancel",endDrag);
-function nudge(d){cancelAnimationFrame(anim);curV=Math.round(curV*4)/4+d;curV=Math.max(0,Math.min(160,curV));lastQ=Math.round(curV*4);tick(false);drawStick();updReadout()}
+function nudge(d){cancelAnimationFrame(anim);anim=null;curV=Math.round(curV*4)/4+d;curV=Math.max(0,Math.min(160,curV));lastQ=Math.round(curV*4);tick(false);drawStick();updReadout()}
 $("nUp").addEventListener("click",function(){nudge(0.25)});$("nDn").addEventListener("click",function(){nudge(-0.25)});
 
 /* ---------- chart ---------- */
 function drawChart(){var run=S.run,r=run.reads,h="";
-  for(var i=0;i<r.length;i++){h+='<div class="crow"><span class="n">'+readName(i,run)+'<br>'+clock(r[i].t)+'</span><b class="in">'+fracIn(r[i].v)+'</b><label><input type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="'+(i===r.length-1?"done":"next")+'" data-i="'+i+'" value="'+(r[i].bbl!=null?r[i].bbl:"")+'" placeholder="bbl" aria-label="Barrels at '+fracIn(r[i].v)+'"><span>BBL</span></label><span class="rt" id="rt'+i+'"></span></div>'}
+  for(var i=0;i<r.length;i++){h+='<div class="crow"><span class="n">'+readName(i,run)+'<br>'+clockCs(r[i].t)+'</span><b class="in">'+fracIn(r[i].v)+'</b><label><input type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="'+(i===r.length-1?"done":"next")+'" data-i="'+i+'" value="'+(r[i].bbl!=null?r[i].bbl:"")+'" placeholder="bbl" aria-label="Barrels at '+fracIn(r[i].v)+'"><span>BBL</span></label><span class="rt" id="rt'+i+'"></span></div>'}
   $("cRows").innerHTML=h;updRates();
   var first=$("cRows").querySelector('input[data-i="'+firstEmpty()+'"]');if(first)setTimeout(function(){first.focus()},150)}
 function firstEmpty(){var r=S.run.reads;for(var i=0;i<r.length;i++)if(r[i].bbl==null)return i;return 0}
@@ -441,7 +464,7 @@ function drawRes(){var run=viewRun,r=run.reads,hr=useHr(run),u=hr?"bbl/hr":"bbl/
     $("resMore").textContent=db+" bbl in "+clock(dt)+" · "+(hr?Math.round(pm)+" bbl/min":Math.round(pm*60)+" bbl/hr")+" · "+Math.round(pm*1440).toLocaleString()+" bbl/day · "+rise(z.v-a.v)+" on the stick"}
   else{$("resRate").innerHTML="<b>–</b><span>"+u+"</span>";$("resMore").textContent="Fill Start and Finish barrels for the strap rate."}
   var h="<tr><th>Read</th><th>Time</th><th>Inches</th><th>BBL</th><th>"+u+"</th></tr>";
-  r.forEach(function(x,i){h+="<tr><td>"+readName(i,run)+"</td><td>"+clock(x.t)+"</td><td>"+fracIn(x.v)+"</td><td>"+(x.bbl!=null?x.bbl:"–")+"</td><td>"+(i&&x.bbl!=null&&r[i-1].bbl!=null?rateTxt(x.bbl-r[i-1].bbl,x.t-r[i-1].t,hr):"")+"</td></tr>"});
+  r.forEach(function(x,i){h+="<tr><td>"+readName(i,run)+"</td><td>"+clockCs(x.t)+"</td><td>"+fracIn(x.v)+"</td><td>"+(x.bbl!=null?x.bbl:"–")+"</td><td>"+(i&&x.bbl!=null&&r[i-1].bbl!=null?rateTxt(x.bbl-r[i-1].bbl,x.t-r[i-1].t,hr):"")+"</td></tr>"});
   $("resTbl").innerHTML=h;$("editBtn").hidden=!!(S.run&&S.run.stopAt==null)}
 function summary(run){var r=run.reads,hr=useHr(run),u=hr?"bbl/hr":"bbl/min",a=r[0],z=r[r.length-1];
   var s="Strap · "+(run.tank||"Tank")+" · "+kindOf(run.kind).big+" · "+new Date(run.startAt).toLocaleDateString()+" "+wall(run.startAt)+"\n";
