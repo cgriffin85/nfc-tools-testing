@@ -125,7 +125,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .readout .f{font-family:var(--fm);font-weight:700;font-size:18px;color:var(--text-mid)}
 .rwin{position:relative;flex:1 1 260px;min-height:200px;max-height:340px;border-radius:16px;overflow:hidden;background:#2F3842;touch-action:none;user-select:none;-webkit-user-select:none}
 .rwin canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.nudge{position:absolute;right:8px;width:52px;height:52px;border-radius:14px;border:1px solid rgba(255,255,255,.25);background:rgba(17,22,27,.55);color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.nudge{touch-action:none;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;position:absolute;right:8px;width:52px;height:52px;border-radius:14px;border:1px solid rgba(255,255,255,.25);background:rgba(17,22,27,.55);color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .nudge.up{top:8px}.nudge.dn{bottom:8px}
 .nudge small{font-size:10px;display:block}
 .conf{height:92px;border:none;border-radius:26px;background:var(--accent);color:var(--on-accent);font-family:var(--fd);font-weight:800;font-size:36px;width:100%}
@@ -218,10 +218,10 @@ button{font-family:inherit;color:inherit;cursor:pointer}
     <div class="reads" id="rulReads" style="max-height:30vh"></div>
     <div class="readout"><span class="w" id="rWhich"></span><span class="v" id="rVal">0″</span><span class="f" id="rFt"></span></div>
     <div class="rwin" id="rwin"><canvas id="cv"></canvas>
-      <button type="button" class="nudge up" id="nUp" aria-label="Up a quarter inch">▲</button>
-      <button type="button" class="nudge dn" id="nDn" aria-label="Down a quarter inch">▼</button>
+      <button type="button" class="nudge up" id="nUp" aria-label="Up an inch — hold to jump by feet">▲</button>
+      <button type="button" class="nudge dn" id="nDn" aria-label="Down an inch — hold to jump by feet">▼</button>
     </div>
-    <span class="hint">Drag the stick to match your wet line. It clicks to each ¼″ — go to the ½″ if the water's rough.</span>
+    <span class="hint">Drag the stick to match your wet line. It clicks to each ¼″. Arrows: tap for an inch, hold to jump by feet.</span>
     <button type="button" class="conf" id="confBtn">Confirm</button>
   </div>
 
@@ -433,7 +433,18 @@ function endDrag(){if(!drag)return;var s=drag.s,n=performance.now(),a=s[0],b=s[s
   glideTo(curV+throwIn)}
 $("rwin").addEventListener("pointerup",endDrag);$("rwin").addEventListener("pointercancel",endDrag);
 function nudge(d){cancelAnimationFrame(anim);anim=null;curV=Math.round(curV*4)/4+d;curV=Math.max(0,Math.min(160,curV));lastQ=Math.round(curV*4);tick(false);drawStick();updReadout()}
-$("nUp").addEventListener("click",function(){nudge(0.25)});$("nDn").addEventListener("click",function(){nudge(-0.25)});
+/* arrows: tap = next whole inch; hold = jump a foot at a time (each whole-foot mark) */
+function jumpTo(v){cancelAnimationFrame(anim);anim=null;curV=Math.max(0,Math.min(160,v));lastQ=Math.round(curV*4);tick(false);drawStick();updReadout();}
+function nextInch(d){var v=curV;return d>0?Math.floor(v+1e-6)+1:Math.ceil(v-1e-6)-1;}
+function nextFoot(d){var v=curV;return d>0?(Math.floor(v/12+1e-6)+1)*12:(Math.ceil(v/12-1e-6)-1)*12;}
+function holdArrow(btn,d){var hold=null,rep=null,held=false;
+  function stop(){clearTimeout(hold);clearInterval(rep);hold=rep=null;}
+  btn.addEventListener("pointerdown",function(e){e.preventDefault();e.stopPropagation();held=false;stop();try{btn.setPointerCapture(e.pointerId);}catch(x){}
+    hold=setTimeout(function(){held=true;jumpTo(nextFoot(d));rep=setInterval(function(){jumpTo(nextFoot(d));},450);},450);});
+  btn.addEventListener("pointerup",function(e){e.preventDefault();var wasHeld=held;stop();if(!wasHeld)jumpTo(nextInch(d));});
+  btn.addEventListener("pointercancel",stop);btn.addEventListener("click",function(e){e.preventDefault();if(e.detail===0)jumpTo(nextInch(d));});
+  btn.addEventListener("contextmenu",function(e){e.preventDefault();});}
+holdArrow($("nUp"),1);holdArrow($("nDn"),-1);
 
 /* ---------- chart ---------- */
 function drawChart(){var run=S.run,r=run.reads,h="";
