@@ -371,7 +371,7 @@ function drawResume(){var on=!!(S.run&&S.run.stopAt==null)||!!(S.run&&S.run.stag
   if(on){$("resumeTxt").textContent=(S.run.tank||"Tank")+" · "+kindOf(S.run.kind).big+(S.run.stage==="chart"?" · barrels to fill":" · tap to go back");$("startBtn").textContent=S.run.stage==="chart"?"Fill barrels":"Back to strap"}else $("startBtn").textContent="Start"}
 
 function readRows(run,pendName){var h="",r=run.reads;for(var i=0;i<r.length;i++){
-  h+='<div class="rd"><span class="n">'+readName(i,run)+'</span><b class="tm">'+clockCs(r[i].t)+'</b><b class="in">'+fracIn(r[i].v)+'</b><span class="d">'+(i?rise(r[i].v-r[i-1].v)+" in "+clock(r[i].t-r[i-1].t):ftIn(r[i].v))+'</span></div>'}return h}
+  h+='<div class="rd"><span class="n">'+readName(i,run)+'</span><b class="tm">'+clockCs(r[i].t)+'</b><b class="in">'+fracIn(r[i].v)+'</b><span class="d">'+(i?rise(r[i].v-r[0].v)+" from start":ftIn(r[i].v))+'</span></div>'}return h}
 function drawRun(){var run=S.run,h=readRows(run);
   var p=plan(),i0=run.reads.length-1;for(var k=Math.max(0,i0);k<p.length;k++){h+='<div class="slot">'+(k===p.length-1?"Last read at "+mmss(p[k])+" — that's Finish":"Read lands here at "+mmss(p[k]))+'</div>'}
   $("runReads").innerHTML=h;var el=$("runReads");el.scrollTop=el.scrollHeight;
@@ -449,9 +449,9 @@ $("cRows").addEventListener("input",function(e){var inp=e.target;if(!inp.matches
 $("cRows").addEventListener("keydown",function(e){if(e.key!=="Enter")return;e.preventDefault();var i=+e.target.getAttribute("data-i");var nx=$("cRows").querySelector('input[data-i="'+(i+1)+'"]');if(nx)nx.focus();else e.target.blur()});
 function updRates(){var run=S.run,r=run.reads,hr=useHr(run),u=hr?"bbl/hr":"bbl/min";
   for(var i=0;i<r.length;i++){var el=$("rt"+i);if(!el)continue;if(i===0){el.innerHTML="";continue}
-    if(r[i].bbl!=null&&r[i-1].bbl!=null){el.innerHTML="<b>"+rateTxt(r[i].bbl-r[i-1].bbl,r[i].t-r[i-1].t,hr)+"</b><span>"+u+"</span>"}else el.innerHTML='<b style="color:var(--text-dim)">–</b><span>'+u+'</span>'}
+    if(r[i].bbl!=null&&r[0].bbl!=null){el.innerHTML="<b>"+rateTxt(r[i].bbl-r[0].bbl,r[i].t-r[0].t,hr)+"</b><span>"+u+"<br>from start</span>"}else el.innerHTML='<b style="color:var(--text-dim)">–</b><span>'+u+'<br>from start</span>'}
   var a=r[0],z=r[r.length-1];
-  $("cSum").innerHTML=(a.bbl!=null&&z.bbl!=null&&r.length>1)?"Strap rate, start → finish: <b>"+rateTxt(z.bbl-a.bbl,z.t-a.t,hr)+" "+u+"</b> · "+(z.bbl-a.bbl)+" bbl in "+clock(z.t-a.t):"Each rate is barrels since the read above it, per "+(hr?"hour":"minute")+", to the whole barrel. Fill Start and Finish for the strap rate."}
+  $("cSum").innerHTML=(a.bbl!=null&&z.bbl!=null&&r.length>1)?"Strap rate, start → finish: <b>"+rateTxt(z.bbl-a.bbl,z.t-a.t,hr)+" "+u+"</b> · "+(z.bbl-a.bbl)+" bbl in "+clock(z.t-a.t):"Each rate is barrels from Start to that read, per "+(hr?"hour":"minute")+", to the whole barrel. Fill Start and Finish for the strap rate."}
 $("doneBtn").addEventListener("click",function(){var run=S.run;document.activeElement&&document.activeElement.blur&&document.activeElement.blur();
   var rec={startAt:run.startAt,kind:run.kind,tank:run.tank,reads:run.reads.map(function(x){return{t:x.t,v:x.v,bbl:x.bbl,fin:x.fin}})};
   if(run.histIdx!=null&&S.hist[run.histIdx]&&S.hist[run.histIdx].startAt===run.startAt)S.hist[run.histIdx]=rec;else S.hist.unshift(rec);
@@ -463,12 +463,12 @@ function drawRes(){var run=viewRun,r=run.reads,hr=useHr(run),u=hr?"bbl/hr":"bbl/
     $("resRate").innerHTML="<b>"+rateTxt(db,dt,hr)+"</b><span>"+u+"</span>";
     $("resMore").textContent=db+" bbl in "+clock(dt)+" · "+(hr?Math.round(pm)+" bbl/min":Math.round(pm*60)+" bbl/hr")+" · "+Math.round(pm*1440).toLocaleString()+" bbl/day · "+rise(z.v-a.v)+" on the stick"}
   else{$("resRate").innerHTML="<b>–</b><span>"+u+"</span>";$("resMore").textContent="Fill Start and Finish barrels for the strap rate."}
-  var h="<tr><th>Read</th><th>Time</th><th>Inches</th><th>BBL</th><th>"+u+"</th></tr>";
-  r.forEach(function(x,i){h+="<tr><td>"+readName(i,run)+"</td><td>"+clockCs(x.t)+"</td><td>"+fracIn(x.v)+"</td><td>"+(x.bbl!=null?x.bbl:"–")+"</td><td>"+(i&&x.bbl!=null&&r[i-1].bbl!=null?rateTxt(x.bbl-r[i-1].bbl,x.t-r[i-1].t,hr):"")+"</td></tr>"});
+  var h="<tr><th>Read</th><th>Time</th><th>Inches</th><th>BBL</th><th>"+u+"<br>from start</th></tr>";
+  r.forEach(function(x,i){h+="<tr><td>"+readName(i,run)+"</td><td>"+clockCs(x.t)+"</td><td>"+fracIn(x.v)+"</td><td>"+(x.bbl!=null?x.bbl:"–")+"</td><td>"+(i&&x.bbl!=null&&r[0].bbl!=null?rateTxt(x.bbl-r[0].bbl,x.t-r[0].t,hr):"")+"</td></tr>"});
   $("resTbl").innerHTML=h;$("editBtn").hidden=!!(S.run&&S.run.stopAt==null)}
 function summary(run){var r=run.reads,hr=useHr(run),u=hr?"bbl/hr":"bbl/min",a=r[0],z=r[r.length-1];
   var s="Strap · "+(run.tank||"Tank")+" · "+kindOf(run.kind).big+" · "+new Date(run.startAt).toLocaleDateString()+" "+wall(run.startAt)+"\n";
-  r.forEach(function(x,i){s+=readName(i,run)+"  "+clock(x.t)+"  "+fracIn(x.v)+"  "+(x.bbl!=null?x.bbl+" bbl":"")+(i&&x.bbl!=null&&r[i-1].bbl!=null?"  "+rateTxt(x.bbl-r[i-1].bbl,x.t-r[i-1].t,hr)+" "+u:"")+"\n"});
+  r.forEach(function(x,i){s+=readName(i,run)+"  "+clock(x.t)+"  "+fracIn(x.v)+"  "+(x.bbl!=null?x.bbl+" bbl":"")+(i&&x.bbl!=null&&r[0].bbl!=null?"  "+rateTxt(x.bbl-r[0].bbl,x.t-r[0].t,hr)+" "+u+" from start":"")+"\n"});
   if(a.bbl!=null&&z.bbl!=null&&r.length>1)s+="Strap rate: "+rateTxt(z.bbl-a.bbl,z.t-a.t,hr)+" "+u+" ("+(z.bbl-a.bbl)+" bbl in "+clock(z.t-a.t)+")";
   return s+"\n— Strap App · BasinWorks Labs"}
 $("copyBtn").addEventListener("click",function(){var t=summary(viewRun);
