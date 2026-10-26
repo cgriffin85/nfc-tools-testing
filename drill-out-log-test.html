@@ -966,7 +966,7 @@ function evLine(e,D){var c=cur(e),d=c.d,k=e.k,s="",tags=[];
       var y=D.etas.filter(function(z){return z.id===e.id;})[0];if(y){if(y.how==="seen")tags.push([Math.round(y.diff)===0?"ok":y.diff>0?"warn":"hot",Math.round(y.diff)===0?"on time":signed(Math.round(y.diff))+" min"]);else if(!y.closed)tags.push(["info","due "+clockS(y.due)]);}break;
     case "sweep_seen":var z=e._eta;s=({visc:"viscosity",dye:"dye / colour",other:"other"}[d.how]||"")+(z?" · due "+clock(z.due):"");if(z)tags.push([Math.round(z.diff)===0?"ok":z.diff>0?"warn":"hot",Math.round(z.diff)===0?"on time":signed(Math.round(z.diff))+(z.diff>0?" early":" late")]);break;
     case "screens":s="plug "+(d.plug||"—")+" · "+fmtWt(wtOz(d))+" · "+({parts:"plug parts",sand:"mostly sand",clean:"clean"}[d.what]||"")+(d.note?" · "+d.note:"");break;
-    case "strap":s=d.tank+" · "+fnum(d.rate,d.sk?0:2)+" bbl/min · "+maniStr(d.mani)+" · Δp "+signed(d.cpsi-d.mpsi)+" psi";break;
+    case "strap":s=d.tank+" · "+fnum(d.rate,2)+" bbl/min · "+maniStr(d.mani)+" · Δp "+signed(d.cpsi-d.mpsi)+" psi";break;
     case "shift_count":s=fnum(d.total)+" bbl"+(isFinite(e._pred)?" · predicted "+fnum(e._pred)+" ("+signed(d.total-e._pred)+")":"");break;
     case "rate_call":s=(d.target?signed(d.target,1)+" bbl/min "+(d.target>0?"over (fat)":"under (lean)"):"barrel in, barrel out")+" · "+(d.by||"")+(d.note?" · "+d.note:"");break;
     case "check":s=d.item||"";break;
@@ -988,7 +988,7 @@ function render(){
     r.appendChild(el("div","cd",mins>0?"in "+dur(mins):(mins>-1?"now":dur(mins)+" over")));
     if(mins<=2){var gb=el("button","go","Seen");gb.type="button";gb.addEventListener("click",function(){entry("sweep_seen");});r.appendChild(gb);}st.appendChild(r);});
   var sd=D.strapDue,sm=(sd-now)/MIN;var sr=el("div","due "+(isFinite(sm)?(sm<-2?"hot":sm<=1?"warn":"ok"):"warn"));var stt=el("div","dt");
-  stt.innerHTML="<b>"+(isFinite(sm)?(sm<=0?"Strap due now":"Next strap "+clock(sd)):"No strap yet")+"</b><span>Every "+u.every+" min · last "+(D.lastStrap?fnum(D.lastStrap.d.rate,D.lastStrap.d.sk?0:2)+" bbl/min at "+clock(D.lastStrap.t):"—")+"</span>";sr.appendChild(stt);
+  stt.innerHTML="<b>"+(isFinite(sm)?(sm<=0?"Strap due now":"Next strap "+clock(sd)):"No strap yet")+"</b><span>Every "+u.every+" min · last "+(D.lastStrap?fnum(D.lastStrap.d.rate,2)+" bbl/min at "+clock(D.lastStrap.t):"—")+"</span>";sr.appendChild(stt);
   sr.appendChild(el("div","cd",isFinite(sm)?(sm>0?"in "+dur(sm):dur(sm)+(sm<=-1?" late":"")):""));if(!isFinite(sm)||sm<=1){var sb=el("button","go","Strap");sb.type="button";sb.addEventListener("click",function(){entry("strap");});sr.appendChild(sb);}st.appendChild(sr);
   var g=el("div","grid3");function o(l,v,s){var b=el("div","out");b.appendChild(el("div","l",l));b.appendChild(el("div","v",v));if(s!=null)b.appendChild(el("div","s",s));g.appendChild(b);}
   o("Pump / return",(isFinite(D.pump)?fnum(D.pump,1):"—")+" / "+(isFinite(D.ret)?fnum(D.ret,1):"—"),D.target?"target "+signed(D.target,1):"barrel in, out");
@@ -1173,7 +1173,7 @@ function shiftPicture(){var D=derive(),u=S.setup,sm=shiftSummary(D),W=1080,PAD=4
   var rows=[];lines.forEach(function(l){var hl=wrap(l.h,BODYB,W-PAD*2-150),sl=l.s?wrap(l.s,MONO,W-PAD*2-150):[];rows.push({l:l,hl:hl,sl:sl,h:(hl.length+sl.length)*LH+(l.lag>=2||l.corr?LH:0)+14});});
   var cnt=D.counts.filter(function(x){return x.t>=S.shift.started;}).pop();
   var sum=[["Plugs through",sm.plugs.length?"#"+sm.plugs[0]+" – #"+sm.plugs[sm.plugs.length-1]+"  ("+sm.plugs.length+")":"none"],["Sweeps timed",sm.seen.length?sm.seen.map(function(x){return (x.kind==="sweep"?"sweep ":"P"+x.plug+" ")+signed(Math.round(x.diff));}).join(" · "):"—"],
-    ["Screens pulled",sm.pulls+"  ·  parts "+fmtWt(sm.oz)],["Straps",sm.straps+"  ·  last "+(D.lastStrap?fnum(D.lastStrap.d.rate,D.lastStrap.d.sk?0:2)+" bbl/min at "+clock(D.lastStrap.t):"—")],
+    ["Screens pulled",sm.pulls+"  ·  parts "+fmtWt(sm.oz)],["Straps",sm.straps+"  ·  last "+(D.lastStrap?fnum(D.lastStrap.d.rate,2)+" bbl/min at "+clock(D.lastStrap.t):"—")],
     ["Surface",(cnt?"counted "+fnum(cnt.total)+" vs predicted "+fnum(cnt.pred)+" ("+signed(cnt.diff)+")  ·  ":"")+"now predicted "+fnum(D.surface)+" bbl"],["Rate target",D.target?signed(D.target,1)+" bbl/min ("+(D.targetBy||"")+")":"barrel in, barrel out"],
     ["Left off",(D.tagPending?"tagged plug "+D.lastTag:"plug "+D.lastThrough+" through")+" · bit "+fnum(D.depth)+" ft · "+maniStr(D.mani)+" · "+fnum(D.mpsi)+"/"+fnum(D.cpsi)+" psi"]];
   var sumL=sum.map(function(s){return wrap(s[1],MONOB,W-PAD*2-240);});
@@ -1282,7 +1282,7 @@ var SX=(function(){
   q("sxMark").addEventListener("click",function(){markOrFinish(nextIsFinish());});
   q("sxAlt").addEventListener("click",function(){markOrFinish(!nextIsFinish());});
   q("sxConf").addEventListener("click",function(){cancelAnimationFrame(anim);anim=null;tick(false);var p=R.pend||{t:lastT(),fin:false};var v=Math.round(curV*4)/4;
-    var rd={t:p.t,v:v,fin:!!p.fin};if(R.bpi>0)rd.bbl=Math.round(v*R.bpi);R.reads.push(rd);R.pend=null;lastV=v;
+    var rd={t:p.t,v:v,fin:!!p.fin};if(R.bpi>0)rd.bbl=Math.round(v*R.bpi*100)/100;R.reads.push(rd);R.pend=null;lastV=v;
     if(p.fin){R.stage="chart";wake(false);keep();show("chart");}else{R.stage="run";keep();show("run");}});
   q("sxBack").addEventListener("click",function(){if(view==="start"&&!R){hide();return;}hide();});
   var armT=null;
@@ -1348,23 +1348,23 @@ holdArrow(q("sxUp"),1);holdArrow(q("sxDn"),-1);
 
   /* barrels */
   function drawChart(){var r=R.reads,h="";q("sxChartTtl").textContent=R.bpi>0?"Barrels for each read — from "+fnum(R.bpi,2)+" bbl/in, fix any":"Read the chart — barrels for each read";
-    for(var i=0;i<r.length;i++)h+='<div class="sx-crow"><span class="sx-n">'+rname(i)+'<br>'+swc(r[i].t)+'</span><b class="sx-in">'+fracIn(r[i].v)+'</b><label><input type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="'+(i===r.length-1?"done":"next")+'" data-i="'+i+'" value="'+(r[i].bbl!=null?r[i].bbl:"")+'" placeholder="bbl" aria-label="Barrels at '+fracIn(r[i].v)+'"><span>BBL</span></label><span class="sx-rt" id="sxRt'+i+'"></span></div>';
+    for(var i=0;i<r.length;i++)h+='<div class="sx-crow"><span class="sx-n">'+rname(i)+'<br>'+swc(r[i].t)+'</span><b class="sx-in">'+fracIn(r[i].v)+'</b><label><input type="text" inputmode="decimal" enterkeyhint="'+(i===r.length-1?"done":"next")+'" data-i="'+i+'" value="'+(r[i].bbl!=null?r[i].bbl:"")+'" placeholder="bbl" aria-label="Barrels at '+fracIn(r[i].v)+'"><span>BBL</span></label><span class="sx-rt" id="sxRt'+i+'"></span></div>';
     q("sxRows").innerHTML=h;rates();var fe=0;for(var j=0;j<r.length;j++)if(r[j].bbl==null){fe=j;break;}var f=q("sxRows").querySelector('input[data-i="'+fe+'"]');if(f&&r[fe].bbl==null)setTimeout(function(){f.focus();},150);}
-  q("sxRows").addEventListener("input",function(e){var inp=e.target;if(!inp.matches("input"))return;var s=inp.value.replace(/[^0-9]/g,"");if(s!==inp.value)inp.value=s;R.reads[+inp.getAttribute("data-i")].bbl=s===""?null:parseInt(s,10);keep();rates();});
+  q("sxRows").addEventListener("input",function(e){var inp=e.target;if(!inp.matches("input"))return;var s=inp.value.replace(/[^0-9.]/g,"").replace(/^([^.]*\.)(.*)$/,function(m,a,b){return a+b.replace(/\./g,"")});if(s!==inp.value)inp.value=s;R.reads[+inp.getAttribute("data-i")].bbl=(s===""||s===".")?null:parseFloat(s);keep();rates();});
   q("sxRows").addEventListener("keydown",function(e){if(e.key!=="Enter")return;e.preventDefault();var i=+e.target.getAttribute("data-i");var nx=q("sxRows").querySelector('input[data-i="'+(i+1)+'"]');if(nx)nx.focus();else e.target.blur();});
-  function rates(){var r=R.reads;for(var i=1;i<r.length;i++){var x=rateFrom(i),c=q("sxRt"+i);if(c)c.innerHTML=isFinite(x)?"<b>"+Math.round(x)+"</b><span>bbl/min<br>from start</span>":'<b style="color:var(--text-dim)">–</b><span>bbl/min<br>from start</span>';}
-    var z=r.length-1,x=rateFrom(z);q("sxSum").innerHTML=isFinite(x)&&z>0?"Strap rate, start → finish: <b>"+Math.round(x)+" bbl/min</b> · "+(r[z].bbl-r[0].bbl)+" bbl in "+sw(r[z].t-r[0].t):"Each rate is barrels from Start to that read, per minute, to the whole barrel. Fill Start and Finish for the strap rate.";}
+  function rates(){var r=R.reads;for(var i=1;i<r.length;i++){var x=rateFrom(i),c=q("sxRt"+i);if(c)c.innerHTML=isFinite(x)?"<b>"+x.toFixed(2)+"</b><span>bbl/min<br>from start</span>":'<b style="color:var(--text-dim)">–</b><span>bbl/min<br>from start</span>';}
+    var z=r.length-1,x=rateFrom(z);q("sxSum").innerHTML=isFinite(x)&&z>0?"Strap rate, start → finish: <b>"+x.toFixed(2)+" bbl/min</b> · "+(Math.round((r[z].bbl-r[0].bbl)*100)/100)+" bbl in "+sw(r[z].t-r[0].t):"Each rate is barrels from Start to that read, per minute. Fill Start and Finish for the strap rate.";}
   q("sxNext").addEventListener("click",function(){var z=R.reads.length-1;if(!isFinite(rateFrom(z))){toast("Fill Start and Finish barrels for a rate");return;}document.activeElement&&document.activeElement.blur&&document.activeElement.blur();R.stage="log";keep();hide();logSheet();});
 
   /* last step: the manifold and pressures, then it goes in the log */
   function logSheet(){var D=derive(),ev=R.editId?S.events.filter(function(x){return x.id===R.editId;})[0]:null,d0=ev?cur(ev).d:{},F2={};var r=R.reads,z=r.length-1,rate=rateFrom(z);
     openSheet("Strap · "+R.tank,"Started "+clock(R.startAt)+" · "+kindOf(R.kind).big+" · "+r.length+" reads",function(b){
       var t='<table class="sx-tb" style="width:100%;border-collapse:collapse;font-family:var(--fm);font-size:13.5px"><tr style="color:var(--text-mid);font:600 10.5px var(--fb);text-transform:uppercase"><td>Read</td><td style="text-align:right">Time</td><td style="text-align:right">Inches</td><td style="text-align:right">BBL</td><td style="text-align:right">bbl/min from start</td></tr>';
-      r.forEach(function(x,i){var rr=i?rateFrom(i):NaN;t+='<tr style="border-top:1px solid var(--rule)"><td style="padding:5px 0">'+rname(i)+'</td><td style="text-align:right">'+sw(x.t)+'</td><td style="text-align:right">'+fracIn(x.v)+'</td><td style="text-align:right">'+(x.bbl!=null?x.bbl:"–")+'</td><td style="text-align:right">'+(isFinite(rr)?Math.round(rr):"")+'</td></tr>';});
-      var box=el("div","derived");box.innerHTML="Strap rate: <b>"+Math.round(rate)+" bbl/min</b> · "+(r[z].bbl-r[0].bbl)+" bbl in "+sw(r[z].t-r[0].t)+"<br>"+t+"</table>";b.appendChild(box);
+      r.forEach(function(x,i){var rr=i?rateFrom(i):NaN;t+='<tr style="border-top:1px solid var(--rule)"><td style="padding:5px 0">'+rname(i)+'</td><td style="text-align:right">'+sw(x.t)+'</td><td style="text-align:right">'+fracIn(x.v)+'</td><td style="text-align:right">'+(x.bbl!=null?x.bbl:"–")+'</td><td style="text-align:right">'+(isFinite(rr)?rr.toFixed(2):"")+'</td></tr>';});
+      var box=el("div","derived");box.innerHTML="Strap rate: <b>"+rate.toFixed(2)+" bbl/min</b> · "+(Math.round((r[z].bbl-r[0].bbl)*100)/100)+" bbl in "+sw(r[z].t-r[0].t)+"<br>"+t+"</table>";b.appendChild(box);
       var r2=el("div","row");F2.mpsi=fPsi("Manifold",isFinite(d0.mpsi)?d0.mpsi:D.mpsi);F2.cpsi=fPsi("Plug catcher",isFinite(d0.cpsi)?d0.cpsi:D.cpsi);r2.appendChild(F2.mpsi.node);r2.appendChild(F2.cpsi.node);
       F2.mani=fMani(d0.mani||D.mani);b.appendChild(F2.mani.node);b.appendChild(r2);var dv=el("div","derived");b.appendChild(dv);var g=gate(b);
-      function upd(){var pump=D.pump,tgt=D.target,h="";if(isFinite(pump)){var off=rate-pump-tgt;h+="Pump "+fnum(pump,1)+(tgt?" · target "+signed(tgt,1):" · barrel in, barrel out")+": <b class='"+(Math.abs(off)<0.5?"ok":"warn")+"'>"+(Math.abs(off)<0.5?"on target":signed(off,1)+" bbl/min "+(off>0?"over":"short"))+"</b><br>";}
+      function upd(){var pump=D.pump,tgt=D.target,h="";if(isFinite(pump)){var off=rate-pump-tgt;h+="Pump "+fnum(pump,1)+(tgt?" · target "+signed(tgt,1):" · barrel in, barrel out")+": <b class='"+(Math.abs(off)<0.15?"ok":"warn")+"'>"+(Math.abs(off)<0.15?"on target":signed(off,1)+" bbl/min "+(off>0?"over":"short"))+"</b><br>";}
         h+="Differential: <b>"+signed(F2.cpsi.get()-F2.mpsi.get())+" psi</b>";dv.innerHTML=h;var prev=ev?NaN:D.ret;g.set(isFinite(prev)&&prev>0&&Math.abs(rate-prev)/prev>0.3?"That's "+fnum(Math.abs(rate-prev)/prev*100)+"% off the last return rate ("+fnum(prev,1)+" bbl/min). Did every reading get rolled?":"");}
       b.addEventListener("scroll",function(){clearTimeout(upd._t);upd._t=setTimeout(upd,130);},true);setTimeout(upd,160);
       return{blocked:function(){upd();return g.blocked();}};},

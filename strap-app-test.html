@@ -280,7 +280,8 @@ function wall(ts){var d=new Date(ts),h=d.getHours(),m=d.getMinutes();return (h%1
 function ordinal(n){return n+(n%10===1&&n!==11?"st":n%10===2&&n!==12?"nd":n%10===3&&n!==13?"rd":"th")}
 function readName(i,run){if(i===0)return "Start";if(run.reads[i].fin)return "Finish";return ordinal(i)+" read"}
 function useHr(run){var k=kindOf(run.kind);return k.plan.length&&k.plan[k.plan.length-1]>=15}
-function rateTxt(db,dtMs,hr){if(!(dtMs>0))return "";var perMin=db/(dtMs/60000);return hr?String(Math.round(perMin*60)):String(Math.round(perMin))}
+function rateTxt(db,dtMs,hr){if(!(dtMs>0))return "";var perMin=db/(dtMs/60000);return hr?(perMin*60).toFixed(1):perMin.toFixed(2)}
+function bb(n){return String(Math.round(n*100)/100)}
 
 /* ---------- feedback: haptics + sound ---------- */
 var audio=null;
@@ -448,17 +449,17 @@ holdArrow($("nUp"),1);holdArrow($("nDn"),-1);
 
 /* ---------- chart ---------- */
 function drawChart(){var run=S.run,r=run.reads,h="";
-  for(var i=0;i<r.length;i++){h+='<div class="crow"><span class="n">'+readName(i,run)+'<br>'+clockCs(r[i].t)+'</span><b class="in">'+fracIn(r[i].v)+'</b><label><input type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="'+(i===r.length-1?"done":"next")+'" data-i="'+i+'" value="'+(r[i].bbl!=null?r[i].bbl:"")+'" placeholder="bbl" aria-label="Barrels at '+fracIn(r[i].v)+'"><span>BBL</span></label><span class="rt" id="rt'+i+'"></span></div>'}
+  for(var i=0;i<r.length;i++){h+='<div class="crow"><span class="n">'+readName(i,run)+'<br>'+clockCs(r[i].t)+'</span><b class="in">'+fracIn(r[i].v)+'</b><label><input type="text" inputmode="decimal" enterkeyhint="'+(i===r.length-1?"done":"next")+'" data-i="'+i+'" value="'+(r[i].bbl!=null?r[i].bbl:"")+'" placeholder="bbl" aria-label="Barrels at '+fracIn(r[i].v)+'"><span>BBL</span></label><span class="rt" id="rt'+i+'"></span></div>'}
   $("cRows").innerHTML=h;updRates();
   var first=$("cRows").querySelector('input[data-i="'+firstEmpty()+'"]');if(first)setTimeout(function(){first.focus()},150)}
 function firstEmpty(){var r=S.run.reads;for(var i=0;i<r.length;i++)if(r[i].bbl==null)return i;return 0}
-$("cRows").addEventListener("input",function(e){var inp=e.target;if(!inp.matches("input"))return;var s=inp.value.replace(/[^0-9]/g,"");if(s!==inp.value)inp.value=s;var i=+inp.getAttribute("data-i");S.run.reads[i].bbl=s===""?null:parseInt(s,10);save();updRates()});
+$("cRows").addEventListener("input",function(e){var inp=e.target;if(!inp.matches("input"))return;var s=inp.value.replace(/[^0-9.]/g,"").replace(/^([^.]*\.)(.*)$/,function(m,a,b){return a+b.replace(/\./g,"")});if(s!==inp.value)inp.value=s;var i=+inp.getAttribute("data-i");S.run.reads[i].bbl=(s===""||s===".")?null:parseFloat(s);save();updRates()});
 $("cRows").addEventListener("keydown",function(e){if(e.key!=="Enter")return;e.preventDefault();var i=+e.target.getAttribute("data-i");var nx=$("cRows").querySelector('input[data-i="'+(i+1)+'"]');if(nx)nx.focus();else e.target.blur()});
 function updRates(){var run=S.run,r=run.reads,hr=useHr(run),u=hr?"bbl/hr":"bbl/min";
   for(var i=0;i<r.length;i++){var el=$("rt"+i);if(!el)continue;if(i===0){el.innerHTML="";continue}
     if(r[i].bbl!=null&&r[0].bbl!=null){el.innerHTML="<b>"+rateTxt(r[i].bbl-r[0].bbl,r[i].t-r[0].t,hr)+"</b><span>"+u+"<br>from start</span>"}else el.innerHTML='<b style="color:var(--text-dim)">–</b><span>'+u+'<br>from start</span>'}
   var a=r[0],z=r[r.length-1];
-  $("cSum").innerHTML=(a.bbl!=null&&z.bbl!=null&&r.length>1)?"Strap rate, start → finish: <b>"+rateTxt(z.bbl-a.bbl,z.t-a.t,hr)+" "+u+"</b> · "+(z.bbl-a.bbl)+" bbl in "+clock(z.t-a.t):"Each rate is barrels from Start to that read, per "+(hr?"hour":"minute")+", to the whole barrel. Fill Start and Finish for the strap rate."}
+  $("cSum").innerHTML=(a.bbl!=null&&z.bbl!=null&&r.length>1)?"Strap rate, start → finish: <b>"+rateTxt(z.bbl-a.bbl,z.t-a.t,hr)+" "+u+"</b> · "+bb(z.bbl-a.bbl)+" bbl in "+clock(z.t-a.t):"Each rate is barrels from Start to that read, per "+(hr?"hour":"minute")+". Fill Start and Finish for the strap rate."}
 $("doneBtn").addEventListener("click",function(){var run=S.run;document.activeElement&&document.activeElement.blur&&document.activeElement.blur();
   var rec={startAt:run.startAt,kind:run.kind,reads:run.reads.map(function(x){return{t:x.t,v:x.v,bbl:x.bbl,fin:x.fin}})};
   if(run.histIdx!=null&&S.hist[run.histIdx]&&S.hist[run.histIdx].startAt===run.startAt)S.hist[run.histIdx]=rec;else S.hist.unshift(rec);
@@ -468,7 +469,7 @@ $("doneBtn").addEventListener("click",function(){var run=S.run;document.activeEl
 function drawRes(){var run=viewRun,r=run.reads,hr=useHr(run),u=hr?"bbl/hr":"bbl/min",a=r[0],z=r[r.length-1];
   if(a.bbl!=null&&z.bbl!=null&&r.length>1){var db=z.bbl-a.bbl,dt=z.t-a.t,pm=db/(dt/60000);
     $("resRate").innerHTML="<b>"+rateTxt(db,dt,hr)+"</b><span>"+u+"</span>";
-    $("resMore").textContent=db+" bbl in "+clock(dt)+" · "+(hr?Math.round(pm)+" bbl/min":Math.round(pm*60)+" bbl/hr")+" · "+Math.round(pm*1440).toLocaleString()+" bbl/day · "+rise(z.v-a.v)+" on the stick"}
+    $("resMore").textContent=bb(db)+" bbl in "+clock(dt)+" · "+(hr?pm.toFixed(2)+" bbl/min":(pm*60).toFixed(1)+" bbl/hr")+" · "+Math.round(pm*1440).toLocaleString()+" bbl/day · "+rise(z.v-a.v)+" on the stick"}
   else{$("resRate").innerHTML="<b>–</b><span>"+u+"</span>";$("resMore").textContent="Fill Start and Finish barrels for the strap rate."}
   var h="<tr><th>Read</th><th>Time</th><th>Inches</th><th>BBL</th><th>"+u+"<br>from start</th></tr>";
   r.forEach(function(x,i){h+="<tr><td>"+readName(i,run)+"</td><td>"+clockCs(x.t)+"</td><td>"+fracIn(x.v)+"</td><td>"+(x.bbl!=null?x.bbl:"–")+"</td><td>"+(i&&x.bbl!=null&&r[0].bbl!=null?rateTxt(x.bbl-r[0].bbl,x.t-r[0].t,hr):"")+"</td></tr>"});
@@ -476,7 +477,7 @@ function drawRes(){var run=viewRun,r=run.reads,hr=useHr(run),u=hr?"bbl/hr":"bbl/
 function summary(run){var r=run.reads,hr=useHr(run),u=hr?"bbl/hr":"bbl/min",a=r[0],z=r[r.length-1];
   var s="Strap · "+kindOf(run.kind).big+" · "+new Date(run.startAt).toLocaleDateString()+" "+wall(run.startAt)+"\n";
   r.forEach(function(x,i){s+=readName(i,run)+"  "+clock(x.t)+"  "+fracIn(x.v)+"  "+(x.bbl!=null?x.bbl+" bbl":"")+(i&&x.bbl!=null&&r[0].bbl!=null?"  "+rateTxt(x.bbl-r[0].bbl,x.t-r[0].t,hr)+" "+u+" from start":"")+"\n"});
-  if(a.bbl!=null&&z.bbl!=null&&r.length>1)s+="Strap rate: "+rateTxt(z.bbl-a.bbl,z.t-a.t,hr)+" "+u+" ("+(z.bbl-a.bbl)+" bbl in "+clock(z.t-a.t)+")";
+  if(a.bbl!=null&&z.bbl!=null&&r.length>1)s+="Strap rate: "+rateTxt(z.bbl-a.bbl,z.t-a.t,hr)+" "+u+" ("+bb(z.bbl-a.bbl)+" bbl in "+clock(z.t-a.t)+")";
   return s+"\n— Strap App · BasinWorks Labs"}
 $("copyBtn").addEventListener("click",function(){var t=summary(viewRun);
   function fb(){var ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("Copied")}catch(e){toast("Couldn't copy")}document.body.removeChild(ta)}
