@@ -482,6 +482,7 @@ body::before{background:var(--slate)}
       <div class="seg" id="sPlugType"><button type="button" data-p="composite">Composite</button><button type="button" data-p="dissolvable">Dissolvable</button></div>
       <div class="row">
         <div class="fld"><label for="sPull">Pull screens every</label><div class="selbox"><select id="sPull"></select></div></div>
+        <div class="fld"><label for="sWtOut">Report parts weight as</label><div class="selbox"><select id="sWtOut"></select></div></div>
       </div>
       <div class="row">
         <div class="fld"><span class="lbl">Plug 1 is a kill plug</span><div class="seg" id="sKP"><button type="button" data-k="1">Yes (KP)</button><button type="button" data-k="0">No</button></div></div>
@@ -714,7 +715,7 @@ function derive(now){
         var open=D.etas.filter(function(x){return !x.closed&&!x.sup;}).sort(function(a,b){return a.due-b.due;});
         if(open.length){var x=open[0];x.closed=t;x.how="seen";x.diff=(x.due-t)/MIN;x.seenId=e.id;e._eta=x;}break;
       case "screens":
-        D.pulls++;D.lastPullAt=t;D.partsOz+=(Number(d.lb)||0)*16+(Number(d.oz)||0);
+        D.pulls++;D.lastPullAt=t;D.partsOz+=wtOz(d);
         var op=D.etas.filter(function(x){return !x.closed&&!x.sup&&x.due<=t+5*MIN;}).sort(function(a,b){return a.due-b.due;});
         op.forEach(function(x){x.closed=t;x.how="screens";});break;
       case "strap":
@@ -768,6 +769,11 @@ function drum(cols,onSet){
   api.reseat=function(){state.forEach(function(s){place(s,s.i,false);});};
   return api;
 }
+/* parts weight: kept in ounces; shown the way the customer wants it (Setup) */
+function wtOz(d){return isFinite(Number(d.wt))?Number(d.wt):(Number(d.lb)||0)*16+(Number(d.oz)||0);}
+function lbOz(oz){var o=Math.round(oz),l=Math.floor(o/16);return l+" lb "+(o-l*16)+" oz";}
+function decLb(oz){return fnum(oz/16,2)+" lb";}
+function fmtWt(oz){return S.setup.wtOut==="dec"?decLb(oz):lbOz(oz);}
 function range(a,b,st){var r=[];for(var v=a;v<=b+1e-9;v+=st)r.push(Math.round(v*100)/100);return r;}
 var W20=range(0,20,1),T10=range(0,9,1),H12=range(1,12,1),MM=range(0,59,1);
 function pad2(n){return ("0"+n).slice(-2);}
@@ -866,11 +872,19 @@ function entry(k,e){/* open the sheet for kind k; e = existing event when correc
   if(k==="screens"){var due=D.open.filter(function(x){return x.due<=Date.now()+5*MIN;});var pl2=e?d.plug:(due.length?due[0].plug:D.lastThrough);
     openSheet("Screens pulled","Wash the parts, weigh them, label them.",function(b){F2.time=fTime("Pulled at",when);b.appendChild(F2.time.node);
       var r=el("div","row");F2.plug=fNum("Parts from plug","",pl2);F2.plug.input.inputMode="numeric";r.appendChild(F2.plug.node);b.appendChild(r);
-      var r2=el("div","row");var lb=drum([{name:"pounds",vals:range(0,40,1)}]);lb.set([isFinite(d.lb)?d.lb:0]);var oz=drum([{name:"ounces",vals:range(0,15,1)}]);oz.set([isFinite(d.oz)?d.oz:0]);_drums.push(lb,oz);
+      var oz0=wtOz(d),mode=d.scale||S.setup.scaleIn||"lboz";
+      F2.scale=fSeg("The scale reads",[["lboz","lb + oz"],["dec","Decimal lb"]],mode);b.appendChild(F2.scale.node);
+      var r2=el("div","row");var lb=drum([{name:"pounds",vals:range(0,40,1)}]);var oz=drum([{name:"ounces",vals:range(0,15,1)}]);var o1=Math.round(oz0),l1=Math.floor(o1/16);lb.set([l1]);oz.set([o1-l1*16]);_drums.push(lb,oz);
       r2.appendChild(F("Parts weight","lb",lb.node));r2.appendChild(F("","oz",oz.node));b.appendChild(r2);F2.lb=lb;F2.oz=oz;
+      var dec=fNum("Parts weight","lb",oz0>0?Math.round(oz0/16*100)/100:NaN,"e.g. 6.5");b.appendChild(dec.node);F2.dec=dec;
+      var conv=el("div","derived");b.appendChild(conv);
+      F2.wt=function(){if(F2.scale.get()==="dec"){var x=dec.get();return isFinite(x)&&x>=0?x*16:NaN;}return F2.lb.vals()[0]*16+F2.oz.vals()[0];};
+      function upd(){var m=F2.scale.get();r2.hidden=m==="dec";dec.node.hidden=m!=="dec";var w=F2.wt();conv.innerHTML=isFinite(w)?"= <b>"+(m==="dec"?lbOz(w):decLb(w))+"</b>"+(S.setup.wtOut===(m==="dec"?"lboz":"dec")?" · that's how the report shows it":""):"Enter the weight off the scale.";}
+      F2.scale.seg.onchange=function(){setTimeout(function(){upd();if(F2.scale.get()==="lboz")requestAnimationFrame(function(){lb.reseat();oz.reseat();});},10);};
+      dec.node.querySelector("input").addEventListener("input",upd);b.addEventListener("scroll",function(){clearTimeout(upd._t);upd._t=setTimeout(upd,130);},true);setTimeout(upd,60);
       F2.what=fSeg("What came back",[["parts","Plug parts"],["sand","Mostly sand"],["clean","Clean"]],d.what||"parts");b.appendChild(F2.what.node);
       F2.note=fNote("Label / note",d.note,"e.g. bag P7, rubber + slips");b.appendChild(F2.note.node);},
-      function(){commit(F2.time.get(),{plug:F2.plug.get(),lb:F2.lb.vals()[0],oz:F2.oz.vals()[0],what:F2.what.get(),note:F2.note.get()});});return;}
+      function(){var w=F2.wt();if(!isFinite(w)){toast("Enter the weight off the scale");return false;}var m=F2.scale.get();S.setup.scaleIn=m;var l=Math.floor(Math.round(w)/16);commit(F2.time.get(),{plug:F2.plug.get(),wt:Math.round(w*100)/100,scale:m,lb:l,oz:Math.round(w)-l*16,what:F2.what.get(),note:F2.note.get()});});return;}
   if(k==="strap"){strapSheet(e);return;}
   if(k==="shift_count"){countSheet(e);return;}
   if(k==="rate_call"){openSheet("Rate call","When the tool hand calls to run fat or lean. Barrel in, barrel out is zero.",function(b){
@@ -951,7 +965,7 @@ function evLine(e,D){var c=cur(e),d=c.d,k=e.k,s="",tags=[];
     case "sweep_pumped":s=({gel:"Gel",dye:"Dye",toe:"Toe",mid:"Mid-lateral",heel:"Heel"}[d.type]||d.type)+" at "+fnum(d.depth)+" ft · "+fnum(d.pump,1)+" bbl/min"+(d.mix?" · "+d.mix:"");
       var y=D.etas.filter(function(z){return z.id===e.id;})[0];if(y){if(y.how==="seen")tags.push([Math.round(y.diff)===0?"ok":y.diff>0?"warn":"hot",Math.round(y.diff)===0?"on time":signed(Math.round(y.diff))+" min"]);else if(!y.closed)tags.push(["info","due "+clockS(y.due)]);}break;
     case "sweep_seen":var z=e._eta;s=({visc:"viscosity",dye:"dye / colour",other:"other"}[d.how]||"")+(z?" · due "+clock(z.due):"");if(z)tags.push([Math.round(z.diff)===0?"ok":z.diff>0?"warn":"hot",Math.round(z.diff)===0?"on time":signed(Math.round(z.diff))+(z.diff>0?" early":" late")]);break;
-    case "screens":s="plug "+(d.plug||"—")+" · "+(d.lb||0)+" lb "+(d.oz||0)+" oz · "+({parts:"plug parts",sand:"mostly sand",clean:"clean"}[d.what]||"")+(d.note?" · "+d.note:"");break;
+    case "screens":s="plug "+(d.plug||"—")+" · "+fmtWt(wtOz(d))+" · "+({parts:"plug parts",sand:"mostly sand",clean:"clean"}[d.what]||"")+(d.note?" · "+d.note:"");break;
     case "strap":s=d.tank+" · "+fnum(d.rate,d.sk?0:2)+" bbl/min · "+maniStr(d.mani)+" · Δp "+signed(d.cpsi-d.mpsi)+" psi";break;
     case "shift_count":s=fnum(d.total)+" bbl"+(isFinite(e._pred)?" · predicted "+fnum(e._pred)+" ("+signed(d.total-e._pred)+")":"");break;
     case "rate_call":s=(d.target?signed(d.target,1)+" bbl/min "+(d.target>0?"over (fat)":"under (lean)"):"barrel in, barrel out")+" · "+(d.by||"")+(d.note?" · "+d.note:"");break;
@@ -1014,7 +1028,7 @@ function showEvent(e){var D=derive(),c=cur(e),L=evLine(e,D);
 /* ================= render: SHIFT ================= */
 function shiftEvents(){return S.events.filter(function(e){return e.ts>=S.shift.started||cur(e).t>=S.shift.started;}).sort(function(a,b){return cur(a).t-cur(b).t;});}
 function shiftSummary(D){var ev=shiftEvents(),seen=D.etas.filter(function(x){return x.how==="seen"&&x.closed>=S.shift.started;});var straps=ev.filter(function(e){return e.k==="strap";}).length;
-  var pulls=ev.filter(function(e){return e.k==="screens";});var oz=0;pulls.forEach(function(e){var d=cur(e).d;oz+=(Number(d.lb)||0)*16+(Number(d.oz)||0);});
+  var pulls=ev.filter(function(e){return e.k==="screens";});var oz=0;pulls.forEach(function(e){var d=cur(e).d;oz+=wtOz(d);});
   var pl=D.plugsThisShift;return{ev:ev,plugs:pl,seen:seen,straps:straps,pulls:pulls.length,oz:oz};}
 function renderShift(D){var s=shiftSummary(D);$("shiftSum").innerHTML="Started <b>"+clock(S.shift.started)+"</b> · "+s.ev.length+" entries<br>Plugs through: <b>"+(s.plugs.length?"#"+s.plugs[0]+"–#"+s.plugs[s.plugs.length-1]+" ("+s.plugs.length+")":"none yet")+"</b><br>Sweeps timed: "+(s.seen.length?s.seen.map(function(x){return signed(Math.round(x.diff));}).join(", "):"—")+"<br>Screens pulled: "+s.pulls+" · parts "+Math.floor(s.oz/16)+" lb "+(s.oz%16)+" oz<br>Straps: "+s.straps+" · surface predicted <b>"+fnum(D.surface)+" bbl</b>";}
 
@@ -1034,7 +1048,7 @@ function bindSetup(){var u=S.setup;
     r.appendChild(a);r.appendChild(bb);r.appendChild(cc);cr.appendChild(r);
     s1.addEventListener("change",function(){c.size=s1.value;c.id=(CASING[c.size]||[[0,NaN]])[0][1];save();bindSetup();render();});
     s2.addEventListener("change",function(){c.id=parseFloat(s2.value);save();render();});inp.addEventListener("input",function(){c.to=inp.value.replace(/[^0-9.]/g,"");save();render();});})(i);
-  segOn("sPlugType","data-p",u.plugType);fillSel("sPull",[[1,"plug"],[2,"2 plugs"],[3,"3 plugs"],[5,"5 plugs"],[10,"10 plugs"],[0,"when told"]],u.pullEvery);
+  segOn("sPlugType","data-p",u.plugType);fillSel("sPull",[[1,"plug"],[2,"2 plugs"],[3,"3 plugs"],[5,"5 plugs"],[10,"10 plugs"],[0,"when told"]],u.pullEvery);fillSel("sWtOut",[["lboz","lb + oz"],["dec","decimal lb"]],u.wtOut||"lboz");
   bindPlugs();
   var tr=$("tankRows");tr.innerHTML="";u.tanks.forEach(function(t,i){var r=el("div","trow2");var a=el("div","fld");a.appendChild(el("span","lbl","Tank"));var ib=el("div","ibox");var n=el("input","txt");n.value=t.name;n.id="tn"+i;ib.appendChild(n);a.appendChild(ib);
     var kk=fSeg("",[["rect","Rect"],["chart","Chart"]],t.kind);var kf=el("div","fld");kf.appendChild(el("span","lbl","Type"));kf.appendChild(kk.node);
@@ -1056,7 +1070,7 @@ function wireSetup(){var u=function(){return S.setup;};
   $("sStick").addEventListener("change",function(){u().stick=this.value;u().stickID=(TUBING[this.value]||[[0,NaN]])[0][1];save();bindSetup();render();});$("sStickWt").addEventListener("change",function(){u().stickID=parseFloat(this.value);save();render();});
   $("sCsgN").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;u().csgN=+b.getAttribute("data-n");save();bindSetup();render();});
   $("sPlugType").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var v=b.getAttribute("data-p");u().plugType=v;u().pullEvery=v==="composite"?1:5;save();bindSetup();render();});
-  $("sPull").addEventListener("change",function(){u().pullEvery=+this.value;save();});
+  $("sPull").addEventListener("change",function(){u().pullEvery=+this.value;save();});$("sWtOut").addEventListener("change",function(){u().wtOut=this.value;save();render();});
   $("pAddBtn").addEventListener("click",addPlug);$("pAdd").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();addPlug();}});
   $("pUndo").addEventListener("click",function(){var u=S.setup;if(!u.plugs.length)return;var n=u.plugs.length;confirmSheet("Remove plug "+n+"?","Takes "+fnum(Number(u.plugs[n-1]))+" ft off the end of the sheet.","Remove it",function(){u.plugs.pop();u.plugSt.pop();save();bindPlugs();render();});});
   $("sKP").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;S.setup.kp=b.getAttribute("data-k")==="1";save();bindPlugs();render();});
@@ -1116,7 +1130,7 @@ $("filt").addEventListener("click",function(e){var b=e.target.closest("button");
 /* ================= handoff payload & QR ================= */
 function payload(){var D=derive(),u=S.setup;var open=D.open.map(function(x){return{k:x.kind,p:x.plug,f:x.from,d:Math.round(x.due)};});
   return{nfc:"dol",v:1,s:{cu:u.cust,w:u.well,re:u.region,ri:u.rig,ca:u.catcher,st:u.start,m:u.mode,od:u.coilOD,rl:u.reel,sk:u.stick,si:u.stickID,
-    cn:u.csgN,cs:u.csg.slice(0,u.csgN).map(function(c){return[c.size,c.id,c.to];}),pt:u.plugType,pe:u.pullEvery,pl:u.plugs.map(Number),ps:(u.plugSt||[]).join(""),kp:u.kp?1:0,sf:u.sheetFrom||"",
+    cn:u.csgN,cs:u.csg.slice(0,u.csgN).map(function(c){return[c.size,c.id,c.to];}),pt:u.plugType,pe:u.pullEvery,wo:u.wtOut||"lboz",pl:u.plugs.map(Number),ps:(u.plugSt||[]).join(""),kp:u.kp?1:0,sf:u.sheetFrom||"",
     tk:u.tanks.map(function(t){return[t.name,t.kind,t.bpi];}),ls:u.lsMax,rs:u.rsMax,ev:u.every,ln:u.len,st:u.strapTank|0,ck:u.checklist||[]},
     l:{through:D.lastThrough,tag:D.lastTag,depth:D.depth,pump:D.pump,ret:D.ret,mani:D.mani,mpsi:D.mpsi,cpsi:D.cpsi,target:D.target,surface:Math.round(D.surface),strapAt:D.lastStrap?D.lastStrap.t:null,etas:open},
     f:{hand:S.shift.hand,which:S.shift.which,end:Date.now()}};}
@@ -1126,7 +1140,7 @@ function drawQR(ctx,q,x,y,size){var n=q.getModuleCount(),quiet=4,cell=size/(n+qu
   for(var r=0;r<n;r++)for(var c=0;c<n;c++)if(q.isDark(r,c))ctx.fillRect(Math.floor(x+(c+quiet)*cell),Math.floor(y+(r+quiet)*cell),Math.ceil(cell),Math.ceil(cell));}
 function applyPayload(p){var s=p.s,L=p.l;var u=blankSetup();
   u.cust=s.cu||"";u.well=s.w||"";u.region=s.re||"";u.rig=s.ri||"";u.catcher=s.ca||"";u.start=s.st||u.start;u.mode=s.m||"coil";u.coilOD=s.od||2.375;u.reel=s.rl||"";u.stick=s.sk||"2⅞";u.stickID=s.si||2.441;
-  u.csgN=s.cn||1;(s.cs||[]).forEach(function(c,i){u.csg[i]={size:c[0],id:c[1],to:c[2]};});u.plugType=s.pt||"composite";u.pullEvery=s.pe==null?1:s.pe;u.plugs=(s.pl||[]).map(String);u.plugSt=(s.ps||"").split("");while(u.plugSt.length<u.plugs.length)u.plugSt.push("t");u.kp=s.kp!==0;u.sheetFrom=s.sf||"";
+  u.csgN=s.cn||1;(s.cs||[]).forEach(function(c,i){u.csg[i]={size:c[0],id:c[1],to:c[2]};});u.plugType=s.pt||"composite";u.pullEvery=s.pe==null?1:s.pe;u.wtOut=s.wo||"lboz";u.plugs=(s.pl||[]).map(String);u.plugSt=(s.ps||"").split("");while(u.plugSt.length<u.plugs.length)u.plugSt.push("t");u.kp=s.kp!==0;u.sheetFrom=s.sf||"";
   u.tanks=(s.tk||[]).map(function(t){return{name:t[0],kind:t[1],bpi:t[2]};});u.lsMax=s.ls||64;u.rsMax=s.rs||64;u.every=s.ev||15;u.len=s.ln||5;u.strapTank=s.st||0;u.checklist=s.ck||[];u.surface=L&&isFinite(L.surface)?String(L.surface):"";
   var st=blankState();st.setup=u;st.shift={hand:"",which:(p.f&&p.f.which)==="Day"?"Night":"Day",started:Date.now()};
   st.events.push({id:uid(),k:"handoff_in",t:Date.now(),ts:Date.now(),d:{from:p.f||{},left:L||{}},corr:[]});S=st;save();bindSetup();render();go("log");toast("Job loaded — you're on from plug "+((L&&L.through||0)+1));}
@@ -1159,7 +1173,7 @@ function shiftPicture(){var D=derive(),u=S.setup,sm=shiftSummary(D),W=1080,PAD=4
   var rows=[];lines.forEach(function(l){var hl=wrap(l.h,BODYB,W-PAD*2-150),sl=l.s?wrap(l.s,MONO,W-PAD*2-150):[];rows.push({l:l,hl:hl,sl:sl,h:(hl.length+sl.length)*LH+(l.lag>=2||l.corr?LH:0)+14});});
   var cnt=D.counts.filter(function(x){return x.t>=S.shift.started;}).pop();
   var sum=[["Plugs through",sm.plugs.length?"#"+sm.plugs[0]+" – #"+sm.plugs[sm.plugs.length-1]+"  ("+sm.plugs.length+")":"none"],["Sweeps timed",sm.seen.length?sm.seen.map(function(x){return (x.kind==="sweep"?"sweep ":"P"+x.plug+" ")+signed(Math.round(x.diff));}).join(" · "):"—"],
-    ["Screens pulled",sm.pulls+"  ·  parts "+Math.floor(sm.oz/16)+" lb "+(sm.oz%16)+" oz"],["Straps",sm.straps+"  ·  last "+(D.lastStrap?fnum(D.lastStrap.d.rate,D.lastStrap.d.sk?0:2)+" bbl/min at "+clock(D.lastStrap.t):"—")],
+    ["Screens pulled",sm.pulls+"  ·  parts "+fmtWt(sm.oz)],["Straps",sm.straps+"  ·  last "+(D.lastStrap?fnum(D.lastStrap.d.rate,D.lastStrap.d.sk?0:2)+" bbl/min at "+clock(D.lastStrap.t):"—")],
     ["Surface",(cnt?"counted "+fnum(cnt.total)+" vs predicted "+fnum(cnt.pred)+" ("+signed(cnt.diff)+")  ·  ":"")+"now predicted "+fnum(D.surface)+" bbl"],["Rate target",D.target?signed(D.target,1)+" bbl/min ("+(D.targetBy||"")+")":"barrel in, barrel out"],
     ["Left off",(D.tagPending?"tagged plug "+D.lastTag:"plug "+D.lastThrough+" through")+" · bit "+fnum(D.depth)+" ft · "+maniStr(D.mani)+" · "+fnum(D.mpsi)+"/"+fnum(D.cpsi)+" psi"]];
   var sumL=sum.map(function(s){return wrap(s[1],MONOB,W-PAD*2-240);});
