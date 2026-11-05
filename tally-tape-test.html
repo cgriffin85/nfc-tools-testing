@@ -267,9 +267,10 @@ $("backBtn").addEventListener("click",function(){show("start")});
 /* ---------- the tape: drawn the way the measurer sees it ---------- */
 /* Horizontal white tape over the end of the collar. Where the collar ends and the ground begins is the read point.
    A tick every hundredth, taller at five hundredths, a long line at each tenth with its digit just left of it,
-   the foot as "32 F". PX = screen pixels per hundredth of a foot. */
-var cv=$("cv"),ctx=cv.getContext("2d"),PX=14,W=0,H=0,DPR=1,bg=null;
-function sizeCanvas(){var r=$("twin").getBoundingClientRect();DPR=window.devicePixelRatio||1;W=r.width;H=r.height;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);bg=null}
+   the foot as "32 F". PX = screen pixels per hundredth of a foot, set so the window spans 4 inches. */
+var SPAN=400/12, /* the window always shows 4 inches of tape (33⅓ hundredths of a foot), whatever the phone width */
+    cv=$("cv"),ctx=cv.getContext("2d"),PX=10.7,W=0,H=0,DPR=1,bg=null;
+function sizeCanvas(){var r=$("twin").getBoundingClientRect();DPR=window.devicePixelRatio||1;W=r.width;H=r.height;PX=W/SPAN;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);bg=null}
 window.addEventListener("resize",function(){if(view==="entry"&&S.mode==="tape"){sizeCanvas();drawTape()}});
 function edgeX(){return Math.round(W/2)}
 function makeBg(){var c=document.createElement("canvas");c.width=cv.width;c.height=cv.height;var g=c.getContext("2d");g.setTransform(DPR,0,0,DPR,0,0);
