@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pipe Tally">
+<meta name="application-name" content="Pipe Tally test · BasinWorks Labs">
+<meta name="author" content="BasinWorks Labs">
+<meta name="theme-color" content="#2F3842">
+<title>Pipe Tally — feel test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF0F2; --card:#FFFFFF; --sunk:#F0F2F4;
+  --text:#1B2026; --text-mid:#5B6775; --text-dim:#8C9BA8;
+  --rule:#D3D9E0; --rule-strong:#B8C2CC;
+  --slate:#2F3842; --on-slate-mid:#C9D1D9;
+  --accent:#E2662B; --accent-ink:#B04A17; --on-accent:#1B2026; --accent-dim:#FCEBDD;
+  --fd:'Saira Semi Condensed',Impact,'Arial Narrow',sans-serif;
+  --fb:'IBM Plex Sans',Arial,sans-serif;
+  --fm:Arial,Helvetica,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161B21; --card:#232B34; --sunk:#1A2027;
+  --text:#E8ECF0; --text-mid:#A3AEB9; --text-dim:#6F7C89;
+  --rule:#333D48; --rule-strong:#46525F;
+  --slate:#11161B; --accent-ink:#F08A55; --accent-dim:rgba(226,102,43,0.16);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#161B21; --card:#232B34; --sunk:#1A2027;
+  --text:#E8ECF0; --text-mid:#A3AEB9; --text-dim:#6F7C89;
+  --rule:#333D48; --rule-strong:#46525F;
+  --slate:#11161B; --accent-ink:#F08A55; --accent-dim:rgba(226,102,43,0.16);
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font-family:var(--fb);font-size:15px;line-height:1.4;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;color:inherit;cursor:pointer}
+[hidden]{display:none!important}
+.scr{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg)}
+.sh{flex:none;background:var(--slate);border-bottom:3px solid var(--accent);
+  padding:calc(env(safe-area-inset-top,0px) + 10px) max(16px,env(safe-area-inset-right,0px)) 10px max(10px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:10px}
+.sh .ttl{font-family:var(--fd);font-weight:700;font-size:19px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+.mark{width:30px;height:30px;flex:none;margin-left:4px}
+.pill{flex:none;height:36px;padding:0 12px;border:1px solid #5B6775;border-radius:999px;background:transparent;color:#fff;font:600 13px var(--fb);display:flex;align-items:center;gap:4px}
+.pill .ch{font-size:20px;line-height:1;margin-top:-2px}
+.pill.rs{border-color:var(--accent);color:#F4A06B}
+.pill.rs.arm{background:var(--accent);color:#1B2026}
+.band{flex:none;background:var(--slate);color:#fff;display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px 16px 12px}
+.band .k{font-size:13px;color:var(--on-slate-mid)}
+.band .j{font-family:var(--fm);font-weight:700;font-size:64px;line-height:1;font-variant-numeric:tabular-nums}
+.prog{width:100%;max-width:528px;height:6px;border-radius:3px;background:#46515D;overflow:hidden}
+.prog i{display:block;height:6px;background:var(--accent);width:0}
+.body{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;padding:10px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));max-width:560px;width:100%;margin:0 auto}
+.lbl{font-size:10.5px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text-mid)}
+.note{font-size:12.5px;color:var(--text-mid);line-height:1.5}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--rule-strong);border-radius:14px;overflow:hidden;background:var(--card)}
+.seg button{height:56px;border:none;background:transparent;font:700 17px var(--fb);color:var(--text-mid)}
+.seg button.on{background:var(--slate);color:#fff}
+.seg.sm button{height:40px;font-size:14px}
+.big{height:96px;border:none;border-radius:26px;background:var(--accent);color:var(--on-accent);font-family:var(--fd);font-weight:800;font-size:36px;width:100%}
+.big:active,.key:active,.ftb:active{filter:brightness(.92)}
+.last{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:6px 14px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:baseline;font-family:var(--fm)}
+.last .n{font:600 12px var(--fb);color:var(--text-mid)}
+.last b{font-size:19px}
+.last .a{font:600 12px var(--fb);color:var(--text-mid)}
+.last .a b{font-family:var(--fm);font-size:15px;color:var(--text)}
+.readout{display:flex;align-items:baseline;justify-content:center;gap:10px}
+.readout .w{font-size:13px;font-weight:600;color:var(--text-mid)}
+.readout .v{font-family:var(--fm);font-weight:700;font-size:56px;line-height:1;font-variant-numeric:tabular-nums}
+.readout .f{font-family:var(--fm);font-weight:700;font-size:18px;color:var(--text-mid)}
+.spacer{flex:1}
+/* tape */
+.twin{position:relative;flex:0 0 210px;border-radius:16px;overflow:hidden;background:#A08A66;touch-action:none;user-select:none;-webkit-user-select:none}
+.twin canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.ftrow{display:flex;align-items:center;gap:10px}
+.ftb{flex:none;width:96px;height:56px;border:1px solid var(--rule-strong);border-radius:16px;background:var(--card);font:700 19px var(--fm);color:var(--text);touch-action:none;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+.ftv{flex:1;display:flex;align-items:baseline;justify-content:center;gap:6px}
+.ftv b{font-family:var(--fm);font-size:40px;line-height:1}
+.ftv span{font-size:13px;font-weight:600;color:var(--text-mid)}
+.hint{font-size:12px;color:var(--text-mid);text-align:center}
+/* keypad */
+.feet{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border:1px solid var(--rule-strong);border-radius:14px;overflow:hidden;background:var(--card)}
+.feet button{height:52px;border:none;border-left:1px solid var(--rule);background:transparent;font:700 20px var(--fm);color:var(--text-mid)}
+.feet button:first-child{border-left:none}
+.feet button.on{background:var(--slate);color:#fff}
+.pad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.key{height:60px;border:1px solid var(--rule-strong);border-radius:14px;background:var(--card);font:700 28px var(--fm);color:var(--text);display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none}
+.key.t{font:600 17px var(--fb);color:var(--text-mid)}
+.dig .u{color:var(--text-dim)}
+/* done */
+.card{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:12px 14px}
+.tbl{width:100%;border-collapse:collapse;font-family:var(--fm);font-size:15px;font-variant-numeric:tabular-nums}
+.tbl th{font:600 10.5px var(--fb);text-transform:uppercase;letter-spacing:.6px;color:var(--text-mid);text-align:right;padding:4px 4px 6px;border-bottom:1px solid var(--rule)}
+.tbl td{text-align:right;padding:8px 4px;border-bottom:1px solid var(--rule)}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.sum div{display:flex;flex-direction:column}
+.sum span{font-size:12px;color:var(--text-mid)}
+.sum b{font-family:var(--fm);font-size:24px;line-height:1.15}
+.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sec{height:52px;border-radius:14px;border:1px solid var(--rule-strong);background:var(--card);font:600 15px var(--fb)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1B2026;color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;z-index:50}
+.foot{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;font-size:12px;color:var(--text-dim)}
+.foot b{font-family:var(--fd);font-weight:700;font-size:13px;letter-spacing:.6px;color:var(--text-mid)}
+.hapt{position:absolute;left:-9999px;top:0;opacity:0;pointer-events:none}
+.num{font-family:var(--fm);font-weight:700;font-size:44px;line-height:1}
+.startnum{display:flex;align-items:center;gap:10px}
+.startnum button{width:64px;height:56px;border:1px solid var(--rule-strong);border-radius:14px;background:var(--card);font:700 22px var(--fm)}
+.startnum .num{flex:1;text-align:center}
+</style>
+</head>
+<body>
+
+<!-- START -->
+<div class="scr" id="sStart">
+  <div class="sh">
+    <svg class="mark" aria-hidden="true" viewBox="0 0 34 34" style="fill:none;stroke-width:2.6;stroke-linecap:round"><rect x="0" y="0" width="34" height="34" rx="8" fill="#1E252D" stroke="none"></rect><path d="M 7 10 Q 12 8 17 10 T 27 10" stroke="#C9D1D9"></path><path d="M 7 15 Q 12 13 17 15 T 27 15" stroke="#D9A25E"></path><path d="M 7 20 Q 12 18 17 20 T 27 20" stroke="#E2662B"></path><path d="M 7 25 Q 12 23 17 25 T 27 25" stroke="#8C9BA8"></path></svg>
+    <span class="ttl">Pipe Tally · feel test</span>
+    <button class="pill" id="themeBtn" type="button" aria-label="Switch light or dark"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg></button>
+  </div>
+  <div class="body" style="overflow-y:auto">
+    <p class="note" style="margin:4px 0 0">A test of one thing: how it feels to put a joint length in as the measurer calls it. Five joints, then you're done. Nothing here goes anywhere — it stays on this phone.</p>
+    <span class="lbl" style="margin-top:8px">How you put the length in</span>
+    <div class="seg" id="modeSeg"><button type="button" data-m="tape">Tape</button><button type="button" data-m="pad">Keypad</button></div>
+    <p class="note" id="modeNote"></p>
+    <span class="lbl" style="margin-top:8px">First joint number</span>
+    <div class="startnum"><button type="button" id="stDn" aria-label="Lower">−</button><span class="num" id="stNum">1</span><button type="button" id="stUp" aria-label="Higher">+</button></div>
+    <p class="note">Joints count from the bottom of the string. A second load on the racks picks up where the last one ended (181, say).</p>
+    <div class="spacer"></div>
+    <button type="button" class="big" id="goBtn">Start tally</button>
+    <footer class="foot"><span>Made in the Permian by <b>BasinWorks Labs</b></span></footer>
+  </div>
+</div>
+
+<!-- ENTRY -->
+<div class="scr" id="sEntry" hidden>
+  <div class="sh">
+    <button type="button" class="pill" id="backBtn" aria-label="Back to start — the tally keeps"><span class="ch">‹</span>Start</button>
+    <span class="ttl" id="eTtl">Tally</span>
+    <button type="button" class="pill rs" id="undoBtn">Undo last</button>
+  </div>
+  <div class="band">
+    <span class="k">Joint</span>
+    <span class="j" id="jNum">1</span>
+    <span class="k" id="jOf">1 of 5</span>
+    <div class="prog"><i id="progBar"></i></div>
+  </div>
+  <div class="body">
+    <div class="seg sm" id="modeSeg2"><button type="button" data-m="tape">Tape</button><button type="button" data-m="pad">Keypad</button></div>
+    <div class="last" id="lastRow"></div>
+    <div class="readout"><span class="w" id="rWhich">Joint 1</span><span class="v" id="rVal">31.50</span><span class="f">ft</span></div>
+
+    <div id="vTape" style="display:flex;flex-direction:column;gap:8px">
+      <div class="twin" id="twin"><canvas id="cv"></canvas></div>
+      <div class="ftrow">
+        <button type="button" class="ftb" id="ftDn" aria-label="One foot less">◀ 1 ft</button>
+        <div class="ftv"><b id="ftVal">31</b><span>feet</span></div>
+        <button type="button" class="ftb" id="ftUp" aria-label="One foot more">1 ft ▶</button>
+      </div>
+      <span class="hint">Slide the tape until the end of the collar sits on the number he calls. It clicks at every hundredth.</span>
+    </div>
+
+    <div id="vPad" style="display:flex;flex-direction:column;gap:8px" hidden>
+      <div class="feet" id="feetSeg"></div>
+      <span class="hint">Feet stays put. Type the two digits after the point he calls; a third press starts the number over.</span>
+      <div class="pad" id="pad"></div>
+    </div>
+
+    <div class="spacer"></div>
+    <button type="button" class="big" id="nextBtn">Next joint · 31.50</button>
+  </div>
+</div>
+
+<!-- DONE -->
+<div class="scr" id="sDone" hidden>
+  <div class="sh">
+    <span class="ttl">Tally · done</span>
+    <button type="button" class="pill rs" id="newBtn2">New tally</button>
+  </div>
+  <div class="body" style="overflow-y:auto">
+    <div class="card"><div class="sum" id="dSum"></div></div>
+    <div class="card" style="padding:6px 12px"><table class="tbl" id="dTbl"></table></div>
+    <p class="note" id="dNote"></p>
+    <div class="btnrow"><button type="button" class="sec" id="copyBtn">Copy for feedback</button><button type="button" class="sec" id="fixBtn">Fix the last one</button></div>
+    <button type="button" class="big" id="newBtn" style="height:72px;font-size:28px">Tally 5 more</button>
+  </div>
+</div>
+
+<label class="hapt" id="haptLbl"><input type="checkbox" switch id="haptIn">tick</label>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var KEY="bwl-tally-tape-test-v1", N=5, MINV=2800, MAXV=3300; /* hundredths of a foot: 28.00–33.00 ft */
+var S={mode:"tape",start:1,joints:[],cur:3150,startedAt:null,lastAt:null,done:null,typed:""};
+try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);if(o&&typeof o==="object")for(var k in S)if(k in o)S[k]=o[k];}}catch(e){}
+if(!Array.isArray(S.joints))S.joints=[];
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function ft(h){return (h/100).toFixed(2)}
+function secs(ms){return (ms/1000).toFixed(1)+" s"}
+
+/* ---------- feedback: haptics (same as the Strap App) ---------- */
+function tick(strong){try{if(navigator.vibrate){navigator.vibrate(strong?[40,30,40]:8);return}}catch(e){}try{$("haptLbl").click()}catch(e){}}
+
+/* ---------- wake lock ---------- */
+var lock=null;
+function wake(on){try{if(on){if(!lock&&navigator.wakeLock){navigator.wakeLock.request("screen").then(function(l){lock=l;l.addEventListener("release",function(){lock=null})}).catch(function(){})}}else if(lock){lock.release();lock=null}}catch(e){}}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&view==="entry")wake(true)});
+
+/* ---------- theme ---------- */
+(function(){var root=document.documentElement;try{var t=localStorage.getItem("nfc-theme");if(t==="light"||t==="dark")root.setAttribute("data-theme",t)}catch(e){}
+$("themeBtn").addEventListener("click",function(){var cur=root.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");var nx=cur==="dark"?"light":"dark";root.setAttribute("data-theme",nx);try{localStorage.setItem("nfc-theme",nx)}catch(e){}})})();
+
+var toastT=null;function toast(m){var t=$("toast");if(!t){t=document.createElement("div");t.id="toast";t.className="toast";document.body.appendChild(t)}t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},2200)}
+
+/* ---------- screens ---------- */
+var view="start";
+function show(v){view=v;$("sStart").hidden=v!=="start";$("sEntry").hidden=v!=="entry";$("sDone").hidden=v!=="done";
+  if(v==="start")drawStart();if(v==="entry"){wake(true);drawEntry()}else wake(false);if(v==="done")drawDone()}
+
+/* ---------- start ---------- */
+var NOTES={tape:"Drag the tape sideways. It clicks every hundredth of a foot. The ◀ ▶ buttons jump a whole foot.",pad:"Pick the feet once; type the two digits after the point for each joint."};
+function drawModes(){["modeSeg","modeSeg2"].forEach(function(id){[].forEach.call($(id).children,function(b){b.classList.toggle("on",b.getAttribute("data-m")===S.mode)})});$("modeNote").textContent=NOTES[S.mode]}
+function drawStart(){drawModes();$("stNum").textContent=S.start;$("goBtn").textContent=S.joints.length&&!S.done?"Back to joint "+(S.start+S.joints.length):"Start tally"}
+function setMode(m){if(m===S.mode)return;S.mode=m;S.typed="";save();tick(false);drawModes();if(view==="entry")drawEntry()}
+$("modeSeg").addEventListener("click",function(e){var b=e.target.closest("button");if(b)setMode(b.getAttribute("data-m"))});
+$("modeSeg2").addEventListener("click",function(e){var b=e.target.closest("button");if(b)setMode(b.getAttribute("data-m"))});
+$("stDn").addEventListener("click",function(){if(S.joints.length)return toast("Finish or clear this tally first");S.start=Math.max(1,S.start-1);save();drawStart()});
+$("stUp").addEventListener("click",function(){if(S.joints.length)return toast("Finish or clear this tally first");S.start=S.start+1;save();drawStart()});
+$("goBtn").addEventListener("click",function(){tick(false);if(S.done){S.joints=[];S.done=null}if(!S.joints.length){S.startedAt=Date.now();S.lastAt=S.startedAt}save();show("entry")});
+
+/* ---------- entry ---------- */
+function avg(){var n=S.joints.length;if(!n)return null;var s=0;S.joints.forEach(function(j){s+=j.v});return s/n}
+function drawEntry(){var n=S.joints.length,j=S.start+n;
+  $("eTtl").textContent="Tally · "+(S.mode==="tape"?"Tape":"Keypad");
+  $("jNum").textContent=j;$("jOf").textContent=(n+1)+" of "+N;$("progBar").style.width=(n/N*100)+"%";
+  $("rWhich").textContent="Joint "+j;
+  if(n){var l=S.joints[n-1];$("lastRow").innerHTML='<span class="n">Last · '+(j-1)+'</span><b>'+ft(l.v)+'</b><span class="a">avg <b>'+ft(Math.round(avg()))+'</b></span>';$("lastRow").hidden=false}
+  else $("lastRow").hidden=true;
+  $("undoBtn").style.visibility=n?"visible":"hidden";
+  $("vTape").hidden=S.mode!=="tape";$("vPad").hidden=S.mode!=="pad";
+  if(S.mode==="tape"){curF=S.cur;lastQ=S.cur;requestAnimationFrame(function(){sizeCanvas();drawTape()})}else drawPad();
+  updReadout()}
+function updReadout(){var txt=S.mode==="pad"&&S.typed.length<2?padText():ft(S.cur);$("rVal").innerHTML=txt;$("ftVal").textContent=Math.floor(S.cur/100);
+  var ok=!(S.mode==="pad"&&S.typed.length<2);$("nextBtn").disabled=!ok;$("nextBtn").style.opacity=ok?1:.5;
+  $("nextBtn").textContent=(S.joints.length===N-1?"Last joint · ":"Next joint · ")+ft(S.cur)}
+$("nextBtn").addEventListener("click",function(){if(S.mode==="pad"&&S.typed.length<2)return;
+  tick(true);var t=Date.now();S.joints.push({v:S.cur,mode:S.mode,ms:t-S.lastAt});S.lastAt=t;S.typed="";
+  if(S.joints.length>=N){S.done=t;save();show("done");return}save();drawEntry()});
+var armT=null;
+$("undoBtn").addEventListener("click",function(){var b=this;if(!S.joints.length)return;
+  if(!b.classList.contains("arm")){b.classList.add("arm");b.textContent="Tap again";clearTimeout(armT);armT=setTimeout(function(){b.classList.remove("arm");b.textContent="Undo last"},3000);return}
+  clearTimeout(armT);b.classList.remove("arm");b.textContent="Undo last";
+  var l=S.joints.pop();S.cur=l.v;S.typed="";S.lastAt=Date.now();save();tick(false);drawEntry();toast("Joint "+(S.start+S.joints.length)+" is open again")});
+$("backBtn").addEventListener("click",function(){show("start")});
+
+/* ---------- the tape: drawn the way the measurer sees it ---------- */
+/* Horizontal white tape over the end of the collar. Where the collar ends and the ground begins is the read point.
+   A tick every hundredth, taller at five hundredths, a long line at each tenth with its digit just left of it,
+   the foot as "32 F". PX = screen pixels per hundredth of a foot. */
+var cv=$("cv"),ctx=cv.getContext("2d"),PX=14,W=0,H=0,DPR=1,bg=null;
+function sizeCanvas(){var r=$("twin").getBoundingClientRect();DPR=window.devicePixelRatio||1;W=r.width;H=r.height;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);bg=null}
+window.addEventListener("resize",function(){if(view==="entry"&&S.mode==="tape"){sizeCanvas();drawTape()}});
+function edgeX(){return Math.round(W/2)}
+function makeBg(){var c=document.createElement("canvas");c.width=cv.width;c.height=cv.height;var g=c.getContext("2d");g.setTransform(DPR,0,0,DPR,0,0);
+  var lg=g.createLinearGradient(0,0,W*0.4,H);lg.addColorStop(0,"#B39D78");lg.addColorStop(.55,"#9C8562");lg.addColorStop(1,"#8A7454");g.fillStyle=lg;g.fillRect(0,0,W,H);
+  [[.72,.18,70,"201,180,143"],[.9,.8,80,"125,106,76"],[.58,.88,66,"188,167,127"],[.2,.1,70,"143,122,87"],[.15,.92,70,"178,156,118"],[.82,.45,60,"170,148,110"]].forEach(function(b){
+    var rg=g.createRadialGradient(W*b[0],H*b[1],0,W*b[0],H*b[1],b[2]);rg.addColorStop(0,"rgba("+b[3]+",0.9)");rg.addColorStop(1,"rgba("+b[3]+",0)");g.fillStyle=rg;g.fillRect(0,0,W,H)});
+  var x0=edgeX(),pt=Math.round(H*0.16),ph=Math.round(H*0.68);
+  g.save();g.shadowColor="rgba(0,0,0,0.38)";g.shadowBlur=14;g.shadowOffsetX=8;g.fillStyle="#7E868F";g.fillRect(0,pt,x0,ph);g.restore();
+  var pg=g.createLinearGradient(0,pt,0,pt+ph);[[0,"#4A5159"],[.14,"#7E868F"],[.34,"#BCC3CA"],[.46,"#E1E5E8"],[.58,"#C4CAD0"],[.8,"#8C949C"],[1,"#545B63"]].forEach(function(s){pg.addColorStop(s[0],s[1])});
+  g.fillStyle=pg;g.fillRect(0,pt,x0,ph);g.fillStyle="#2A2F35";g.fillRect(x0-3,pt,3,ph);
+  bg=c}
+function drawTape(){if(!W)return;if(!bg)makeBg();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);ctx.drawImage(bg,0,0);ctx.setTransform(DPR,0,0,DPR,0,0);
+  var x0=edgeX(),th=56,ty=Math.round(H/2-th/2),V=curF;
+  ctx.save();ctx.shadowColor="rgba(0,0,0,0.25)";ctx.shadowBlur=6;ctx.shadowOffsetY=3;ctx.fillStyle="#F7F7F3";ctx.fillRect(0,ty,W,th);ctx.restore();
+  ctx.fillStyle="#C3C7CC";ctx.fillRect(0,ty,W,1);ctx.fillRect(0,ty+th-1,W,1);
+  var lo=Math.floor(V-x0/PX)-2,hi=Math.ceil(V+(W-x0)/PX)+2,bot=ty+th-1;
+  ctx.fillStyle="#15191E";ctx.textBaseline="alphabetic";
+  for(var h=lo;h<=hi;h++){var x=x0+(h-V)*PX,m=((h%100)+100)%100;
+    if(m===0){ctx.fillRect(x-1.5,ty,3,th);ctx.font="700 26px Arial, Helvetica, sans-serif";ctx.textAlign="right";ctx.fillText(String(h/100),x-4,ty+36);ctx.textAlign="left";ctx.fillText("F",x+4,ty+36)}
+    else if(m%10===0){ctx.fillRect(x-1.25,bot-30,2.5,30);ctx.font="700 26px Arial, Helvetica, sans-serif";ctx.textAlign="right";ctx.fillText(String(m/10),x-3,ty+36)}
+    else{var len=m%5===0?18:11;ctx.fillRect(x-0.75,bot-len,1.5,len)}}}
+/* feel: the Strap App's — follow the thumb, keep sliding after a flick, settle on the nearest hundredth */
+var curF=3150,drag=null,lastQ=null,anim=null,TAU=240,MAXH=60;
+function setF(v,ticks){v=Math.max(MINV,Math.min(MAXV,v));var q=Math.round(v);if(lastQ!==null&&q!==lastQ&&ticks)tick(false);lastQ=q;curF=v;S.cur=q;drawTape();updReadout()}
+function glideTo(to){cancelAnimationFrame(anim);to=Math.max(MINV,Math.min(MAXV,Math.round(to)));var from=curF,t0=performance.now(),d=to-from;var tau=Math.abs(d)<0.6?70:TAU;
+  (function step(t){var k=1-Math.exp(-(t-t0)/tau);var v=from+d*k;if(Math.abs(to-v)<0.01){setF(to,true);anim=null;save();return}setF(v,true);anim=requestAnimationFrame(step)})(t0)}
+$("twin").addEventListener("pointerdown",function(e){cancelAnimationFrame(anim);anim=null;drag={x:e.clientX,v:curF,s:[{t:performance.now(),x:e.clientX}]};lastQ=Math.round(curF);try{this.setPointerCapture(e.pointerId)}catch(x){}e.preventDefault()});
+$("twin").addEventListener("pointermove",function(e){if(!drag)return;var n=performance.now();drag.s.push({t:n,x:e.clientX});while(drag.s.length>2&&n-drag.s[0].t>100)drag.s.shift();setF(drag.v-(e.clientX-drag.x)/PX,true);e.preventDefault()});
+function endDrag(){if(!drag)return;var s=drag.s,n=performance.now(),a=s[0],b=s[s.length-1];drag=null;
+  var vel=(b.t-a.t>0&&n-b.t<60)?(b.x-a.x)/(b.t-a.t):0; /* px/ms; tape moving right = lower reading */
+  var th=-vel*TAU/PX;if(Math.abs(vel)<0.15)th=0;th=Math.max(-MAXH,Math.min(MAXH,th));glideTo(curF+th)}
+$("twin").addEventListener("pointerup",endDrag);$("twin").addEventListener("pointercancel",endDrag);
+function jumpFt(d){cancelAnimationFrame(anim);anim=null;var v=Math.max(MINV,Math.min(MAXV,Math.round(curF)+d*100));curF=v;S.cur=v;lastQ=v;tick(false);drawTape();updReadout();save()}
+function holdBtn(btn,d){var hold=null,rep=null,held=false;function stop(){clearTimeout(hold);clearInterval(rep);hold=rep=null}
+  btn.addEventListener("pointerdown",function(e){e.preventDefault();held=false;stop();try{btn.setPointerCapture(e.pointerId)}catch(x){}hold=setTimeout(function(){held=true;jumpFt(d);rep=setInterval(function(){jumpFt(d)},420)},420)});
+  btn.addEventListener("pointerup",function(e){e.preventDefault();var w=held;stop();if(!w)jumpFt(d)});
+  btn.addEventListener("pointercancel",stop);btn.addEventListener("click",function(e){e.preventDefault();if(e.detail===0)jumpFt(d)});
+  btn.addEventListener("contextmenu",function(e){e.preventDefault()})}
+holdBtn($("ftDn"),-1);holdBtn($("ftUp"),1);
+
+/* ---------- the keypad ---------- */
+var FEET=[28,29,30,31,32,33];
+function padText(){var f=Math.floor(S.cur/100),d=S.typed;return f+"."+d+'<span class="u">'+"––".slice(0,2-d.length)+"</span>"}
+function drawPad(){var f=Math.floor(S.cur/100),h="";FEET.forEach(function(x){h+='<button type="button" data-f="'+x+'" class="'+(x===f?"on":"")+'">'+x+'</button>'});$("feetSeg").innerHTML=h;
+  var k="";[1,2,3,4,5,6,7,8,9].forEach(function(n){k+='<button type="button" class="key" data-d="'+n+'">'+n+'</button>'});
+  k+='<button type="button" class="key t" data-c="clear">Clear</button><button type="button" class="key" data-d="0">0</button>';
+  k+='<button type="button" class="key" data-c="back" aria-label="Backspace"><svg width="34" height="26" viewBox="0 0 34 26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M11 2 H31 a1.5 1.5 0 0 1 1.5 1.5 V22.5 a1.5 1.5 0 0 1 -1.5 1.5 H11 L2 13 Z"/><path d="M16 8.5 L25 17.5 M25 8.5 L16 17.5"/></svg></button>';
+  $("pad").innerHTML=k}
+$("feetSeg").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var f=+b.getAttribute("data-f");S.cur=f*100+(S.cur%100);tick(false);save();drawPad();updReadout()});
+$("pad").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;tick(false);var f=Math.floor(S.cur/100),c=b.getAttribute("data-c");
+  if(c==="clear"){S.typed=""}
+  else if(c==="back"){S.typed=S.typed.slice(0,-1)}
+  else{var d=b.getAttribute("data-d");S.typed=S.typed.length>=2?d:S.typed+d}
+  if(S.typed.length===2)S.cur=f*100+parseInt(S.typed,10);
+  save();updReadout()});
+
+/* ---------- done ---------- */
+function drawDone(){var J=S.joints,tot=0,ms=0;J.forEach(function(j){tot+=j.v;ms+=j.ms});
+  $("dSum").innerHTML='<div><span>Joints</span><b>'+J.length+'</b></div><div><span>Total</span><b>'+(tot/100).toFixed(2)+'</b></div><div><span>Average</span><b>'+ft(Math.round(tot/J.length))+'</b></div>';
+  var h="<tr><th>Joint</th><th>Length</th><th>Running</th><th>Way</th><th>Time</th></tr>",run=0;
+  J.forEach(function(j,i){run+=j.v;h+="<tr><td>"+(S.start+i)+"</td><td>"+ft(j.v)+"</td><td>"+(run/100).toFixed(2)+"</td><td>"+(j.mode==="tape"?"Tape":"Keypad")+"</td><td>"+secs(j.ms)+"</td></tr>"});
+  $("dTbl").innerHTML=h;
+  $("dNote").textContent="Time is from the last tap to this one — roughly how long each joint took to put in. "+secs(ms)+" for all "+J.length+"."}
+function summary(){var J=S.joints,s="Pipe Tally feel test · "+new Date(S.done||Date.now()).toLocaleString()+"\n",run=0,ms=0,tot=0;
+  J.forEach(function(j,i){run+=j.v;ms+=j.ms;tot+=j.v;s+="Joint "+(S.start+i)+"  "+ft(j.v)+"  ("+(j.mode==="tape"?"tape":"keypad")+", "+secs(j.ms)+")\n"});
+  s+="Total "+(tot/100).toFixed(2)+" ft · avg "+ft(Math.round(tot/J.length))+" · "+secs(ms)+" in all\nPhone: "+navigator.userAgent.replace(/\s*\(KHTML.*$/,"")+"\nWhat felt right / wrong:\n";
+  return s+"— Pipe Tally test · BasinWorks Labs"}
+$("copyBtn").addEventListener("click",function(){var t=summary();
+  function fb(){var ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("Copied — paste it in the text to Chris")}catch(e){toast("Couldn't copy")}document.body.removeChild(ta)}
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){toast("Copied — paste it in the text to Chris")},fb);else fb()});
+$("fixBtn").addEventListener("click",function(){var l=S.joints.pop();S.cur=l.v;S.typed="";S.done=null;S.lastAt=Date.now();save();show("entry")});
+function newTally(){var next=S.start+S.joints.length;S.joints=[];S.done=null;S.start=next;S.typed="";S.startedAt=Date.now();S.lastAt=S.startedAt;save();show("entry")}
+$("newBtn").addEventListener("click",newTally);$("newBtn2").addEventListener("click",function(){S.joints=[];S.done=null;S.typed="";save();show("start")});
+
+/* ---------- boot ---------- */
+curF=S.cur;lastQ=S.cur;
+show(S.done?"done":"start");
+})();
+</script>
+</body>
+</html>
