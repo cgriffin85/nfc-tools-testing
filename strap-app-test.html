@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Strap App">
+<meta name="application-name" content="Strap App · BasinWorks Labs">
+<meta name="author" content="BasinWorks Labs">
+<meta name="theme-color" content="#2F3842">
+<title>Strap App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF0F2; --surface:#FFFFFF; --card:#FFFFFF; --sunk:#F0F2F4;
+  --text:#1B2026; --text-mid:#5B6775; --text-dim:#8C9BA8;
+  --rule:#D3D9E0; --rule-strong:#B8C2CC;
+  --slate:#2F3842; --on-slate:#FFFFFF; --on-slate-mid:#C9D1D9;
+  --accent:#E2662B; --accent-ink:#B04A17; --on-accent:#1B2026; --accent-dim:#FCEBDD;
+  --warn:#8F5A12; --warn-bg:#FFF4EC; --warn-bd:#E8C59A;
+  --wet:#E5332A;
+  --fd:'Saira Semi Condensed',Impact,'Arial Narrow',sans-serif;
+  --fb:'IBM Plex Sans',Arial,sans-serif;
+  --fm:Arial,Helvetica,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161B21; --surface:#1E252D; --card:#232B34; --sunk:#1A2027;
+  --text:#E8ECF0; --text-mid:#A3AEB9; --text-dim:#6F7C89;
+  --rule:#333D48; --rule-strong:#46525F;
+  --slate:#11161B; --accent-ink:#F08A55; --accent-dim:rgba(226,102,43,0.16);
+  --warn:#E3B062; --warn-bg:rgba(217,162,94,0.12); --warn-bd:rgba(217,162,94,0.4);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#161B21; --surface:#1E252D; --card:#232B34; --sunk:#1A2027;
+  --text:#E8ECF0; --text-mid:#A3AEB9; --text-dim:#6F7C89;
+  --rule:#333D48; --rule-strong:#46525F;
+  --slate:#11161B; --accent-ink:#F08A55; --accent-dim:rgba(226,102,43,0.16);
+  --warn:#E3B062; --warn-bg:rgba(217,162,94,0.12); --warn-bd:rgba(217,162,94,0.4);
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font-family:var(--fb);font-size:15px;line-height:1.4;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;color:inherit;cursor:pointer}
+.num{font-family:var(--fm);font-variant-numeric:tabular-nums}
+[hidden]{display:none!important}
+
+/* home */
+.hdr{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--rule);
+  padding:calc(env(safe-area-inset-top,0px) + 12px) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+.hrow{display:flex;align-items:center;gap:10px;max-width:560px;margin:0 auto}
+.hrow h1{font-family:var(--fd);font-weight:700;font-size:24px;line-height:1;margin:0}
+.hsub{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--accent-ink);font-weight:600;margin-top:4px}
+.mark{width:32px;height:32px;flex:none}
+.icon{margin-left:auto;flex:none;width:40px;height:40px;border-radius:999px;border:1px solid var(--rule);background:transparent;display:flex;align-items:center;justify-content:center;color:var(--text-mid)}
+.icon svg{width:18px;height:18px}
+.wrap{max-width:560px;margin:0 auto;padding:14px max(16px,env(safe-area-inset-right,0px)) calc(32px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px}
+.lbl{font-size:10.5px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text-mid)}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:14px}
+.kinds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kind{border:1px solid var(--rule);border-radius:14px;background:var(--card);padding:10px 8px;text-align:left;min-height:64px}
+.kind b{display:block;font-family:var(--fd);font-size:21px;line-height:1.1}
+.kind span{font-size:11.5px;color:var(--text-mid)}
+.kind.on{border:2px solid var(--accent);background:var(--accent-dim)}
+.kind.on b{color:var(--accent-ink)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field input{height:48px;border:1px solid var(--rule-strong);border-radius:10px;background:var(--card);color:var(--text);font:600 17px var(--fb);padding:0 12px;width:100%}
+.field input:focus{outline:none;border:2px solid var(--accent)}
+.note{font-size:12.5px;color:var(--text-mid);line-height:1.5}
+.big{height:112px;border:none;border-radius:26px;background:var(--accent);color:var(--on-accent);font-family:var(--fd);font-weight:800;font-size:42px;width:100%}
+.big:active{filter:brightness(.92)}
+.big.fin{background:#2F3842;color:#fff}
+:root[data-theme="dark"] .big.fin{background:#E8ECF0;color:#1B2026}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .big.fin{background:#E8ECF0;color:#1B2026} }
+.resume{display:flex;align-items:center;gap:10px;border:2px solid var(--accent);background:var(--accent-dim);border-radius:14px;padding:12px 14px;width:100%;text-align:left}
+.resume b{font-family:var(--fm);font-size:22px}
+.hist{display:flex;flex-direction:column;gap:8px}
+.hitem{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:10px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;width:100%;text-align:left}
+.hitem .t{font-weight:600;font-size:14px}
+.hitem .s{font-size:12px;color:var(--text-mid)}
+.hitem .r{grid-row:1 / span 2;grid-column:2;align-self:center;text-align:right;font-family:var(--fm);font-weight:700;font-size:20px}
+.hitem .r small{display:block;font:600 10.5px var(--fb);color:var(--text-mid)}
+.link{background:none;border:none;color:var(--accent-ink);font-weight:600;font-size:13.5px;padding:8px 0;text-align:left}
+
+/* strap screens */
+.scr{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg);z-index:10}
+.sh{flex:none;background:var(--slate);border-bottom:3px solid var(--accent);
+  padding:calc(env(safe-area-inset-top,0px) + 10px) max(16px,env(safe-area-inset-right,0px)) 10px max(10px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:10px}
+.sh .ttl{font-family:var(--fd);font-weight:700;font-size:19px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+.pill{flex:none;height:36px;padding:0 12px;border:1px solid #5B6775;border-radius:999px;background:transparent;color:#fff;font:600 13px var(--fb);display:flex;align-items:center;gap:4px}
+.pill .ch{font-size:20px;line-height:1;margin-top:-2px}
+.pill.rs{border-color:var(--accent);color:#F4A06B}
+.pill.rs.arm{background:var(--accent);color:#1B2026}
+.band{flex:none;background:var(--slate);color:#fff;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 16px 12px;transition:background .2s}
+.band .clk{font-family:var(--fm);font-weight:700;font-size:80px;line-height:1;font-variant-numeric:tabular-nums}
+.band .sub{font-size:13.5px;color:var(--on-slate-mid);text-align:center}
+.band .sub b{color:#fff}
+.band.mid .clk{font-size:68px}
+.band.thin{flex-direction:row;justify-content:center;align-items:baseline;gap:12px;padding:4px 16px 10px}
+.band.thin .clk{font-size:40px}
+.band.alert{background:var(--accent)}
+.band.alert .sub,.band.alert .sub b{color:#1B2026}
+.body{flex:1;min-height:0;display:flex;flex-direction:column;gap:6px;padding:10px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));max-width:560px;width:100%;margin:0 auto}
+.reads{display:flex;flex-direction:column;gap:5px;overflow-y:auto;min-height:0;flex:0 1 auto}
+.rd{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:6px 12px;display:grid;grid-template-columns:58px 70px minmax(0,1fr) auto;gap:8px;align-items:baseline;font-family:var(--fm)}
+.rd .n{font:600 12px var(--fb);color:var(--text-mid)}
+.rd .tm{font-weight:700;font-size:15px}
+.rd .in{font-weight:700;font-size:19px}
+.rd .d{font-size:12.5px;color:var(--text-mid);text-align:right}
+.slot{border:2px dashed var(--rule);border-radius:12px;padding:7px 12px;font-size:12.5px;color:var(--text-dim)}
+.spacer{flex:1}
+.hint{font-size:12.5px;color:var(--text-mid);text-align:center}
+.alt{background:none;border:none;color:var(--accent-ink);font:600 14px var(--fb);height:40px}
+
+/* ruler */
+.readout{display:flex;align-items:baseline;justify-content:center;gap:12px}
+.readout .w{font-size:13px;font-weight:600;color:var(--text-mid)}
+.readout .v{font-family:var(--fm);font-weight:700;font-size:54px;line-height:1}
+.readout .f{font-family:var(--fm);font-weight:700;font-size:18px;color:var(--text-mid)}
+.rwin{position:relative;flex:1 1 260px;min-height:200px;max-height:340px;border-radius:16px;overflow:hidden;background:#2F3842;touch-action:none;user-select:none;-webkit-user-select:none}
+.rwin canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.nudge{touch-action:none;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;position:absolute;right:8px;width:52px;height:52px;border-radius:14px;border:1px solid rgba(255,255,255,.25);background:rgba(17,22,27,.55);color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.nudge.up{top:8px}.nudge.dn{bottom:8px}
+.nudge small{font-size:10px;display:block}
+.conf{height:92px;border:none;border-radius:26px;background:var(--accent);color:var(--on-accent);font-family:var(--fd);font-weight:800;font-size:36px;width:100%}
+
+/* chart */
+.ttl2{font-family:var(--fd);font-weight:700;font-size:22px;line-height:1.1;margin:2px 0 4px}
+.crow{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:7px 10px 7px 12px;display:grid;grid-template-columns:54px 50px minmax(0,1fr) 62px;gap:8px;align-items:center;font-family:var(--fm)}
+.crow .n{font:600 12px var(--fb);color:var(--text-mid);line-height:1.25}
+.crow .in{font-weight:700;font-size:18px}
+.crow label{display:flex;align-items:center;height:48px;border-radius:10px;padding:0 8px;gap:4px;background:var(--card);border:1px solid var(--rule-strong)}
+.crow label:focus-within{border:2px solid var(--accent)}
+.crow input{border:none;outline:none;width:100%;min-width:0;font:700 19px var(--fm);color:var(--text);background:transparent}
+.crow label span{font:600 11px var(--fb);color:var(--text-mid)}
+.crow .rt{text-align:right;line-height:1.1}
+.crow .rt b{display:block;font-size:21px}
+.crow .rt span{font:600 10.5px var(--fb);color:var(--text-mid)}
+.sum{background:var(--sunk);border:1px solid var(--rule);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.5}
+.sum b{font-family:var(--fm);font-size:16px}
+.btnrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.sec{height:52px;border-radius:14px;border:1px solid var(--rule-strong);background:var(--card);font:600 15px var(--fb)}
+.done{height:64px;border:none;border-radius:20px;background:var(--accent);color:var(--on-accent);font-family:var(--fd);font-weight:800;font-size:28px;width:100%}
+
+/* result */
+.rate{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.rate b{font-family:var(--fm);font-size:52px;line-height:1}
+.rate span{font-size:14px;color:var(--text-mid);font-weight:600}
+.tbl{width:100%;border-collapse:collapse;font-family:var(--fm);font-size:14px}
+.tbl th{font:600 10.5px var(--fb);text-transform:uppercase;letter-spacing:.6px;color:var(--text-mid);text-align:right;padding:4px 4px 6px;border-bottom:1px solid var(--rule)}
+.tbl td{text-align:right;padding:7px 4px;border-bottom:1px solid var(--rule)}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1B2026;color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;z-index:50}
+.foot{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:22px;font-size:12px;color:var(--text-dim);letter-spacing:.3px}
+.foot svg{width:20px;height:20px}
+.foot b{font-family:var(--fd);font-weight:700;font-size:13px;letter-spacing:.6px;color:var(--text-mid)}
+.stamp{margin-top:10px;padding-top:8px;border-top:1px solid var(--rule);font-family:var(--fd);font-weight:600;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-dim)}
+.home-sh{position:sticky;top:0;z-index:5}
+.home-sh .ttl{flex:1;min-width:0;font-family:var(--fd);font-weight:700;font-size:19px;color:#fff}
+.home-sh .mark{width:30px;height:30px;flex:none;margin-left:4px}
+.ttlbtn{flex:1;min-width:0;display:flex;align-items:center;gap:6px;background:none;border:none;padding:4px 0;color:#fff;text-align:left}
+.ttlbtn svg{width:15px;height:15px;flex:none;color:var(--on-slate-mid)}
+.cs{font-size:.42em;font-weight:700;margin-left:2px;letter-spacing:0}
+.rd .tm .cs,.crow .cs,.tbl .cs{font-size:.75em;color:var(--text-mid);margin-left:1px}
+.chartsel{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid var(--rule);border-radius:14px;background:var(--card);padding:12px 14px}
+.chartsel.on{border:2px solid var(--accent);background:var(--accent-dim)}
+.chartsel b{display:block;font-family:var(--fd);font-size:19px;line-height:1.15}
+.chartsel small{display:block;font-size:12px;color:var(--text-mid);margin-top:2px}
+.chartsel .go{margin-left:auto;font-size:26px;color:var(--text-mid)}
+.shade{position:fixed;inset:0;z-index:30;background:rgba(17,22,27,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:560px;max-height:88vh;overflow-y:auto;background:var(--bg);border-radius:20px 20px 0 0;padding:16px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px}
+.sheet p{margin:0}
+.sheet h2{font-family:var(--fd);font-weight:700;font-size:22px;margin:0}
+.copt{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid var(--rule);border-radius:14px;background:var(--card);padding:12px 14px}
+.copt.on{border:2px solid var(--accent)}
+.copt b{display:block;font-size:15px}.copt small{display:block;font-size:12px;color:var(--text-mid)}
+.copt .vw{margin-left:auto;flex:none;border:1px solid var(--rule-strong);border-radius:999px;background:transparent;font:600 13px var(--fb);padding:6px 12px;color:var(--text)}
+.ctab{width:100%;border-collapse:collapse;font-family:var(--fm);font-size:14px;font-variant-numeric:tabular-nums}
+.ctab th{position:sticky;top:-16px;background:var(--bg);font:600 10.5px var(--fb);text-transform:uppercase;letter-spacing:.6px;color:var(--text-mid);text-align:right;padding:6px 6px;border-bottom:2px solid var(--rule-strong)}
+.ctab td{text-align:right;padding:5px 6px;border-bottom:1px solid var(--rule)}
+.ctab th:first-child,.ctab td:first-child{text-align:left;font-weight:700}
+.ctab tr.ft td{border-bottom:2px solid var(--rule-strong)}
+.ctab td.flag{color:var(--warn);font-weight:700}
+.work{grid-column:2 / 5;font:500 12px var(--fb);color:var(--text-mid);line-height:1.35;margin-top:-2px}
+.work b{color:var(--text);font-family:var(--fm)}
+.work.typed{color:var(--warn)}
+.hapt{position:absolute;left:-9999px;top:0;opacity:0;pointer-events:none}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="home">
+  <div class="sh home-sh">
+    <svg class="mark" aria-hidden="true" viewBox="0 0 34 34" style="fill:none;stroke-width:2.6;stroke-linecap:round"><rect x="0" y="0" width="34" height="34" rx="8" fill="#1E252D" stroke="none"></rect><path d="M 7 10 Q 12 8 17 10 T 27 10" stroke="#C9D1D9"></path><path d="M 7 15 Q 12 13 17 15 T 27 15" stroke="#D9A25E"></path><path d="M 7 20 Q 12 18 17 20 T 27 20" stroke="#E2662B"></path><path d="M 7 25 Q 12 23 17 25 T 27 25" stroke="#8C9BA8"></path></svg>
+    <span class="ttl">Strap App</span>
+    <button class="pill" id="themeBtn" type="button" aria-label="Switch light or dark"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg></button>
+  </div>
+  <div class="band" id="homeBand"><span class="clk" id="homeClk" style="color:#8C9BA8">0:00<small class="cs">.00</small></span><span class="sub" id="homeSub"></span></div>
+  <main class="wrap">
+    <button type="button" class="resume" id="resumeBtn" hidden><span style="flex:1"><span class="lbl" style="display:block">Strap running</span><span id="resumeTxt"></span></span><b class="num" id="resumeClk">0:00</b></button>
+    <span class="lbl">Kind of strap</span>
+    <div class="kinds" id="kinds"></div>
+    <span class="lbl">Tank chart</span>
+    <button type="button" class="chartsel" id="chartBtn"><span><b id="chartName">No chart — I'll type barrels</b><small id="chartSub">Tap to pick the chart that's on your tank</small></span><span class="go">›</span></button>
+    <p class="note">To prepare, isolate your tank and have your stick and the app ready. Tap <b>Start</b> as you lift the stick, then match the first line on the ruler. The screen stays awake while the strap runs.</p>
+    <button type="button" class="big" id="startBtn">Start</button>
+    <div id="histWrap" hidden>
+      <div class="lbl" style="margin:14px 0 8px">Past straps on this phone</div>
+      <div class="hist" id="hist"></div>
+    </div>
+    <footer class="foot"><svg viewBox="0 0 34 34" aria-hidden="true" style="fill:none;stroke-width:2.6;stroke-linecap:round"><path d="M 7 10 Q 12 8 17 10 T 27 10" stroke="#8C9BA8"></path><path d="M 7 15 Q 12 13 17 15 T 27 15" stroke="#D9A25E"></path><path d="M 7 20 Q 12 18 17 20 T 27 20" stroke="#E2662B"></path><path d="M 7 25 Q 12 23 17 25 T 27 25" stroke="#8C9BA8"></path></svg><span>Made in the Permian by <b>BasinWorks Labs</b></span></footer>
+  </main>
+</div>
+
+<!-- CHART PICKER -->
+<div class="shade" id="shade" hidden><div class="sheet" id="sheet" role="dialog" aria-label="Tank chart"></div></div>
+
+<!-- STRAP SCREENS -->
+<div class="scr" id="scr" hidden>
+  <div class="sh">
+    <button type="button" class="pill" id="backBtn" aria-label="Back to home — the strap keeps running"><span class="ch">‹</span>Home</button>
+    <span class="ttl" id="sTtl">Strap</span>
+    <button type="button" class="pill rs" id="restartBtn">Restart</button>
+  </div>
+  <div class="band" id="band"><span class="clk" id="clk">0:00</span><span class="sub" id="bandSub"></span></div>
+
+  <!-- running -->
+  <div class="body" id="vRun" hidden>
+    <div class="reads" id="runReads"></div>
+    <div class="spacer"></div>
+    <span class="hint" id="runHint"></span>
+    <button type="button" class="big" id="markBtn">Mark</button>
+    <button type="button" class="alt" id="altBtn"></button>
+  </div>
+
+  <!-- ruler -->
+  <div class="body" id="vRuler" hidden>
+    <div class="reads" id="rulReads" style="max-height:30vh"></div>
+    <div class="readout"><span class="w" id="rWhich"></span><span class="v" id="rVal">0″</span><span class="f" id="rFt"></span></div>
+    <div class="rwin" id="rwin"><canvas id="cv"></canvas>
+      <button type="button" class="nudge up" id="nUp" aria-label="Up an inch — hold to jump by feet">▲</button>
+      <button type="button" class="nudge dn" id="nDn" aria-label="Down an inch — hold to jump by feet">▼</button>
+    </div>
+    <span class="hint">Drag the stick to match your wet line. It clicks to each ¼″. Arrows: tap for an inch, hold to jump by feet.</span>
+    <button type="button" class="conf" id="confBtn">Confirm</button>
+  </div>
+
+  <!-- chart -->
+  <div class="body" id="vChart" hidden style="overflow-y:auto">
+    <div class="ttl2" id="chartTtl">Read the chart — barrels for each read</div>
+    <div id="cRows" style="display:flex;flex-direction:column;gap:7px"></div>
+    <div class="sum" id="cSum"></div>
+    <button type="button" class="done" id="doneBtn">Done</button>
+  </div>
+
+  <!-- result -->
+  <div class="body" id="vRes" hidden style="overflow-y:auto">
+    <div class="card">
+      <div class="lbl" id="resLbl">Strap rate · start → finish</div>
+      <div class="rate" id="resRate"></div>
+      <div class="note" id="resMore" style="margin-top:4px"></div>
+      <div class="stamp">Strap App · BasinWorks Labs</div>
+    </div>
+    <div class="card" style="padding:8px 12px"><table class="tbl" id="resTbl"></table></div>
+    <div class="btnrow"><button type="button" class="sec" id="copyBtn">Copy summary</button><button type="button" class="sec" id="editBtn">Fix barrels</button></div>
+    <button type="button" class="done" id="newBtn">New strap</button>
+  </div>
+</div>
+
+<label class="hapt" id="haptLbl"><input type="checkbox" switch id="haptIn">tick</label>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var KEY="bwl-strap-app-v1";
+var KINDS=[
+  {id:"135",big:"1 · 3 · 5",small:"reads at 1, 3, 5",plan:[1,3,5]},
+  {id:"5",big:"5",small:"one read at 5",plan:[5]},
+  {id:"15",big:"15",small:"one read at 15",plan:[15]},
+  {id:"30",big:"30",small:"one read at 30",plan:[30]},
+  {id:"60",big:"60",small:"one read at 60",plan:[60]},
+  {id:"free",big:"Free",small:"you call Finish",plan:[]}
+];
+function kindOf(id){for(var i=0;i<KINDS.length;i++)if(KINDS[i].id===id)return KINDS[i];return KINDS[0]}
+
+var S={tank:"",kind:"135",chart:"",run:null,hist:[],lastV:null};
+try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);if(o&&typeof o==="object"){S.tank=o.tank||"";S.kind=o.kind||"135";S.chart=o.chart||"";S.run=o.run||null;S.hist=Array.isArray(o.hist)?o.hist:[];S.lastV=typeof o.lastV==="number"?o.lastV:null;}}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+/* ---------- formatting ---------- */
+function fracIn(v){var neg=v<0;v=Math.abs(Math.round(v*4)/4);var w=Math.floor(v),q=Math.round((v-w)*4);var f=["","¼","½","¾"][q];return (neg?"−":"")+(w===0&&f?"":String(w))+f+"″"}
+function ftIn(v){v=Math.round(v*4)/4;var f=Math.floor(v/12),r=v-f*12;return f+"′ "+fracIn(r)}
+function clock(ms){if(ms<0)ms=0;var s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;return (h?h+":"+(m<10?"0":""):"")+m+":"+(x<10?"0":"")+x}
+function cs(ms){if(ms<0)ms=0;var c=Math.floor(ms/10)%100;return '<small class="cs">.'+(c<10?"0":"")+c+"</small>"}
+function clockCs(ms){return clock(ms)+cs(ms)}
+function mmss(min){return clock(min*60000)}
+function rise(d){return (d>=0?"+":"")+fracIn(d)}
+function wall(ts){var d=new Date(ts),h=d.getHours(),m=d.getMinutes();return (h%12||12)+":"+(m<10?"0":"")+m+(h<12?" AM":" PM")}
+function ordinal(n){return n+(n%10===1&&n!==11?"st":n%10===2&&n!==12?"nd":n%10===3&&n!==13?"rd":"th")}
+function readName(i,run){if(i===0)return "Start";if(run.reads[i].fin)return "Finish";return ordinal(i)+" read"}
+function useHr(run){var k=kindOf(run.kind);return k.plan.length&&k.plan[k.plan.length-1]>=15}
+function rateTxt(db,dtMs,hr){if(!(dtMs>0))return "";var perMin=db/(dtMs/60000);return hr?(perMin*60).toFixed(1):perMin.toFixed(2)}
+function bb(n){return String(Math.round(n*100)/100)}
+
+/* ---------- feedback: haptics + sound ---------- */
+var audio=null;
+function unlockAudio(){try{if(!audio){var C=window.AudioContext||window.webkitAudioContext;if(C)audio=new C();}if(audio&&audio.state==="suspended")audio.resume();}catch(e){}}
+function beep(n){if(!audio)return;try{for(var i=0;i<n;i++){var o=audio.createOscillator(),g=audio.createGain(),t=audio.currentTime+i*0.22;o.frequency.value=1046;o.type="square";g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.25,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+0.16);o.connect(g);g.connect(audio.destination);o.start(t);o.stop(t+0.18);}}catch(e){}}
+function tick(strong){try{if(navigator.vibrate){navigator.vibrate(strong?[60,40,60]:8);return}}catch(e){}try{$("haptLbl").click()}catch(e){}}
+
+/* ---------- wake lock ---------- */
+var lock=null;
+function wake(on){try{if(on){if(!lock&&navigator.wakeLock){navigator.wakeLock.request("screen").then(function(l){lock=l;l.addEventListener("release",function(){lock=null})}).catch(function(){})}}else if(lock){lock.release();lock=null}}catch(e){}}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&S.run&&S.run.stopAt==null)wake(true)});
+
+/* ---------- theme ---------- */
+(function(){var root=document.documentElement;try{var t=localStorage.getItem("nfc-theme");if(t==="light"||t==="dark")root.setAttribute("data-theme",t)}catch(e){}
+$("themeBtn").addEventListener("click",function(){var cur=root.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");var nx=cur==="dark"?"light":"dark";root.setAttribute("data-theme",nx);try{localStorage.setItem("nfc-theme",nx)}catch(e){}})})();
+
+/* ---------- toast ---------- */
+var toastT=null;function toast(m){var t=$("toast");if(!t){t=document.createElement("div");t.id="toast";t.className="toast";document.body.appendChild(t)}t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},2200)}
+
+/* ---------- home ---------- */
+function drawKinds(){var h="";KINDS.forEach(function(k){h+='<button type="button" class="kind'+(k.id===S.kind?" on":"")+'" data-k="'+k.id+'"><b>'+k.big+'</b><span>'+k.small+'</span></button>'});$("kinds").innerHTML=h;
+  var k=kindOf(S.kind);$("homeSub").textContent=k.plan.length?((k.plan.length>1?"reads at "+k.plan.slice(0,-1).join(", ")+" and "+k.plan[k.plan.length-1]+" min":"one read at "+k.plan[0]+" min")+" · last one is Finish"):"Free strap — Mark as you go, Finish when you're done"}
+$("kinds").addEventListener("click",function(e){var b=e.target.closest(".kind");if(!b)return;S.kind=b.getAttribute("data-k");save();drawKinds()});
+
+function drawHist(){var h="";S.hist.slice(0,15).forEach(function(r,i){var n=r.reads.length,last=r.reads[n-1],first=r.reads[0];var hr=useHr(r);var rt=(first.bbl!=null&&last.bbl!=null)?rateTxt(last.bbl-first.bbl,last.t-first.t,hr):"–";
+  h+='<button type="button" class="hitem" data-h="'+i+'"><span class="t">'+kindOf(r.kind).big+' strap</span><span class="r">'+rt+'<small>'+(hr?"bbl/hr":"bbl/min")+'</small></span><span class="s">'+new Date(r.startAt).toLocaleDateString()+' '+wall(r.startAt)+' · '+fracIn(first.v)+' → '+fracIn(last.v)+' in '+clock(last.t)+'</span></button>'});
+  $("hist").innerHTML=h;$("histWrap").hidden=!S.hist.length}
+$("hist").addEventListener("click",function(e){var b=e.target.closest(".hitem");if(!b)return;viewRun=S.hist[+b.getAttribute("data-h")];openScr("res")});
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+/* ---------- run model ---------- */
+var view="home",viewRun=null,pending=null,curV=60;
+function now(){return Date.now()}
+function elapsed(){return S.run?((S.run.stopAt!=null?S.run.stopAt:now())-S.run.startAt):0}
+function plan(){return kindOf(S.run.kind).plan}
+function lastT(){var r=S.run.reads;return r.length?r[r.length-1].t:0}
+function nextPlanned(){var p=plan(),i=S.run.reads.length-1;if(i>=0&&i<p.length)return {min:p[i],last:i===p.length-1};return null}
+function nextIsFinish(){var p=plan();if(!p.length)return false;var n=nextPlanned();return !n||n.last||elapsed()>=p[p.length-1]*60000}
+
+$("startBtn").addEventListener("click",function(){
+  unlockAudio();tick(false);
+  if(S.run&&S.run.stopAt==null){openScr(S.run.stage||"run");return}
+  S.run={startAt:now(),kind:S.kind,chart:S.chart,reads:[],stopAt:null,stage:"ruler",pend:{t:0,fin:false},alerted:[]};
+  curV=S.lastV!=null?S.lastV:60;save();wake(true);openScr("ruler")});
+
+function markOrFinish(fin){
+  unlockAudio();tick(true);
+  var t=elapsed();S.run.pend={t:t,fin:fin};if(fin)S.run.stopAt=S.run.startAt+t;
+  S.run.stage="ruler";var r=S.run.reads;curV=r.length?r[r.length-1].v:curV;save();openScr("ruler")}
+$("markBtn").addEventListener("click",function(){markOrFinish(nextIsFinish())});
+$("altBtn").addEventListener("click",function(){markOrFinish(!nextIsFinish())});
+
+$("confBtn").addEventListener("click",function(){
+  cancelAnimationFrame(anim);anim=null;tick(false);var p=S.run.pend||{t:lastT(),fin:false};var v=Math.round(curV*4)/4;
+  S.run.reads.push({t:p.t,v:v,fin:!!p.fin});S.run.pend=null;S.lastV=v;
+  if(p.fin){S.run.stage="chart";wake(false);save();openScr("chart")}else{S.run.stage="run";save();openScr("run")}});
+
+$("backBtn").addEventListener("click",function(){openScr("home")});
+var armT=null;
+$("restartBtn").addEventListener("click",function(){var b=this;
+  if(view==="res"){openScr("home");return}
+  if(!b.classList.contains("arm")){b.classList.add("arm");b.textContent="Tap again";clearTimeout(armT);armT=setTimeout(function(){b.classList.remove("arm");b.textContent="Restart"},3000);return}
+  clearTimeout(armT);b.classList.remove("arm");b.textContent="Restart";
+  var keep={kind:S.run.kind};S.run=null;S.kind=keep.kind;save();wake(false);drawKinds();openScr("home");toast("Strap cleared — tap Start when you're ready")});
+$("resumeBtn").addEventListener("click",function(){openScr(S.run.stage||"run")});
+
+/* ---------- screens ---------- */
+function openScr(v){view=v;
+  if(v==="home"){$("scr").hidden=true;$("home").hidden=false;drawKinds();drawHist();drawResume();return}
+  $("home").hidden=true;$("scr").hidden=false;
+  ["vRun","vRuler","vChart","vRes"].forEach(function(id){$(id).hidden=true});
+  var band=$("band");band.className="band";
+  var run=v==="res"?viewRun:S.run;
+  $("sTtl").textContent="Strap · "+kindOf(run.kind).big.replace(/ /g,"");
+  $("restartBtn").hidden=false;$("restartBtn").textContent=v==="res"?"Close":"Restart";$("restartBtn").classList.remove("arm");
+  $("backBtn").hidden=v==="res";
+  if(v==="run"){$("vRun").hidden=false;drawRun()}
+  if(v==="ruler"){band.classList.add("mid");$("vRuler").hidden=false;drawRulerScreen()}
+  if(v==="chart"){band.classList.add("thin");$("vChart").hidden=false;$("restartBtn").hidden=true;drawChart()}
+  if(v==="res"){band.classList.add("thin");$("vRes").hidden=false;drawRes()}
+  tickClock()}
+function drawResume(){var on=!!(S.run&&S.run.stopAt==null)||!!(S.run&&S.run.stage==="chart");$("resumeBtn").hidden=!on;
+  if(on){$("resumeTxt").textContent=kindOf(S.run.kind).big+" strap"+(S.run.stage==="chart"?" · barrels to fill":" · tap to go back");$("startBtn").textContent=S.run.stage==="chart"?"Fill barrels":"Back to strap"}else $("startBtn").textContent="Start"}
+
+function readRows(run,pendName){var h="",r=run.reads;for(var i=0;i<r.length;i++){
+  h+='<div class="rd"><span class="n">'+readName(i,run)+'</span><b class="tm">'+clockCs(r[i].t)+'</b><b class="in">'+fracIn(r[i].v)+'</b><span class="d">'+(i?rise(r[i].v-r[0].v)+" from start":ftIn(r[i].v))+'</span></div>'}return h}
+function drawRun(){var run=S.run,h=readRows(run);
+  var p=plan(),i0=run.reads.length-1;for(var k=Math.max(0,i0);k<p.length;k++){h+='<div class="slot">'+(k===p.length-1?"Last read at "+mmss(p[k])+" — that's Finish":"Read lands here at "+mmss(p[k]))+'</div>'}
+  $("runReads").innerHTML=h;var el=$("runReads");el.scrollTop=el.scrollHeight;
+  var fin=nextIsFinish();var mb=$("markBtn");mb.textContent=fin?"Finish":"Mark";mb.classList.toggle("fin",fin);
+  $("altBtn").textContent=fin?(p.length?"Mark instead — add an extra read":"Mark"):"Finish now — this is the last read";
+  $("runHint").textContent=fin?"Last read. Tap Finish as you pull the stick — the watch stops.":"Tap Mark as you pull the stick."}
+
+function drawRulerScreen(){var run=S.run,p=run.pend||{t:0};var i=run.reads.length;
+  var name=i===0?"Starting read":(p.fin?"Finish read":ordinal(i)+" read");
+  $("rWhich").innerHTML=name+" · "+clockCs(p.t);$("rulReads").innerHTML=readRows(run);var el=$("rulReads");el.scrollTop=el.scrollHeight;
+  requestAnimationFrame(function(){sizeCanvas();drawStick()});updReadout()}
+
+/* ---------- clock loop ---------- */
+function tickClock(){var run=view==="res"?viewRun:S.run;if(!run||view==="home"){if(S.run&&S.run.stopAt==null)$("resumeClk").innerHTML=clockCs(elapsed());return}
+  var e=view==="res"?(run.reads.length?run.reads[run.reads.length-1].t:0):elapsed();$("clk").innerHTML=clockCs(e);
+  var sub="",band=$("band"),alert=false;
+  if(view==="res"){sub="finished "+wall(run.startAt+e)}
+  else if(run.stopAt!=null){sub=view==="chart"?"stopped · "+run.reads.length+" reads":"stopped · finish read is stamped "+clock(run.stopAt-run.startAt)}
+  else if(view==="ruler"){var pt=run.pend?run.pend.t:0;sub="running · this read is stamped "+clock(pt)}
+  else{var n=nextPlanned();if(n){var left=n.min*60000-e;if(left>0){sub=(n.last?"last read":"next read")+" at <b>"+mmss(n.min)+"</b> — in "+clock(left+999);alert=left<=10000}else{sub="<b>"+mmss(n.min)+"</b> read is due — "+clock(-left)+" late";alert=true}}else sub=plan().length?"past the last planned read — tap Finish":"free strap — Mark as you go, Finish when done"}
+  $("bandSub").innerHTML=sub;alertOn=alert;if(!alert)band.classList.remove("alert");
+  if(run.stopAt==null&&view!=="res"){var pl=plan();for(var k=0;k<pl.length;k++){var at=pl[k]*60000;if(e>=at&&e<at+4000&&run.alerted.indexOf(pl[k])<0){run.alerted.push(pl[k]);save();beep(k===pl.length-1?3:2);tick(true)}}}
+  if(view==="run"&&Math.floor(e/1000)!==lastSec){lastSec=Math.floor(e/1000);var fin=nextIsFinish();if($("markBtn").textContent!==(fin?"Finish":"Mark"))drawRun()}}
+var lastSec=-1;
+var alertOn=false;
+setInterval(tickClock,250);
+(function raf(){if(S.run&&S.run.stopAt==null){var c=view==="home"?$("resumeClk"):(view==="run"||view==="ruler")?$("clk"):null;if(c)c.innerHTML=clockCs(elapsed());if(view==="run"||view==="ruler"){var e=elapsed();$("band").classList.toggle("alert",alertOn&&Math.floor(e/500)%2===0)}}requestAnimationFrame(raf)})();
+
+/* ---------- the stick ---------- */
+var cv=$("cv"),ctx=cv.getContext("2d"),PX=88,W=0,H=0,DPR=1;
+function sizeCanvas(){var r=$("rwin").getBoundingClientRect();DPR=window.devicePixelRatio||1;W=r.width;H=r.height;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR)}
+window.addEventListener("resize",function(){if(view==="ruler"){sizeCanvas();drawStick()}});
+function drawStick(){if(!W)return;ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,W,H);
+  var sw=170,x0=Math.round((W-sw)/2),cy=H/2,T=curV+cy/PX;
+  var g=ctx.createLinearGradient(x0,0,x0+sw,0);g.addColorStop(0,"#C79F62");g.addColorStop(.22,"#DDBE8A");g.addColorStop(.5,"#E6CB98");g.addColorStop(.78,"#DDBE8A");g.addColorStop(1,"#C49B5E");
+  ctx.fillStyle=g;ctx.fillRect(x0,0,sw,H);
+  ctx.fillStyle="rgba(120,84,40,0.07)";for(var gx=x0;gx<x0+sw;gx+=9)ctx.fillRect(gx,0,2,H);
+  ctx.fillStyle="#8A6A3C";ctx.fillRect(x0-1,0,1,H);ctx.fillRect(x0+sw,0,1,H);
+  var top8=Math.ceil(T*8)+1,bot8=Math.floor((T-H/PX)*8)-10;
+  ctx.fillStyle="#15191E";ctx.textAlign="center";ctx.textBaseline="alphabetic";
+  for(var e8=top8;e8>=bot8;e8--){if(e8<0)break;var y=(T-e8/8)*PX,m=((e8%8)+8)%8;
+    if(m===0){var n=e8/8,inFoot=n%12;ctx.fillRect(x0,y-2,sw,4);
+      ctx.textBaseline="top";ctx.font="700 40px Arial, Helvetica, sans-serif";ctx.fillText(String(n),x0+sw/2,y+5);
+      ctx.textBaseline="alphabetic";if(inFoot===0&&n>0){ctx.font="700 42px Arial, Helvetica, sans-serif";ctx.fillText(String(n/12),x0+sw/2,y-6)}else if(n>0){ctx.font="700 28px Arial, Helvetica, sans-serif";ctx.fillText(String(inFoot),x0+sw/2,y-6)}}
+    else{var w=m===4?40:(m===2||m===6)?27:16;ctx.fillRect(x0,y-1,w,2);ctx.fillRect(x0+sw-w,y-1,w,2)}}
+  ctx.fillStyle="#E5332A";ctx.fillRect(0,cy-1.5,W,3);
+  ctx.font="700 12px Arial, sans-serif";var lw=ctx.measureText("wet line").width+16;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(8,cy-12,lw,24,12);else ctx.rect(8,cy-12,lw,24);ctx.fill();
+  ctx.fillStyle="#fff";ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText("wet line",16,cy+1)}
+function updReadout(){var v=Math.round(curV*4)/4;$("rVal").textContent=fracIn(v);$("rFt").textContent=ftIn(v);$("confBtn").textContent="Confirm "+fracIn(v)}
+var drag=null,lastQ=null,anim=null;
+/* Feel of the stick: like the roller pickers — it keeps sliding after a flick and settles on a quarter-inch mark.
+   Distance comes from flick speed in screen pixels and is turned into inches at the stick's own scale (PX per inch),
+   so a flick moves the drawn stick the way your thumb threw it. TAU sets how quickly it slows (iOS-like). */
+var TAU=260, MAXIN=18;
+function setV(v,ticks){v=Math.max(0,Math.min(160,v));var q=Math.round(v*4);if(lastQ!==null&&q!==lastQ&&ticks)tick(false);lastQ=q;curV=v;drawStick();updReadout()}
+function glideTo(to){cancelAnimationFrame(anim);to=Math.max(0,Math.min(160,Math.round(to*4)/4));var from=curV,t0=performance.now(),d=to-from;
+  var tau=Math.abs(d)<0.3?70:TAU;
+  (function step(t){var k=1-Math.exp(-(t-t0)/tau);var v=from+d*k;if(Math.abs(to-v)<0.004){setV(to,true);anim=null;return}setV(v,true);anim=requestAnimationFrame(step)})(t0)}
+$("rwin").addEventListener("pointerdown",function(e){if(e.target.closest(".nudge"))return;cancelAnimationFrame(anim);anim=null;drag={y:e.clientY,v:curV,s:[{t:performance.now(),y:e.clientY}]};lastQ=Math.round(curV*4);try{this.setPointerCapture(e.pointerId)}catch(x){}e.preventDefault()});
+$("rwin").addEventListener("pointermove",function(e){if(!drag)return;var n=performance.now();drag.s.push({t:n,y:e.clientY});while(drag.s.length>2&&n-drag.s[0].t>100)drag.s.shift();setV(drag.v+(e.clientY-drag.y)/PX,true);e.preventDefault()});
+function endDrag(){if(!drag)return;var s=drag.s,n=performance.now(),a=s[0],b=s[s.length-1];drag=null;
+  var vel=(b.t-a.t>0&&n-b.t<60)?(b.y-a.y)/(b.t-a.t):0; /* px per ms, + = stick moving down = higher reading */
+  var throwIn=vel*TAU/PX; if(Math.abs(vel)<0.15)throwIn=0; throwIn=Math.max(-MAXIN,Math.min(MAXIN,throwIn));
+  glideTo(curV+throwIn)}
+$("rwin").addEventListener("pointerup",endDrag);$("rwin").addEventListener("pointercancel",endDrag);
+function nudge(d){cancelAnimationFrame(anim);anim=null;curV=Math.round(curV*4)/4+d;curV=Math.max(0,Math.min(160,curV));lastQ=Math.round(curV*4);tick(false);drawStick();updReadout()}
+/* arrows: tap = next whole inch; hold = jump a foot at a time (each whole-foot mark) */
+function jumpTo(v){cancelAnimationFrame(anim);anim=null;curV=Math.max(0,Math.min(160,v));lastQ=Math.round(curV*4);tick(false);drawStick();updReadout();}
+function nextInch(d){var v=curV;return d>0?Math.floor(v+1e-6)+1:Math.ceil(v-1e-6)-1;}
+function nextFoot(d){var v=curV;return d>0?(Math.floor(v/12+1e-6)+1)*12:(Math.ceil(v/12-1e-6)-1)*12;}
+function holdArrow(btn,d){var hold=null,rep=null,held=false;
+  function stop(){clearTimeout(hold);clearInterval(rep);hold=rep=null;}
+  btn.addEventListener("pointerdown",function(e){e.preventDefault();e.stopPropagation();held=false;stop();try{btn.setPointerCapture(e.pointerId);}catch(x){}
+    hold=setTimeout(function(){held=true;jumpTo(nextFoot(d));rep=setInterval(function(){jumpTo(nextFoot(d));},450);},450);});
+  btn.addEventListener("pointerup",function(e){e.preventDefault();var wasHeld=held;stop();if(!wasHeld)jumpTo(nextInch(d));});
+  btn.addEventListener("pointercancel",stop);btn.addEventListener("click",function(e){e.preventDefault();if(e.detail===0)jumpTo(nextInch(d));});
+  btn.addEventListener("contextmenu",function(e){e.preventDefault();});}
+holdArrow($("nUp"),1);holdArrow($("nDn"),-1);
+
+/* ---------- tank charts (library; the hand checks the chart against the plate on his tank) ---------- */
+var CHARTS=[{id:"srs-gb-500",name:"SRS gas buster frac tank",sub:"Supreme Rental Services · 518.3 bbl at 108″",
+  note:"Typed from the chart on the tank. V1–V4 are the first four inches, in the sloped bottom. At 82″ the chart prints 385.5 bbl but its gallons (16,170) work out to 385.0 — the app uses the printed 385.5 so it matches the chart on your tank.",flag:{82:1},
+  rows:[[1,23,0.5],[2,91,2.2],[3,204,4.9],[4,363,8.6],[5,554,13.2],[6,745,17.7],[7,936,22.3],[8,1127,26.8],[9,1318,31.4],[10,1509,35.9],[11,1700,40.5],[12,1891,45],[13,2082,49.6],[14,2273,54.1],[15,2464,58.7],[16,2655,63.2],[17,2846,67.8],[18,3037,72.3],[19,3228,76.9],[20,3419,81.4],[21,3610,86],[22,3801,90.5],[23,3992,95],[24,4183,99.6],[25,4374,104.1],[26,4565,108.7],[27,4756,113.2],[28,4947,117.8],[29,5138,122.3],[30,5329,126.9],[31,5520,131.4],[32,5711,136],[33,5902,140.5],[34,6093,145.1],[35,6284,149.6],[36,6475,154.2],[37,6666,158.7],[38,6857,163.3],[39,7048,167.8],[40,7239,172.4],[41,7423,176.7],[42,7617,181.4],[43,7815,186.1],[44,8016,190.9],[45,8219,195.7],[46,8426,200.6],[47,8636,205.6],[48,8848,210.7],[49,9064,215.8],[50,9279,220.9],[51,9494,226.1],[52,9710,231.2],[53,9925,236.3],[54,10140,241.4],[55,10356,246.6],[56,10571,251.7],[57,10786,256.8],[58,11002,261.9],[59,11217,267.1],[60,11433,272.2],[61,11648,277.3],[62,11863,282.5],[63,12079,287.6],[64,12294,292.7],[65,12509,297.8],[66,12725,303],[67,12940,308.1],[68,13155,313.2],[69,13371,318.3],[70,13586,323.5],[71,13801,328.6],[72,14017,333.7],[73,14232,338.9],[74,14447,344],[75,14663,349.1],[76,14878,354.2],[77,15093,359.4],[78,15309,364.5],[79,15524,369.6],[80,15740,374.8],[81,15955,379.9],[82,16170,385.5],[83,16386,390.1],[84,16601,395.3],[85,16816,400.4],[86,17032,405.5],[87,17247,410.6],[88,17462,415.8],[89,17678,420.9],[90,17893,426],[91,18108,431.2],[92,18324,436.3],[93,18539,441.4],[94,18754,446.5],[95,18970,451.7],[96,19185,456.8],[97,19400,461.9],[98,19616,467],[99,19831,472.2],[100,20047,477.3],[101,20262,482.4],[102,20477,487.6],[103,20693,492.7],[104,20908,497.8],[105,21123,502.9],[106,21339,508.1],[107,21554,513.2],[108,21769,518.3]]}];
+function chartOf(id){for(var i=0;i<CHARTS.length;i++)if(CHARTS[i].id===id)return CHARTS[i];return null}
+function hgt(n){return n<=4?"V"+n:n+"″"}
+/* barrels at v inches, with the work shown: between two chart lines it adds the same share of the step */
+function chartAt(c,v){if(!c||!(v>=0))return null;var R=c.rows,max=R[R.length-1][0];if(v>max)return null;
+  var lo=Math.floor(v+1e-9),f=Math.round((v-lo)*100)/100;function b(n){return n===0?0:R[n-1][2]}
+  if(f===0)return{bbl:b(lo),txt:hgt(lo)+" on the chart = <b>"+b(lo)+" bbl</b>"};
+  var b0=b(lo),b1=b(lo+1),st=Math.round((b1-b0)*100)/100,val=Math.round((b0+f*st)*100)/100;var fr={0.25:"¼",0.5:"½",0.75:"¾"}[f]||String(f);
+  return{bbl:val,txt:(lo?hgt(lo):"0″")+" "+b0+" → "+hgt(lo+1)+" "+b1+" is "+st+" bbl; "+fr+" of that is "+(Math.round(f*st*100)/100)+", so "+fracIn(v)+" = <b>"+val+" bbl</b>"}}
+function drawChartSel(){var c=chartOf(S.chart);$("chartName").textContent=c?c.name:"No chart — I'll type barrels";$("chartSub").textContent=c?c.sub+" · tap to change or view":"Tap to pick the chart that's on your tank";$("chartBtn").classList.toggle("on",!!c)}
+function closeSheet(){$("shade").hidden=true;$("sheet").innerHTML=""}
+$("shade").addEventListener("click",function(e){if(e.target===this)closeSheet()});
+function pickSheet(){var h='<h2>Pick your tank chart</h2><p class="note">Pick the one that matches the chart on your tank. Open it and check a few lines against the plate before you trust it.</p>';
+  CHARTS.forEach(function(c){h+='<div class="copt'+(S.chart===c.id?" on":"")+'" data-c="'+c.id+'"><span><b>'+esc(c.name)+'</b><small>'+esc(c.sub)+'</small></span><button type="button" class="vw" data-v="'+c.id+'">View</button></div>'});
+  h+='<div class="copt'+(!S.chart?" on":"")+'" data-c=""><span><b>No chart</b><small>I\'ll read my own chart and type barrels</small></span></div><button type="button" class="sec" id="shClose">Close</button>';
+  $("sheet").innerHTML=h;$("shade").hidden=false;$("sheet").scrollTop=0;
+  $("shClose").addEventListener("click",closeSheet)}
+function viewSheet(id){var c=chartOf(id);var h='<h2>'+esc(c.name)+'</h2><p class="note">'+esc(c.sub)+'</p><p class="note">'+esc(c.note)+'</p><button type="button" class="done" id="shUse">Use this chart</button><table class="ctab"><tr><th>Height</th><th>Gallons</th><th>Barrels</th></tr>';
+  c.rows.forEach(function(r){h+='<tr'+(r[0]%12===0?' class="ft"':"")+'><td>'+hgt(r[0])+'</td><td>'+r[1].toLocaleString()+'</td><td'+(c.flag&&c.flag[r[0]]?' class="flag"':"")+'>'+r[2].toFixed(1)+(c.flag&&c.flag[r[0]]?" *":"")+'</td></tr>'});
+  h+='</table><button type="button" class="sec" id="shBack">Back to the list</button>';
+  $("sheet").innerHTML=h;$("shade").hidden=false;$("sheet").scrollTop=0;
+  $("shUse").addEventListener("click",function(){S.chart=id;save();drawChartSel();closeSheet();toast("Chart set: "+c.name)});$("shBack").addEventListener("click",pickSheet)}
+$("chartBtn").addEventListener("click",pickSheet);
+$("sheet").addEventListener("click",function(e){var v=e.target.closest(".vw");if(v){viewSheet(v.getAttribute("data-v"));return}var o=e.target.closest(".copt");if(o){S.chart=o.getAttribute("data-c");save();drawChartSel();closeSheet();if(S.chart)toast("Chart set — check it against your tank")}});
+
+/* ---------- chart ---------- */
+function drawChart(){var run=S.run,r=run.reads,h="",c=chartOf(run.chart);
+  $("chartTtl").textContent=c?"Barrels from the chart — check the work":"Read the chart — barrels for each read";
+  if(c)r.forEach(function(x){var a=chartAt(c,x.v);if(a&&(x.bbl==null||x.auto)){x.bbl=a.bbl;x.auto=true}});save();
+  for(var i=0;i<r.length;i++){var a=c?chartAt(c,r[i].v):null;h+='<div class="crow"><span class="n">'+readName(i,run)+'<br>'+clockCs(r[i].t)+'</span><b class="in">'+fracIn(r[i].v)+'</b><label><input type="text" inputmode="decimal" enterkeyhint="'+(i===r.length-1?"done":"next")+'" data-i="'+i+'" value="'+(r[i].bbl!=null?r[i].bbl:"")+'" placeholder="bbl" aria-label="Barrels at '+fracIn(r[i].v)+'"></label><span class="rt" id="rt'+i+'"></span>'+(c?'<div class="work'+(a&&!r[i].auto?" typed":"")+'" id="wk'+i+'">'+workTxt(a,r[i])+'</div>':"")+'</div>'}
+  $("cRows").innerHTML=h;updRates();
+  var fe=firstEmpty(),first=r[fe]&&r[fe].bbl==null?$("cRows").querySelector('input[data-i="'+fe+'"]'):null;if(first)setTimeout(function(){first.focus()},150)}
+function workTxt(a,x){if(!a)return "Off the end of this chart — type barrels";return x.auto?a.txt:"Typed "+x.bbl+" bbl — the chart works out to "+a.bbl}
+function firstEmpty(){var r=S.run.reads;for(var i=0;i<r.length;i++)if(r[i].bbl==null)return i;return 0}
+$("cRows").addEventListener("input",function(e){var inp=e.target;if(!inp.matches("input"))return;var s=inp.value.replace(/[^0-9.]/g,"").replace(/^([^.]*\.)(.*)$/,function(m,a,b){return a+b.replace(/\./g,"")});if(s!==inp.value)inp.value=s;var i=+inp.getAttribute("data-i");S.run.reads[i].bbl=(s===""||s===".")?null:parseFloat(s);S.run.reads[i].auto=false;var c=chartOf(S.run.chart),w=$("wk"+i);if(c&&w){var a=chartAt(c,S.run.reads[i].v);w.className="work typed";w.innerHTML=a?(S.run.reads[i].bbl==null?"Cleared — the chart works out to "+a.bbl:workTxt(a,S.run.reads[i])):workTxt(null)}save();updRates()});
+$("cRows").addEventListener("keydown",function(e){if(e.key!=="Enter")return;e.preventDefault();var i=+e.target.getAttribute("data-i");var nx=$("cRows").querySelector('input[data-i="'+(i+1)+'"]');if(nx)nx.focus();else e.target.blur()});
+function updRates(){var run=S.run,r=run.reads,hr=useHr(run),u=hr?"bbl/hr":"bbl/min";
+  for(var i=0;i<r.length;i++){var el=$("rt"+i);if(!el)continue;if(i===0){el.innerHTML="";continue}
+    if(r[i].bbl!=null&&r[0].bbl!=null){el.innerHTML="<b>"+rateTxt(r[i].bbl-r[0].bbl,r[i].t-r[0].t,hr)+"</b><span>"+u+"<br>from start</span>"}else el.innerHTML='<b style="color:var(--text-dim)">–</b><span>'+u+'<br>from start</span>'}
+  var a=r[0],z=r[r.length-1];
+  $("cSum").innerHTML=(a.bbl!=null&&z.bbl!=null&&r.length>1)?"Strap rate, start → finish: <b>"+rateTxt(z.bbl-a.bbl,z.t-a.t,hr)+" "+u+"</b> · "+bb(z.bbl-a.bbl)+" bbl in "+clock(z.t-a.t):"Each rate is barrels from Start to that read, per "+(hr?"hour":"minute")+". Fill Start and Finish for the strap rate."}
+$("doneBtn").addEventListener("click",function(){var run=S.run;document.activeElement&&document.activeElement.blur&&document.activeElement.blur();
+  var rec={startAt:run.startAt,kind:run.kind,chart:run.chart||"",reads:run.reads.map(function(x){return{t:x.t,v:x.v,bbl:x.bbl,fin:x.fin,auto:x.auto}})};
+  if(run.histIdx!=null&&S.hist[run.histIdx]&&S.hist[run.histIdx].startAt===run.startAt)S.hist[run.histIdx]=rec;else S.hist.unshift(rec);
+  S.hist=S.hist.slice(0,30);S.run=null;save();viewRun=rec;openScr("res")});
+
+/* ---------- result ---------- */
+function drawRes(){var run=viewRun,r=run.reads,hr=useHr(run),u=hr?"bbl/hr":"bbl/min",a=r[0],z=r[r.length-1];
+  if(a.bbl!=null&&z.bbl!=null&&r.length>1){var db=z.bbl-a.bbl,dt=z.t-a.t,pm=db/(dt/60000);
+    $("resRate").innerHTML="<b>"+rateTxt(db,dt,hr)+"</b><span>"+u+"</span>";
+    $("resMore").textContent=bb(db)+" bbl in "+clock(dt)+" · "+(hr?pm.toFixed(2)+" bbl/min":(pm*60).toFixed(1)+" bbl/hr")+" · "+Math.round(pm*1440).toLocaleString()+" bbl/day · "+rise(z.v-a.v)+" on the stick"+(chartOf(run.chart)?" · chart: "+chartOf(run.chart).name:"")}
+  else{$("resRate").innerHTML="<b>–</b><span>"+u+"</span>";$("resMore").textContent="Fill Start and Finish barrels for the strap rate."}
+  var h="<tr><th>Read</th><th>Time</th><th>Inches</th><th>BBL</th><th>"+u+"<br>from start</th></tr>";
+  r.forEach(function(x,i){h+="<tr><td>"+readName(i,run)+"</td><td>"+clockCs(x.t)+"</td><td>"+fracIn(x.v)+"</td><td>"+(x.bbl!=null?x.bbl:"–")+"</td><td>"+(i&&x.bbl!=null&&r[0].bbl!=null?rateTxt(x.bbl-r[0].bbl,x.t-r[0].t,hr):"")+"</td></tr>"});
+  $("resTbl").innerHTML=h;$("editBtn").hidden=!!(S.run&&S.run.stopAt==null)}
+function summary(run){var r=run.reads,hr=useHr(run),u=hr?"bbl/hr":"bbl/min",a=r[0],z=r[r.length-1];
+  var s="Strap · "+kindOf(run.kind).big+" · "+new Date(run.startAt).toLocaleDateString()+" "+wall(run.startAt)+"\n"+(chartOf(run.chart)?"Chart: "+chartOf(run.chart).name+"\n":"");
+  r.forEach(function(x,i){s+=readName(i,run)+"  "+clock(x.t)+"  "+fracIn(x.v)+"  "+(x.bbl!=null?x.bbl+" bbl":"")+(i&&x.bbl!=null&&r[0].bbl!=null?"  "+rateTxt(x.bbl-r[0].bbl,x.t-r[0].t,hr)+" "+u+" from start":"")+"\n"});
+  if(a.bbl!=null&&z.bbl!=null&&r.length>1)s+="Strap rate: "+rateTxt(z.bbl-a.bbl,z.t-a.t,hr)+" "+u+" ("+bb(z.bbl-a.bbl)+" bbl in "+clock(z.t-a.t)+")";
+  return s+"\n— Strap App · BasinWorks Labs"}
+$("copyBtn").addEventListener("click",function(){var t=summary(viewRun);
+  function fb(){var ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("Copied")}catch(e){toast("Couldn't copy")}document.body.removeChild(ta)}
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){toast("Copied")},fb);else fb()});
+$("editBtn").addEventListener("click",function(){var idx=S.hist.indexOf(viewRun);
+  S.run={startAt:viewRun.startAt,kind:viewRun.kind,chart:viewRun.chart||"",reads:viewRun.reads.map(function(x){return{t:x.t,v:x.v,bbl:x.bbl,fin:x.fin,auto:x.auto}}),stopAt:viewRun.startAt+viewRun.reads[viewRun.reads.length-1].t,stage:"chart",pend:null,alerted:[],histIdx:idx};save();openScr("chart")});
+$("newBtn").addEventListener("click",function(){openScr("home")});
+
+/* ---------- boot ---------- */
+drawKinds();drawHist();drawChartSel();
+if(S.run){if(S.run.stopAt==null)wake(true);openScr(S.run.stage||"run")}else openScr("home");
+})();
+</script>
+</body>
+</html>

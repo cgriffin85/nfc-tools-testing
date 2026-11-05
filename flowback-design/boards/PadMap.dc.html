@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Phone — footpath from above, live</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@400;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #EEF0F2; font-family: 'IBM Plex Sans', Arial, sans-serif; color: #1B2026; font-size: 15px; line-height: 1.4; overflow: hidden; display: flex; flex-direction: column">
+
+<div style="flex: none; display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: #2F3842; border-bottom: 3px solid #E2662B; color: #FFFFFF">
+<svg aria-hidden="true" width="26" height="26" viewBox="0 0 34 34" style="fill: none; stroke-width: 2.6; stroke-linecap: round"><rect x="0" y="0" width="34" height="34" rx="8" fill="#1E252D" stroke="none"></rect><path d="M 7 10 Q 12 8 17 10 T 27 10" stroke="#C9D1D9"></path><path d="M 7 15 Q 12 13 17 15 T 27 15" stroke="#D9A25E"></path><path d="M 7 20 Q 12 18 17 20 T 27 20" stroke="#E2662B"></path><path d="M 7 25 Q 12 23 17 25 T 27 25" stroke="#8C9BA8"></path></svg>
+<div style="display: flex; flex-direction: column; line-height: 1.2"><span style="font-family: 'Saira Semi Condensed', Impact, sans-serif; font-weight: 700; font-size: 17px">[Pad name]</span><span style="font-size: 12px; color: #C9D1D9">Lead operator · days</span></div>
+<span style="margin-left: auto; font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #C9D1D9">15:41</span>
+</div>
+
+<div style="flex: none; padding: 10px 16px 6px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; gap: 8px"><button type="button" aria-label="back" style="width: 40px; height: 40px; border-radius: 999px; border: 1px solid #D3D9E0; background: #FFFFFF; font-size: 18px; color: #1B2026">‹</button><div style="font-family: 'Saira Semi Condensed', Impact, sans-serif; font-weight: 700; font-size: 22px">My footpath</div>
+<div style="margin-left: auto; display: flex; border: 1px solid #D3D9E0; border-radius: 999px; overflow: hidden"><button type="button" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; padding: 7px 14px; border: none; background: #FFFFFF; color: #5B6775">List</button><button type="button" style="font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; font-weight: 700; padding: 7px 14px; border: none; background: #E2662B; color: #1B2026">From above</button></div></div>
+<div style="display: flex; gap: 6px; font-size: 12px"><sc-for list="{{ steps }}" as="st" hint-placeholder-count="3"><sc-if value="{{ st.on }}" hint-placeholder-val="{{ false }}"><span style="padding: 4px 10px; border-radius: 999px; background: #E2662B; color: #1B2026; font-weight: 700">{{ st.t }}</span></sc-if><sc-if value="{{ st.done }}" hint-placeholder-val="{{ false }}"><span style="padding: 4px 10px; border-radius: 999px; background: #FFFFFF; border: 1px solid #D3D9E0; color: #1B2026">✓ {{ st.t }}</span></sc-if><sc-if value="{{ st.todo }}" hint-placeholder-val="{{ true }}"><span style="padding: 4px 10px; border-radius: 999px; border: 1px solid #D3D9E0; color: #5B6775">{{ st.t }}</span></sc-if></sc-for></div>
+<div style="font-size: 12px; color: #5B6775; line-height: 1.4; min-height: 34px">{{ hint }}</div>
+</div>
+
+<div onClick="{{ padTap }}" style="flex: none; margin: 0 16px; position: relative; width: 358px; height: 300px; background-color: #FFFFFF; border: 2px solid #4A6378; border-radius: 10px; overflow: hidden; cursor: pointer; background-image: linear-gradient(#E6E9ED 1px, transparent 1px), linear-gradient(90deg, #E6E9ED 1px, transparent 1px); background-size: 20px 20px">
+<svg role="img" aria-label="compass, north up" width="44" height="44" viewBox="0 0 44 44" style="position: absolute; right: 8px; top: 8px; opacity: 0.4; pointer-events: none; fill: none; stroke: #1B2026; stroke-width: 1.5"><circle cx="22" cy="22" r="18"></circle><path d="M 22 6 L 27 22 L 22 18 L 17 22 Z" fill="#E2662B" stroke="none"></path><path d="M 22 38 L 27 22 L 22 26 L 17 22 Z" fill="#8C9BA8" stroke="none"></path><text x="22" y="5" font-size="7" text-anchor="middle" fill="#1B2026" stroke="none" font-family="Arial">N</text></svg>
+<svg aria-hidden="true" width="358" height="300" viewBox="0 0 358 300" style="position: absolute; left: 0; top: 0; pointer-events: none; fill: none; stroke: #E2662B; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 7 6"><path d="{{ routeD }}"></path></svg>
+<sc-for list="{{ placed }}" as="p" hint-placeholder-count="0"><div style="position: absolute; left: {{ p.left }}px; top: {{ p.top }}px; width: 40px; height: 40px; pointer-events: none; border-radius: 10px; background: {{ p.bg }}"><dc-import name="Icon" kind="{{ p.kind }}" size="40" hint-size="40px,40px"></dc-import></div></sc-for>
+<sc-for list="{{ badges }}" as="b" hint-placeholder-count="0"><div style="position: absolute; left: {{ b.left }}px; top: {{ b.top }}px; width: 20px; height: 20px; border-radius: 999px; background: #1B2026; color: #FFFFFF; font-family: Arial, Helvetica, sans-serif; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; pointer-events: none">{{ b.n }}</div></sc-for>
+<sc-if value="{{ empty }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; left: 0; right: 0; top: 130px; text-align: center; font-size: 13px; color: #8C9BA8; pointer-events: none">Empty pad — pick a piece below, then tap where it sits</div></sc-if>
+</div>
+
+<div style="flex: 1; min-height: 0; overflow-y: auto; padding: 8px 16px 4px; display: flex; flex-direction: column; gap: 8px">
+<sc-if value="{{ isBuild }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #5B6775">Tray — this job's pieces</span><span style="font-size: 12px; color: #5B6775">{{ placedCount }}</span></div>
+<div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px">
+<sc-for list="{{ tray }}" as="t" hint-placeholder-count="11">
+<sc-if value="{{ t.sel }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ t.pick }}" aria-label="{{ t.l }}" style="display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 5px 2px; border-radius: 12px; border: 2px solid #E2662B; background: #FCEBDD; cursor: pointer; font-family: 'IBM Plex Sans', Arial, sans-serif"><dc-import name="Icon" kind="{{ t.k }}" size="34" hint-size="34px,34px"></dc-import><span style="font-size: 9px; color: #1B2026; white-space: nowrap">{{ t.short }}</span><span style="font-size: 9px; color: #8F3A12; font-weight: 700">{{ t.left }}</span></button></sc-if>
+<sc-if value="{{ t.avail }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ t.pick }}" aria-label="{{ t.l }}" style="display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 5px 2px; border-radius: 12px; border: 1px solid #D3D9E0; background: #FFFFFF; cursor: pointer; font-family: 'IBM Plex Sans', Arial, sans-serif"><dc-import name="Icon" kind="{{ t.k }}" size="34" hint-size="34px,34px"></dc-import><span style="font-size: 9px; color: #1B2026; white-space: nowrap">{{ t.short }}</span><span style="font-size: 9px; color: #5B6775">{{ t.left }}</span></button></sc-if>
+<sc-if value="{{ t.used }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ t.pick }}" aria-label="{{ t.l }} — all placed" style="display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 5px 2px; border-radius: 12px; border: 1px dashed #D3D9E0; background: transparent; opacity: 0.45; cursor: pointer; font-family: 'IBM Plex Sans', Arial, sans-serif"><dc-import name="Icon" kind="{{ t.k }}" size="34" hint-size="34px,34px"></dc-import><span style="font-size: 9px; color: #1B2026; white-space: nowrap">{{ t.short }}</span><span style="font-size: 9px; color: #5B6775">✓</span></button></sc-if>
+</sc-for>
+</div>
+<div style="font-size: 11px; color: #5B6775; line-height: 1.4">Tap a placed piece to pick it back up. The tray holds only what this pad has, from Job Setup; frac tanks are optional.</div>
+<div style="display: flex; gap: 8px; margin-top: 2px"><button type="button" onClick="{{ demo }}" style="flex: 1; font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; padding: 12px 6px; border-radius: 14px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #5B6775; cursor: pointer">Fill a sample pad</button>
+<sc-if value="{{ allPlaced }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ setMap }}" style="flex: 2; font-family: 'Saira Semi Condensed', Impact, sans-serif; font-size: 19px; font-weight: 700; padding: 12px; border-radius: 14px; border: none; background: #E2662B; color: #1B2026; cursor: pointer">Set the map →</button></sc-if>
+<sc-if value="{{ notAllPlaced }}" hint-placeholder-val="{{ true }}"><button type="button" disabled style="flex: 2; font-family: 'Saira Semi Condensed', Impact, sans-serif; font-size: 19px; font-weight: 700; padding: 12px; border-radius: 14px; border: none; background: #DDE1E6; color: #5B6775">Set the map →</button></sc-if></div>
+</sc-if>
+
+<sc-if value="{{ isTrace }}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #5B6775">Your route · {{ routeCount }}</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{ routeList }}" as="r" hint-placeholder-count="0"><span style="font-size: 12px; padding: 4px 9px; border-radius: 999px; background: #FFFFFF; border: 1px solid #D3D9E0"><b style="font-family: Arial, Helvetica, sans-serif">{{ r.n }}</b> {{ r.name }}</span></sc-for></div>
+<sc-if value="{{ saved }}" hint-placeholder-val="{{ false }}"><div style="background: #E6ECF1; border-radius: 12px; padding: 8px 12px; font-size: 13px"><b>Footpath saved.</b> The list view and every round now follow this order; the night hand walks the same one.</div></sc-if>
+<div style="display: flex; gap: 8px; margin-top: 2px"><button type="button" onClick="{{ backToBuild }}" style="flex: none; font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; padding: 12px 10px; border-radius: 14px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #5B6775; cursor: pointer">Move pieces</button><button type="button" onClick="{{ undo }}" style="flex: 1; font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 13px; padding: 12px 6px; border-radius: 14px; border: 1px solid #D3D9E0; background: #FFFFFF; color: #1B2026; cursor: pointer">Undo last</button>
+<sc-if value="{{ canSave }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ save }}" style="flex: 2; font-family: 'Saira Semi Condensed', Impact, sans-serif; font-size: 19px; font-weight: 700; padding: 12px; border-radius: 14px; border: none; background: #E2662B; color: #1B2026; cursor: pointer">Save footpath</button></sc-if>
+<sc-if value="{{ cantSave }}" hint-placeholder-val="{{ true }}"><button type="button" disabled style="flex: 2; font-family: 'Saira Semi Condensed', Impact, sans-serif; font-size: 19px; font-weight: 700; padding: 12px; border-radius: 14px; border: none; background: #DDE1E6; color: #5B6775">Save footpath</button></sc-if></div>
+</sc-if>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"startStep":{"editor":null,"tsType":"string"},"$preview":{"width":390,"height":844}}'>
+var TYPES = [
+  { k: 'wellhead', l: 'Wellhead', s: 'Well', n: 3 }, { k: 'esp', l: 'ESP drive', s: 'ESP', n: 3 }, { k: 'separator', l: 'Separator', s: 'Sep', n: 3 },
+  { k: 'battery', l: 'Battery', s: 'Battery', n: 1 }, { k: 'water', l: 'Water pump', s: 'Water', n: 1 }, { k: 'lact', l: 'LACT', s: 'LACT', n: 1 },
+  { k: 'sales', l: 'Sales gas', s: 'Sales', n: 1 }, { k: 'flare', l: 'Flare', s: 'Flare', n: 1 }, { k: 'sko', l: 'Sand knockouts', s: 'SKOs', n: 1 },
+  { k: 'road', l: 'Lease road in', s: 'Road', n: 1 }, { k: 'frac', l: 'Frac tanks', s: 'Frac', n: 1, optional: true }
+];
+var GW = 358, GH = 300, CELL = 20, MAXC = Math.floor((GW - 40) / CELL), MAXR = Math.floor((GH - 40) / CELL);
+var DEMO = [['road',8,13],['wellhead',5,5],['wellhead',8,5],['wellhead',11,5],['esp',5,2],['esp',8,2],['esp',11,2],['separator',5,9],['separator',8,9],['separator',11,9],['battery',1,4],['water',1,7],['lact',1,10],['sales',14,8],['flare',14,3],['sko',8,11]];
+var DEMO_ROUTE = [10, 11, 12, 7, 8, 9, 13, 4, 5, 6, 1, 2, 3, 15];
+function tl(k){ return TYPES.filter(function(t){ return t.k === k; })[0]; }
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    var step = parseInt(props.startStep || '1', 10) || 1, placed = [];
+    if (step > 1) placed = DEMO.map(function(d){ return { kind: d[0], c: d[1], r: d[2] }; });
+    this.state = { step: step, sel: 'wellhead', placed: placed, route: step >= 3 ? DEMO_ROUTE.slice(0, 9) : [], saved: false };
+  }
+  near(c, r) { var s = this.state.placed; for (var i = s.length - 1; i >= 0; i--) { if (Math.abs(s[i].c - c) < 2 && Math.abs(s[i].r - r) < 2) return i; } return -1; }
+  renderVals() {
+    var self = this, s = this.state;
+    var count = function(k){ return s.placed.filter(function(p){ return p.kind === k; }).length; };
+    var required = TYPES.filter(function(t){ return !t.optional; });
+    var allPlaced = required.every(function(t){ return count(t.k) >= t.n; });
+    var nameOf = function(i){ var p = s.placed[i]; var t = tl(p.kind); if (t.n <= 1) return t.l; var idx = s.placed.slice(0, i + 1).filter(function(q){ return q.kind === p.kind; }).length; return t.l + ' ' + String.fromCharCode(64 + idx); };
+    var centre = function(i){ var p = s.placed[i]; return [p.c * CELL + 20, p.r * CELL + 20]; };
+    var routeD = s.route.length > 1 ? s.route.map(function(i, j){ var c = centre(i); return (j ? 'L ' : 'M ') + c[0] + ' ' + c[1]; }).join(' ') : '';
+    var hint = s.step === 1 ? (s.sel ? 'Pick a piece in the tray, then tap the pad where it sits on location. It snaps to the grid — the grid is for lining things up, not for scale.' : 'Pick a piece in the tray.') : (s.saved ? 'Saved. Tap more pieces to keep going, or Undo last to change the end of it.' : 'Map set. Now tap the pieces in the order you walk them — the route draws as you go.');
+    return {
+      steps: [['1 Build the pad', 1], ['2 Set the map', 2], ['3 Trace the route', 3]].map(function(x){ var n = x[1], cur = s.step === 1 ? 1 : 3; var active = (n === 1 && s.step === 1) || (n === 3 && s.step === 3); var done = n < cur || (n === 2 && s.step === 3); return { t: x[0], on: active, done: done && !active, todo: !active && !done }; }),
+      hint: hint, isBuild: s.step === 1, isTrace: s.step === 3, empty: s.placed.length === 0,
+      placed: s.placed.map(function(p, i){ var inRoute = s.route.indexOf(i) >= 0; return { kind: p.kind, left: p.c * CELL, top: p.r * CELL, bg: s.step === 3 && inRoute ? '#FCEBDD' : 'rgba(255,255,255,0.85)' }; }),
+      badges: s.route.map(function(i, j){ var p = s.placed[i]; return { n: j + 1, left: p.c * CELL + 26, top: p.r * CELL - 6 }; }),
+      routeD: routeD,
+      padTap: function(e){
+        var rect = e.currentTarget.getBoundingClientRect(); var x = (e.clientX - rect.left) / rect.width * GW, y = (e.clientY - rect.top) / rect.height * GH;
+        var c = Math.max(0, Math.min(MAXC, Math.round((x - 20) / CELL))), r = Math.max(0, Math.min(MAXR, Math.round((y - 20) / CELL)));
+        var hit = self.near(c, r);
+        if (s.step === 1) {
+          if (hit >= 0) { self.setState(function(st){ var pl = st.placed.slice(); pl.splice(hit, 1); return { placed: pl }; }); return; }
+          var t = tl(s.sel); if (!t || count(t.k) >= t.n) return;
+          self.setState(function(st){ var pl = st.placed.concat([{ kind: st.sel, c: c, r: r }]); var left = count(st.sel) + 1 >= t.n; var next = st.sel; if (left) { var nx = TYPES.filter(function(tt){ return pl.filter(function(q){ return q.kind === tt.k; }).length < tt.n && !tt.optional; })[0]; next = nx ? nx.k : ''; } return { placed: pl, sel: next }; });
+        } else if (s.step === 3 && hit >= 0 && s.route.indexOf(hit) < 0 && s.placed[hit].kind !== 'road') {
+          self.setState(function(st){ return { route: st.route.concat([hit]), saved: false }; });
+        }
+      },
+      tray: TYPES.map(function(t){ var used = count(t.k), left = t.n - used; return { k: t.k, l: t.l, short: t.s, left: left > 0 ? (t.n > 1 ? left + ' left' : (t.optional ? 'optional' : '')) : '', sel: s.sel === t.k && left > 0, avail: s.sel !== t.k && left > 0, used: left <= 0, pick: function(){ self.setState({ sel: t.k }); } }; }),
+      placedCount: s.placed.length + ' of ' + required.reduce(function(a, t){ return a + t.n; }, 0) + ' placed',
+      allPlaced: allPlaced, notAllPlaced: !allPlaced,
+      demo: function(){ self.setState({ placed: DEMO.map(function(d){ return { kind: d[0], c: d[1], r: d[2] }; }), sel: '' }); },
+      setMap: function(){ self.setState({ step: 3, route: [], saved: false }); },
+      backToBuild: function(){ self.setState({ step: 1, route: [], saved: false }); },
+      undo: function(){ self.setState(function(st){ return { route: st.route.slice(0, -1), saved: false }; }); },
+      routeCount: s.route.length + ' stops',
+      routeList: s.route.map(function(i, j){ return { n: j + 1, name: nameOf(i) }; }),
+      canSave: s.route.length >= 2, cantSave: s.route.length < 2,
+      save: function(){ self.setState({ saved: true }); }, saved: s.saved
+    };
+  }
+}
+</script>
+</body>
+</html>

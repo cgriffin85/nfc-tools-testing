@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Foreman's phone — watching the pad</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@400;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #EEF0F2; font-family: 'IBM Plex Sans', Arial, sans-serif; color: #1B2026; font-size: 15px; line-height: 1.4; overflow: hidden; display: flex; flex-direction: column">
+
+<div style="flex: none; display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: #2F3842; border-bottom: 3px solid #E2662B; color: #FFFFFF">
+<sc-if value="{{ notPad }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ toPad }}" aria-label="back to the pad" style="width: 36px; height: 36px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.3); background: transparent; color: #FFFFFF; font-size: 18px; cursor: pointer">‹</button></sc-if>
+<div style="display: flex; flex-direction: column; line-height: 1.2"><span style="font-family: 'Saira Semi Condensed', Impact, sans-serif; font-weight: 700; font-size: 17px">{{ headTitle }}</span><span style="font-size: 12px; color: #C9D1D9">{{ headSub }}</span></div>
+<span style="margin-left: auto; text-align: right; line-height: 1.2"><span style="font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums; font-size: 13px; color: #FFFFFF">through 14:00</span><br><span style="font-size: 11px; color: #C9D1D9">round in 12 min ago</span></span>
+</div>
+
+<sc-if value="{{ sPad }}" hint-placeholder-val="{{ true }}">
+<div style="flex: 1; min-height: 0; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 12px">
+
+<div style="background: #FFFFFF; border: 1px solid #D3D9E0; border-left: 5px solid #E2662B; border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #5B6775">Needs a look</div>
+<sc-for list="{{ needs }}" as="n" hint-placeholder-count="2">
+<button type="button" onClick="{{ n.go }}" style="text-align: left; font-family: 'IBM Plex Sans', Arial, sans-serif; background: transparent; border: none; padding: 0; cursor: pointer; color: #1B2026; display: grid; grid-template-columns: 14px 1fr; gap: 8px; font-size: 14px; line-height: 1.35">
+<span style="margin-top: 5px; width: 10px; height: 10px; border-radius: 999px; background: {{ n.dot }}"></span>
+<span><b>{{ n.title }}</b><br><span style="color: #5B6775; font-size: 13px">{{ n.body }}</span></span>
+</button>
+</sc-for>
+</div>
+
+<sc-for list="{{ wellCards }}" as="w" hint-placeholder-count="3">
+<button type="button" onClick="{{ w.open }}" style="text-align: left; font-family: 'IBM Plex Sans', Arial, sans-serif; background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; color: #1B2026">
+<span style="display: flex; align-items: center; gap: 8px"><span style="font-family: 'Saira Semi Condensed', Impact, sans-serif; font-weight: 700; font-size: 17px">{{ w.name }}</span><span style="padding: 2px 8px; border-radius: 999px; background: #E3EFE7; color: #24603C; font-size: 12px; font-weight: 600">{{ w.status }}</span><span style="margin-left: auto; font-size: 13px; color: #5B6775">choke <b style="color: #1B2026; font-family: Arial, Helvetica, sans-serif">{{ w.choke }}</b>/64</span></span>
+<span style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+<sc-for list="{{ w.rates }}" as="r" hint-placeholder-count="3"><span style="display: flex; flex-direction: column; line-height: 1.15"><span style="font-size: 11px; color: #5B6775">{{ r.l }}</span><span style="font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 600">{{ r.v }}</span><span style="font-size: 11px; color: {{ r.dc }}">{{ r.d }}</span></span></sc-for>
+</span>
+<span style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding-top: 8px; border-top: 1px solid #E6EAEE">
+<sc-for list="{{ w.esp }}" as="r" hint-placeholder-count="4"><span style="display: flex; flex-direction: column; line-height: 1.15"><span style="font-size: 11px; color: #5B6775">{{ r.l }}</span><span style="font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 600; color: {{ r.vc }}">{{ r.v }}</span><span style="font-size: 11px; color: {{ r.dc }}">{{ r.d }}</span></span></sc-for>
+</span>
+<span style="font-size: 12px; color: #5B6775">Tbg {{ w.tbg }} · Csg {{ w.csg }} psi · arrows vs 6 h ago · <b style="color: #B04A17">72 h →</b></span>
+</button>
+</sc-for>
+
+<div style="background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #5B6775">Pad since 06:00</span><span style="font-size: 12px; color: #5B6775">vs same 8 h yesterday</span></div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+<sc-for list="{{ padDay }}" as="r" hint-placeholder-count="3"><span style="display: flex; flex-direction: column; line-height: 1.15"><span style="font-size: 11px; color: #5B6775">{{ r.l }}</span><span style="font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 600">{{ r.v }}</span><span style="font-size: 11px; color: {{ r.dc }}">{{ r.d }}</span></span></sc-for>
+</div>
+<div style="font-size: 12px; color: #5B6775">Gas: 108 sold · 14 flared mcf · Metered vs tank oil: 3.9 % apart, growing</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; justify-content: space-between; font-size: 12px"><span style="color: #5B6775">Load water back</span><span style="font-family: Arial, Helvetica, sans-serif"><b>41 %</b> · 18,300 of 44,600 bbl</span></div>
+<div style="height: 8px; border-radius: 999px; background: #E6EAEE; overflow: hidden"><div style="width: 41%; height: 100%; background: #2F6FB0; border-radius: 999px"></div></div>
+</div>
+</div>
+
+<button type="button" onClick="{{ toCompare }}" style="text-align: left; font-family: 'IBM Plex Sans', Arial, sans-serif; background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; cursor: pointer; color: #1B2026">
+<span style="font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #5B6775">Wells side by side · 72 h</span>
+<span style="font-size: 14px">Same gauge, all three wells, one chart — oil, amps, intake, temp…</span>
+<span style="font-size: 13px; color: #B04A17; font-weight: 600">Compare →</span>
+</button>
+
+<div style="background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px">
+<div style="font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #5B6775">Crew notes</div>
+<sc-for list="{{ notes }}" as="c" hint-placeholder-count="3"><div style="display: grid; grid-template-columns: 44px 1fr; gap: 8px; font-size: 13px; line-height: 1.35"><span style="font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums; color: #5B6775">{{ c.t }}</span><span><b>{{ c.who }}</b> {{ c.text }}</span></div></sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ sWell }}" hint-placeholder-val="{{ false }}">
+<div style="flex: 1; min-height: 0; overflow-y: auto; padding: 10px 16px 16px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; gap: 6px; align-items: center">
+<sc-for list="{{ wellTabs }}" as="t" hint-placeholder-count="3"><button type="button" onClick="{{ t.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; padding: 6px 12px; border-radius: 999px; border: 1px solid {{ t.bd }}; background: {{ t.bg }}; color: {{ t.fg }}; font-size: 13px; font-weight: 600; cursor: pointer">{{ t.name }}</button></sc-for>
+<span style="margin-left: auto; display: flex; gap: 4px"><sc-for list="{{ ranges }}" as="g" hint-placeholder-count="2"><button type="button" onClick="{{ g.pick }}" style="font-family: Arial, Helvetica, sans-serif; padding: 6px 10px; border-radius: 10px; border: 1px solid {{ g.bd }}; background: {{ g.bg }}; color: {{ g.fg }}; font-size: 13px; cursor: pointer">{{ g.l }}</button></sc-for></span>
+</div>
+<div style="background: #2F3842; color: #FFFFFF; border-radius: 12px; padding: 8px 12px; font-size: 13px; display: flex; justify-content: space-between; align-items: center"><span>Reading at <b style="font-family: Arial, Helvetica, sans-serif">{{ curLabel }}</b></span><span style="color: #C9D1D9; font-size: 12px">{{ curEvent }}</span></div>
+<div style="position: relative; background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 16px; padding: 4px 12px 8px">
+<sc-for list="{{ rows }}" as="r" hint-placeholder-count="10">
+<sc-if value="{{ r.group }}" hint-placeholder-val="{{ false }}"><div style="font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: #5B6775; padding-top: 8px">{{ r.group }}</div></sc-if>
+<div style="display: grid; grid-template-columns: 84px 1fr; gap: 8px; align-items: center; height: 44px; border-bottom: 1px solid #F0F2F4">
+<span style="line-height: 1.1"><span style="font-size: 11px; color: #5B6775">{{ r.l }}</span><br><span style="font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 600">{{ r.v }}</span></span>
+<svg role="img" aria-label="{{ r.aria }}" width="100%" height="38" viewBox="0 0 240 38" preserveAspectRatio="none" style="display: block; width: 100%; overflow: visible">
+<path d="{{ r.marks }}" stroke="#B8C2CC" stroke-width="1" stroke-dasharray="3 3" fill="none" vector-effect="non-scaling-stroke"></path>
+<polyline points="{{ r.pts }}" fill="none" stroke="{{ r.color }}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"></polyline>
+<line x1="{{ curX }}" x2="{{ curX }}" y1="0" y2="38" stroke="#E2662B" stroke-width="1.5" vector-effect="non-scaling-stroke"></line>
+</svg>
+</div>
+</sc-for>
+<div style="position: absolute; top: 0; bottom: 0; left: 104px; right: 12px; display: flex">
+<sc-for list="{{ scrub }}" as="s" hint-placeholder-count="24"><button type="button" onClick="{{ s.pick }}" aria-label="{{ s.l }}" style="flex: 1; height: 100%; padding: 0; border: none; background: transparent; cursor: crosshair"></button></sc-for>
+</div>
+</div>
+<div style="font-size: 12px; color: #5B6775">Tap anywhere on the stack to read every gauge at that hour. Dashed lines are choke, Hz and crew events. Each row has its own scale.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ sCompare }}" hint-placeholder-val="{{ false }}">
+<div style="flex: 1; min-height: 0; overflow-y: auto; padding: 10px 16px 16px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{ items }}" as="t" hint-placeholder-count="7"><button type="button" onClick="{{ t.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; padding: 6px 12px; border-radius: 999px; border: 1px solid {{ t.bd }}; background: {{ t.bg }}; color: {{ t.fg }}; font-size: 13px; font-weight: 600; cursor: pointer">{{ t.l }}</button></sc-for></div>
+<div style="background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 16px; padding: 12px">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><b style="font-size: 14px">{{ cmpTitle }}</b><span style="font-size: 12px; color: #5B6775">last 72 h</span></div>
+<div style="display: flex; gap: 12px; font-size: 12px; margin: 6px 0"><sc-for list="{{ legend }}" as="g" hint-placeholder-count="3"><span style="display: flex; align-items: center; gap: 4px"><span style="width: 14px; height: 3px; border-radius: 2px; background: {{ g.c }}"></span>{{ g.n }}</span></sc-for></div>
+<svg role="img" aria-label="{{ cmpTitle }} for each well over 72 hours" width="100%" height="200" viewBox="0 0 330 200" preserveAspectRatio="none" style="display: block; width: 100%">
+<line x1="0" x2="330" y1="190" y2="190" stroke="#D3D9E0" stroke-width="1"></line>
+<line x1="0" x2="330" y1="100" y2="100" stroke="#EEF0F2" stroke-width="1"></line>
+<line x1="0" x2="330" y1="10" y2="10" stroke="#EEF0F2" stroke-width="1"></line>
+<sc-for list="{{ cmpLines }}" as="l" hint-placeholder-count="3"><polyline points="{{ l.pts }}" fill="none" stroke="{{ l.c }}" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline></sc-for>
+</svg>
+<div style="display: flex; justify-content: space-between; font-size: 11px; color: #5B6775; font-family: Arial, Helvetica, sans-serif"><span>{{ cmpLo }} · 3 days ago</span><span>top {{ cmpHi }}</span><span>now</span></div>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 16px; padding: 10px 12px">
+<div style="display: grid; grid-template-columns: 1fr 64px 64px 64px; gap: 6px; font-size: 11px; color: #5B6775; padding-bottom: 4px; border-bottom: 1px solid #E6EAEE"><span>Well</span><span style="text-align: right">now</span><span style="text-align: right">6 h ago</span><span style="text-align: right">24 h ago</span></div>
+<sc-for list="{{ cmpTable }}" as="r" hint-placeholder-count="3"><div style="display: grid; grid-template-columns: 1fr 64px 64px 64px; gap: 6px; font-size: 14px; padding: 6px 0; font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums"><span style="display: flex; align-items: center; gap: 6px; font-family: 'IBM Plex Sans', Arial, sans-serif"><span style="width: 10px; height: 10px; border-radius: 999px; background: {{ r.c }}"></span>{{ r.n }}</span><b style="text-align: right">{{ r.now }}</b><span style="text-align: right">{{ r.h6 }}</span><span style="text-align: right">{{ r.h24 }}</span></div></sc-for>
+</div>
+<div style="font-size: 12px; color: #5B6775">When one well walks away from the other two on the same gauge, that is the one to drive to.</div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+var N = 72, NOW = 14;
+var WELLS = ['[Well 1]', '[Well 2]', '[Well 3]'];
+var WCOL = ['#0B72A8', '#B8572A', '#7A4FA0'];
+function wob(i, k) { return Math.sin(i * 0.9 + k) * 0.5 + Math.sin(i * 0.37 + k * 2) * 0.5; }
+function chokeAt(w, i) {
+  if (w === 0) return i < 20 ? 24 : i < 46 ? 28 : 32;
+  if (w === 1) return i < 30 ? 28 : 32;
+  return i < 40 ? 20 : i < 60 ? 24 : 26;
+}
+function val(w, key, i) {
+  var ch = chokeAt(w, i), late = w === 1 && i > 56 ? (i - 56) / 15 : 0;
+  switch (key) {
+    case 'choke': return ch;
+    case 'tbg': return [640, 590, 700][w] - i * 2.2 - (ch - 20) * 6 + wob(i, w) * 6;
+    case 'csg': return [1320, 1260, 1380][w] - i * 2.8 + wob(i, w + 3) * 5;
+    case 'oil': return [13, 16, 10][w] + (ch - 20) * 0.7 + i * 0.03 + wob(i, w + 1) * 1.2 - late * 3;
+    case 'water': return [72, 64, 80][w] - i * 0.22 + (ch - 20) * 1.5 + wob(i, w + 2) * 3 - late * 6;
+    case 'gas': return ([13, 16, 10][w] + (ch - 20) * 0.7) * [1.6, 1.9, 1.4][w] + wob(i, w + 4) * 1.5 + late * 9;
+    case 'amps': return [46, 52, 42][w] + wob(i, w + 5) * 0.8 - late * 11;
+    case 'hz': return w === 2 ? (i < 40 ? 52 : 56) : 55;
+    case 'pip': return [1350, 1180, 1500][w] - i * 1.4 + wob(i, w + 6) * 8 - late * 250;
+    case 'temp': return [198, 205, 192][w] + wob(i, w + 7) * 1.5 + late * 23;
+  }
+}
+var EVENTS = [
+  { w: 0, i: 20, t: 'Choke 24 → 28' }, { w: 0, i: 46, t: 'Choke 28 → 32' },
+  { w: 1, i: 30, t: 'Choke 28 → 32' }, { w: 1, i: 66, t: 'Jake: drive showing underload warning' },
+  { w: 2, i: 40, t: 'Choke 20 → 24 · Hz 52 → 56' }, { w: 2, i: 60, t: 'Choke 24 → 26' }
+];
+var ROWS = [
+  { k: 'choke', l: 'Choke /64', c: '#4A6378', d: 0, g: 'Surface' }, { k: 'tbg', l: 'Tbg psi', c: '#4A6378', d: 0 }, { k: 'csg', l: 'Csg psi', c: '#4A6378', d: 0 },
+  { k: 'oil', l: 'Oil BOPH', c: '#2F7D4E', d: 1, g: 'Rates' }, { k: 'water', l: 'Water BWPH', c: '#2F6FB0', d: 0 }, { k: 'gas', l: 'Gas MCFPH', c: '#C98A2E', d: 1 },
+  { k: 'amps', l: 'Amps', c: '#1B2026', d: 0, g: 'ESP' }, { k: 'hz', l: 'Hz', c: '#1B2026', d: 0 }, { k: 'pip', l: 'Intake psi', c: '#1B2026', d: 0 }, { k: 'temp', l: 'Motor °F', c: '#1B2026', d: 0 }
+];
+var ITEMS = [['oil', 'Oil BOPH', 1], ['water', 'Water BWPH', 0], ['gas', 'Gas MCFPH', 1], ['tbg', 'Tbg psi', 0], ['amps', 'Amps', 0], ['pip', 'Intake psi', 0], ['temp', 'Motor °F', 0]];
+function hourLabel(i) { var h = ((NOW - (N - 1 - i)) % 24 + 24) % 24; return (h < 10 ? '0' : '') + h + ':00'; }
+function fmt(v, d) { return d ? v.toFixed(d) : Math.round(v).toLocaleString('en-US'); }
+function arrow(now, then, d, bigPct) {
+  var diff = now - then, pct = then ? Math.abs(diff / then) * 100 : 0;
+  var flat = pct < 2;
+  return { d: flat ? '— steady' : (diff > 0 ? '▲ ' : '▼ ') + fmt(Math.abs(diff), d), dc: pct > bigPct ? '#B04A17' : '#5B6775' };
+}
+function pts(arr, w, h, pad) {
+  var lo = Math.min.apply(null, arr), hi = Math.max.apply(null, arr); if (hi - lo < 1e-6) { hi = lo + 1; lo = lo - 1; }
+  return arr.map(function (v, j) { return (j * w / (arr.length - 1)).toFixed(1) + ',' + (pad + (h - 2 * pad) * (1 - (v - lo) / (hi - lo))).toFixed(1); }).join(' ');
+}
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { screen: 'pad', well: 1, range: 72, cur: N - 1, item: 'amps' }; }
+  renderVals() {
+    var self = this, s = this.state, go = function (o) { return function () { self.setState(o); }; };
+    var start = N - s.range;
+    var wellCards = WELLS.map(function (name, w) {
+      var v = function (k, i) { return val(w, k, i === undefined ? N - 1 : i); };
+      var esp = [['amps', 'Amps', 0], ['hz', 'Hz', 0], ['pip', 'Intake', 0], ['temp', 'Motor', 0]].map(function (e) {
+        var a = arrow(v(e[0]), v(e[0], N - 7), 0, 6), hot = w === 1 && e[0] !== 'hz';
+        return { l: e[1], v: fmt(v(e[0]), 0) + (e[0] === 'temp' ? '°' : ''), vc: hot ? '#B04A17' : '#1B2026', d: a.d, dc: a.dc };
+      });
+      var rates = [['oil', 'Oil BOPH', 1], ['water', 'Water BWPH', 0], ['gas', 'Gas MCFPH', 1]].map(function (e) { var a = arrow(v(e[0]), v(e[0], N - 7), e[2], 10); return { l: e[1], v: fmt(v(e[0]), e[2]), d: a.d, dc: a.dc }; });
+      return { name: name, status: 'ESP flowing', choke: chokeAt(w, N - 1), tbg: fmt(v('tbg'), 0), csg: fmt(v('csg'), 0), rates: rates, esp: esp, open: go({ screen: 'well', well: w, cur: N - 1 }) };
+    });
+    var needs = [
+      { dot: '#E2662B', title: WELLS[1] + ' pump walking away', body: 'Amps down 11, intake down 250 psi, motor up 23° since 05:00. Gas up. Nobody touched the choke.', go: go({ screen: 'well', well: 1, cur: N - 1, range: 24 }) },
+      { dot: '#E2662B', title: 'Oil meters drifting from the tanks', body: '3.9 % apart and growing 7 hours running.', go: go({}) },
+      { dot: '#4A6378', title: WELLS[0] + ', ' + WELLS[2] + ' steady', body: 'Rates holding after this morning’s choke changes.', go: go({}) }
+    ];
+    var w = s.well, evs = EVENTS.filter(function (e) { return e.w === w && e.i >= start; });
+    var marks = evs.map(function (e) { var x = ((e.i - start) * 240 / (s.range - 1)).toFixed(1); return 'M' + x + ' 0 V38'; }).join(' ');
+    var cur = Math.max(start, s.cur);
+    var rows = ROWS.map(function (r) {
+      var arr = []; for (var i = start; i < N; i++) arr.push(val(w, r.k, i));
+      return { group: r.g || '', l: r.l, v: fmt(val(w, r.k, cur), r.d), color: r.c, pts: pts(arr, 240, 38, 3), marks: marks || 'M0 0', aria: r.l + ' for ' + WELLS[w] + ' over the last ' + s.range + ' hours' };
+    });
+    var curEv = EVENTS.filter(function (e) { return e.w === w && Math.abs(e.i - cur) <= 1; })[0];
+    var scrub = []; for (var i = start; i < N; i++) (function (i) { scrub.push({ l: 'read at ' + hourLabel(i), pick: go({ cur: i }) }); })(i);
+    var it = ITEMS.filter(function (x) { return x[0] === s.item; })[0];
+    var all = [], series = WELLS.map(function (n, ww) { var a = []; for (var i = 0; i < N; i++) { a.push(val(ww, it[0], i)); all.push(a[i]); } return a; });
+    var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+    var cmpLines = series.map(function (a, ww) { return { c: WCOL[ww], pts: a.map(function (v, j) { return (j * 330 / (N - 1)).toFixed(1) + ',' + (10 + 180 * (1 - (v - lo) / (hi - lo))).toFixed(1); }).join(' ') }; });
+    var sel = function (on) { return on ? { bg: '#2F3842', fg: '#FFFFFF', bd: '#2F3842' } : { bg: '#FFFFFF', fg: '#1B2026', bd: '#D3D9E0' }; };
+    return {
+      sPad: s.screen === 'pad', sWell: s.screen === 'well', sCompare: s.screen === 'compare', notPad: s.screen !== 'pad',
+      headTitle: s.screen === 'pad' ? '[Pad name]' : s.screen === 'well' ? WELLS[w] + ' · ' + s.range + ' h' : 'Wells side by side',
+      headSub: s.screen === 'pad' ? 'Day 11 · 3 wells on ESP' : 'Production foreman',
+      toPad: go({ screen: 'pad' }), toCompare: go({ screen: 'compare' }),
+      needs: needs, wellCards: wellCards,
+      padDay: [{ l: 'Oil bbl', v: '262', d: '▲ 18 vs yesterday', dc: '#5B6775' }, { l: 'Water bbl', v: '1,190', d: '▼ 64', dc: '#5B6775' }, { l: 'Gas mcf', v: '122', d: '▲ 9', dc: '#5B6775' }],
+      notes: [{ t: '13:20', who: 'Jake', text: WELLS[1] + ' drive showing underload warning, called it in.' }, { t: '10:05', who: 'Jake', text: 'LACT proved, ticket in the truck.' }, { t: '08:00', who: 'Ray', text: WELLS[2] + ' choke to 26 per the engineer.' }],
+      wellTabs: WELLS.map(function (n, ww) { var c = sel(ww === w); return { name: n, bg: c.bg, fg: c.fg, bd: c.bd, pick: go({ well: ww }) }; }),
+      ranges: [24, 72].map(function (g) { var c = sel(g === s.range); return { l: g + ' h', bg: c.bg, fg: c.fg, bd: c.bd, pick: go({ range: g, cur: N - 1 }) }; }),
+      curLabel: hourLabel(cur) + (cur === N - 1 ? ' (latest)' : ''), curEvent: curEv ? curEv.t : '',
+      curX: ((cur - start) * 240 / (s.range - 1)).toFixed(1), rows: rows, scrub: scrub,
+      items: ITEMS.map(function (x) { var c = sel(x[0] === s.item); return { l: x[1], bg: c.bg, fg: c.fg, bd: c.bd, pick: go({ item: x[0] }) }; }),
+      cmpTitle: it[1], cmpLo: fmt(lo, it[2]), cmpHi: fmt(hi, it[2]), cmpLines: cmpLines,
+      legend: WELLS.map(function (n, ww) { return { n: n, c: WCOL[ww] }; }),
+      cmpTable: series.map(function (a, ww) { return { n: WELLS[ww], c: WCOL[ww], now: fmt(a[N - 1], it[2]), h6: fmt(a[N - 7], it[2]), h24: fmt(a[N - 25], it[2]) }; })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Engineer's setup — his side of the report</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@400;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1600px; height: 900px; box-sizing: border-box; background: #EEF0F2; font-family: 'IBM Plex Sans', Arial, sans-serif; color: #1B2026; font-size: 14px; line-height: 1.4; display: flex; flex-direction: column; overflow: hidden">
+
+<div style="flex: none; display: flex; align-items: center; gap: 16px; padding: 10px 24px; background: #2F3842; border-bottom: 3px solid #E2662B; color: #FFFFFF">
+<span style="font-family: 'Saira Semi Condensed', Impact, sans-serif; font-weight: 700; font-size: 20px">My setup · [Pad name]</span>
+<span style="color: #C9D1D9">[Customer] engineer · your side of the report — NFC runs the field side</span>
+<span style="margin-left: auto; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.1); font-size: 13px">Nothing here changes what the crew records</span>
+</div>
+
+<div style="flex: 1; min-height: 0; display: grid; grid-template-columns: 260px 1fr; gap: 0">
+
+<div style="background: #FFFFFF; border-right: 1px solid #D3D9E0; padding: 18px 14px; display: flex; flex-direction: column; gap: 6px">
+<sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+<button type="button" onClick="{{ s.pick }}" style="text-align: left; font-family: 'IBM Plex Sans', Arial, sans-serif; display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: center; padding: 10px; border-radius: 12px; border: none; background: {{ s.bg }}; color: #1B2026; cursor: pointer">
+<span style="width: 28px; height: 28px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; background: {{ s.dotBg }}; color: {{ s.dotFg }}">{{ s.n }}</span>
+<span style="line-height: 1.25"><b style="font-size: 14px">{{ s.l }}</b><br><span style="font-size: 12px; color: #5B6775">{{ s.d }}</span></span>
+</button>
+</sc-for>
+<div style="margin-top: auto; font-size: 12px; color: #5B6775; padding: 10px; border-top: 1px solid #E6EAEE">Changes save as you go and show on your desk at once. Limits reach the foreman's phone on its next sync.</div>
+</div>
+
+<div style="padding: 20px 28px; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 14px">
+
+<sc-if value="{{ s1 }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; align-items: baseline; gap: 12px"><span style="font-family: 'Saira Semi Condensed', Impact, sans-serif; font-weight: 700; font-size: 24px">1 · Forecast per well</span><span style="color: #5B6775">what each well should make — the dashed line on your desk</span></div>
+<div style="display: flex; gap: 6px"><sc-for list="{{ wellTabs }}" as="t" hint-placeholder-count="3"><button type="button" onClick="{{ t.pick }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; padding: 7px 14px; border-radius: 999px; border: 1px solid {{ t.bd }}; background: {{ t.bg }}; color: {{ t.fg }}; font-weight: 600; cursor: pointer">{{ t.name }}</button></sc-for></div>
+<div style="display: grid; grid-template-columns: 380px 1fr; gap: 18px; flex: 1; min-height: 0">
+<div style="background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+<span style="font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #5B6775">How do you want to give it?</span>
+<div style="display: flex; flex-direction: column; gap: 6px"><sc-for list="{{ methods }}" as="m" hint-placeholder-count="3"><button type="button" onClick="{{ m.pick }}" style="text-align: left; font-family: 'IBM Plex Sans', Arial, sans-serif; padding: 10px 12px; border-radius: 10px; border: 1px solid {{ m.bd }}; background: {{ m.bg }}; color: #1B2026; cursor: pointer"><b>{{ m.l }}</b><br><span style="font-size: 12px; color: #5B6775">{{ m.d }}</span></button></sc-for></div>
+<sc-if value="{{ mPeak }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{ knobs }}" as="k" hint-placeholder-count="3"><div style="display: grid; grid-template-columns: 1fr 40px 90px 40px; gap: 6px; align-items: center"><span>{{ k.l }}</span><button type="button" onClick="{{ k.dn }}" aria-label="less" style="height: 36px; border-radius: 10px; border: 1px solid #D3D9E0; background: #FFFFFF; font-size: 18px; cursor: pointer">−</button><span style="text-align: center; font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 600">{{ k.v }}</span><button type="button" onClick="{{ k.up }}" aria-label="more" style="height: 36px; border-radius: 10px; border: 1px solid #D3D9E0; background: #FFFFFF; font-size: 18px; cursor: pointer">+</button></div></sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ mUpload }}" hint-placeholder-val="{{ false }}"><div style="border: 2px dashed #B8C2CC; border-radius: 12px; padding: 22px; text-align: center; color: #5B6775">Drop a day-vs-rate table here<br><span style="font-size: 12px">CSV or Excel export from your forecasting software · columns: day, oil, gas, water</span></div></sc-if>
+<sc-if value="{{ mNone }}" hint-placeholder-val="{{ false }}"><div style="background: #EEF0F2; border-radius: 12px; padding: 14px; color: #5B6775; font-size: 13px">No dashed line for this well. Your desk compares it with the other wells and the pad average instead.</div></sc-if>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 6px; min-height: 0">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><b>{{ wellName }} · oil, bbl/day, by days since opened</b><span style="font-size: 12px; color: #5B6775">solid = actual so far · dashed = your forecast</span></div>
+<div style="flex: 1; min-height: 0; display: grid; grid-template-columns: 40px 1fr; gap: 6px">
+<div style="display: flex; flex-direction: column; justify-content: space-between; font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #5B6775; text-align: right; padding-bottom: 18px"><span>400</span><span>200</span><span>0</span></div>
+<div style="display: flex; flex-direction: column">
+<svg role="img" aria-label="Actual oil and forecast for {{ wellName }}" width="100%" height="100%" viewBox="0 0 800 300" preserveAspectRatio="none" style="flex: 1; display: block">
+<line x1="0" x2="800" y1="150" y2="150" stroke="#EEF0F2"></line><line x1="0" x2="800" y1="300" y2="300" stroke="#D3D9E0"></line>
+<sc-if value="{{ showFc }}" hint-placeholder-val="{{ true }}"><polyline points="{{ fcPts }}" fill="none" stroke="#8C9BA8" stroke-width="2" stroke-dasharray="7 5" vector-effect="non-scaling-stroke"></polyline></sc-if>
+<polyline points="{{ actPts }}" fill="none" stroke="{{ wellColor }}" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
+</svg>
+<div style="display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #5B6775; height: 16px"><span>day 1</span><span>day 15</span><span>day 30</span><span>day 45</span><span>day 60</span></div>
+</div>
+</div>
+<div style="font-size: 13px">{{ fcRead }}</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ s2 }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: baseline; gap: 12px"><span style="font-family: 'Saira Semi Condensed', Impact, sans-serif; font-weight: 700; font-size: 24px">2 · Targets</span><span style="color: #5B6775">the lines you judge the pad against — they show on your desk, not the phone</span></div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+<sc-for list="{{ targets }}" as="k" hint-placeholder-count="3">
+<div style="background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<b style="font-size: 15px">{{ k.l }}</b><span style="font-size: 12px; color: #5B6775">{{ k.d }}</span>
+<div style="display: grid; grid-template-columns: 44px 1fr 44px; gap: 8px; align-items: center"><button type="button" onClick="{{ k.dn }}" aria-label="less" style="height: 44px; border-radius: 10px; border: 1px solid #D3D9E0; background: #FFFFFF; font-size: 20px; cursor: pointer">−</button><span style="text-align: center; font-family: Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums; font-size: 30px; font-weight: 600">{{ k.v }}</span><button type="button" onClick="{{ k.up }}" aria-label="more" style="height: 44px; border-radius: 10px; border: 1px solid #D3D9E0; background: #FFFFFF; font-size: 20px; cursor: pointer">+</button></div>
+<span style="font-size: 12px; color: #5B6775">{{ k.now }}</span>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ s3 }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: baseline; gap: 12px"><span style="font-family: 'Saira Semi Condensed', Impact, sans-serif; font-weight: 700; font-size: 24px">3 · Alarm limits</span><span style="color: #5B6775">your call on your equipment — flags on your desk and on the foreman's phone</span></div>
+<div style="background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 14px; padding: 6px 18px 12px">
+<div style="display: grid; grid-template-columns: 1.6fr 1.4fr 150px 150px 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid #D3D9E0; font-size: 12px; color: #5B6775"><span>Flag when…</span><span>measured against</span><span style="text-align: center">NFC default</span><span style="text-align: center">yours</span><span>last changed</span></div>
+<sc-for list="{{ limits }}" as="r" hint-placeholder-count="6">
+<div style="display: grid; grid-template-columns: 1.6fr 1.4fr 150px 150px 1fr; gap: 12px; padding: 9px 0; border-bottom: 1px solid #F0F2F4; align-items: center">
+<b>{{ r.l }}</b><span style="font-size: 13px; color: #5B6775">{{ r.basis }}</span>
+<span style="text-align: center; font-family: Arial, Helvetica, sans-serif; color: #5B6775">{{ r.def }}</span>
+<span style="display: grid; grid-template-columns: 34px 1fr 34px; gap: 4px; align-items: center"><button type="button" onClick="{{ r.dn }}" aria-label="less" style="height: 32px; border-radius: 8px; border: 1px solid #D3D9E0; background: #FFFFFF; cursor: pointer">−</button><span style="text-align: center; font-family: Arial, Helvetica, sans-serif; font-weight: 700; color: {{ r.c }}">{{ r.v }}</span><button type="button" onClick="{{ r.up }}" aria-label="more" style="height: 32px; border-radius: 8px; border: 1px solid #D3D9E0; background: #FFFFFF; cursor: pointer">+</button></span>
+<span style="font-size: 12px; color: #5B6775">{{ r.when }}</span>
+</div>
+</sc-for>
+<div style="display: grid; grid-template-columns: 1.6fr 1.4fr 150px 150px 1fr; gap: 12px; padding: 9px 0; align-items: center"><b>Motor ceiling</b><span style="font-size: 13px; color: #5B6775">motor insulation class</span><span style="text-align: center; color: #5B6775">class B · 266 °F</span><span style="display: flex; gap: 4px; justify-content: center"><sc-for list="{{ classes }}" as="c" hint-placeholder-count="3"><button type="button" onClick="{{ c.pick }}" style="padding: 5px 10px; border-radius: 8px; border: 1px solid {{ c.bd }}; background: {{ c.bg }}; color: {{ c.fg }}; font-weight: 600; cursor: pointer">{{ c.l }}</button></sc-for></span><span style="font-size: 12px; color: #5B6775">{{ ceilText }}</span></div>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px">
+<div style="background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 14px; padding: 14px 16px; font-size: 13px"><b>"The well's normal"</b> is its average over the last 12 readings, restarted when Hz changes by more than 1. Two readings in a row past a limit before anything flags.</div>
+<div style="background: #FFF4EC; border: 1px solid #F0C9AE; border-radius: 14px; padding: 14px 16px; font-size: 13px"><b>What the foreman sees:</b> "Customer limit — amps 18 % under normal (yours: 15 %)". Your limits never stop a hand from recording or change a number. Bad-reading checks stay NFC's.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ s4 }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: baseline; gap: 12px"><span style="font-family: 'Saira Semi Condensed', Impact, sans-serif; font-weight: 700; font-size: 24px">4 · What shows on my desk</span><span style="color: #5B6775">hide what you don't read, put first what you open first</span></div>
+<div style="display: grid; grid-template-columns: 520px 1fr; gap: 18px; flex: 1; min-height: 0">
+<div style="background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 14px; padding: 8px 14px; display: flex; flex-direction: column">
+<sc-for list="{{ panels }}" as="p" hint-placeholder-count="8">
+<div style="display: grid; grid-template-columns: 1fr 36px 36px 70px; gap: 6px; align-items: center; padding: 8px 0; border-bottom: 1px solid #F0F2F4; opacity: {{ p.op }}">
+<span><b>{{ p.l }}</b><br><span style="font-size: 12px; color: #5B6775">{{ p.d }}</span></span>
+<button type="button" onClick="{{ p.upF }}" aria-label="move up" style="height: 32px; border-radius: 8px; border: 1px solid #D3D9E0; background: #FFFFFF; cursor: pointer">▲</button>
+<button type="button" onClick="{{ p.dnF }}" aria-label="move down" style="height: 32px; border-radius: 8px; border: 1px solid #D3D9E0; background: #FFFFFF; cursor: pointer">▼</button>
+<button type="button" onClick="{{ p.tog }}" style="height: 32px; border-radius: 999px; border: 1px solid {{ p.tbd }}; background: {{ p.tbg }}; color: {{ p.tfg }}; font-size: 12px; font-weight: 600; cursor: pointer">{{ p.tl }}</button>
+</div>
+</sc-for>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 8px">
+<b>Your desk, top to bottom</b>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+<sc-for list="{{ preview }}" as="p" hint-placeholder-count="6"><div style="grid-column: {{ p.span }}; height: {{ p.h }}; border-radius: 10px; background: #EEF0F2; border: 1px solid #D3D9E0; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #4A6378; font-weight: 600">{{ p.l }}</div></sc-for>
+</div>
+<span style="font-size: 12px; color: #5B6775">"Can I trust these numbers?" can't be hidden — it's how you know the rest is real.</span>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ s5 }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: baseline; gap: 12px"><span style="font-family: 'Saira Semi Condensed', Impact, sans-serif; font-weight: 700; font-size: 24px">5 · Who sees what</span><span style="color: #5B6775">your forecast and targets are yours</span></div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px">
+<div style="background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<b>Your forecast line</b>
+<sc-for list="{{ vis }}" as="v" hint-placeholder-count="2"><button type="button" onClick="{{ v.pick }}" style="text-align: left; font-family: 'IBM Plex Sans', Arial, sans-serif; padding: 12px; border-radius: 10px; border: 1px solid {{ v.bd }}; background: {{ v.bg }}; color: #1B2026; cursor: pointer"><b>{{ v.l }}</b><br><span style="font-size: 12px; color: #5B6775">{{ v.d }}</span></button></sc-for>
+<b style="margin-top: 6px">People at [Customer] on this pad</b>
+<div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{ people }}" as="p" hint-placeholder-count="3"><span style="padding: 5px 10px; border-radius: 999px; background: #EEF0F2; font-size: 13px">{{ p.e }} · <b>{{ p.r }}</b></span></sc-for><span style="padding: 5px 10px; border-radius: 999px; border: 1px dashed #B8C2CC; font-size: 13px; color: #5B6775">+ add by email</span></div>
+<span style="font-size: 12px; color: #5B6775">Can set up = changes this page. Can view = sees your desk only.</span>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #D3D9E0; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 8px">
+<b>Change log</b>
+<sc-for list="{{ log }}" as="c" hint-placeholder-count="5"><div style="display: grid; grid-template-columns: 110px 1fr; gap: 10px; font-size: 13px; padding: 4px 0; border-bottom: 1px solid #F0F2F4"><span style="font-family: Arial, Helvetica, sans-serif; color: #5B6775">{{ c.t }}</span><span><b>{{ c.who }}</b> {{ c.x }}</span></div></sc-for>
+<span style="font-size: 12px; color: #5B6775">NFC sees this log — so a hand knows why a flag changed.</span>
+</div>
+</div>
+</sc-if>
+
+<div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center">
+<button type="button" onClick="{{ back }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; padding: 10px 18px; border-radius: 10px; border: 1px solid #D3D9E0; background: #FFFFFF; cursor: pointer; visibility: {{ backVis }}">← Back</button>
+<button type="button" onClick="{{ next }}" style="font-family: 'IBM Plex Sans', Arial, sans-serif; padding: 10px 22px; border-radius: 10px; border: none; background: #E2662B; color: #FFFFFF; font-weight: 600; cursor: pointer">{{ nextLabel }}</button>
+</div>
+
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1600,"height":900}}'>
+var WELLS = ['[Well 1]', '[Well 2]', '[Well 3]'], WCOL = ['#0B72A8', '#B8572A', '#7A4FA0'];
+var DAYS_ON = [11, 10, 8], PEAK = [330, 300, 250];
+var STEPS = [['Forecast', 'what each well should make'], ['Targets', 'load back, flare, oil cut'], ['Alarm limits', 'what counts as a problem'], ['What shows', 'your desk, your order'], ['Who sees what', 'people and the change log']];
+var PANELS = [['Totals so far', 'oil, gas, water to date, uptime'], ['Oil by well vs forecast', 'lined up on days since opened'], ['Well scorecard', 'last 24 h per well'], ['What changed this week', 'chokes, Hz, downtime, ESP'], ['Load water back', 'vs your plan'], ['Oil cut', 'by day'], ['Gas–oil ratio', 'by day'], ['Gas sold vs flared', 'by day, vs your limit']];
+function act(w, d) { var v = PEAK[w] * (1 - Math.exp(-d / 2.2)) * Math.exp(-0.018 * d) + Math.sin(d * 1.7 + w) * 8; if (w === 1 && d >= 9) v -= (d - 8) * 14; return v; }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    this.state = { step: 0, well: 0, method: ['peak', 'peak', 'none'], fc: [[320, 5, 6], [310, 5, 6], [260, 5, 6]],
+      load: 50, flare: 10, cut: 30, lim: [15, 15, 10, 15, 85, 50], cls: 'F', order: [0, 1, 2, 3, 4, 5, 6, 7], hide: { 6: true }, vis: 'mine' };
+  }
+  mut(f) { var n = JSON.parse(JSON.stringify(this.state)); f(n); this.setState(n); }
+  renderVals() {
+    var self = this, s = this.state, go = function (o) { return function () { self.setState(o); }; }, m = function (f) { return function () { self.mut(f); }; };
+    var sel = function (on) { return on ? { bg: '#2F3842', fg: '#FFFFFF', bd: '#2F3842' } : { bg: '#FFFFFF', fg: '#1B2026', bd: '#D3D9E0' }; };
+    var w = s.well, f = s.fc[w], meth = s.method[w];
+    var fcV = function (d) { var up = Math.min(1, d / f[1]); return f[0] * up * Math.pow(1 - f[2] / 100, Math.max(0, d - f[1]) / 30 * 1); };
+    var X = function (d) { return ((d - 1) * 800 / 59).toFixed(1); }, Y = function (v) { return (300 - 296 * clamp(v, 0, 400) / 400).toFixed(1); };
+    var fcPts = [], actPts = [];
+    for (var d = 1; d <= 60; d++) fcPts.push(X(d) + ',' + Y(fcV(d)));
+    for (var d2 = 1; d2 <= DAYS_ON[w]; d2++) actPts.push(X(d2) + ',' + Y(act(w, d2)));
+    var gap = Math.round((act(w, DAYS_ON[w]) / fcV(DAYS_ON[w]) - 1) * 100);
+    var knob = function (i, l, step, lo, hi, unit) { return { l: l, v: f[i] + unit, dn: m(function (n) { n.fc[w][i] = clamp(n.fc[w][i] - step, lo, hi); }), up: m(function (n) { n.fc[w][i] = clamp(n.fc[w][i] + step, lo, hi); }) }; };
+    var tgt = function (k, l, d, step, lo, hi, unit, now) { return { l: l, d: d, v: s[k] + unit, now: now, dn: m(function (n) { n[k] = clamp(n[k] - step, lo, hi); }), up: m(function (n) { n[k] = clamp(n[k] + step, lo, hi); }) }; };
+    var DEF = [15, 15, 10, 15, 85, 50];
+    var LIM = [['Amps fall', 'the well’s normal', '% under'], ['Amps climb', 'the well’s normal', '% over'], ['Motor temp warning', 'the well’s normal', ' °F over'], ['Motor temp alarm', 'the well’s normal', ' °F over'], ['Intake pressure low', 'the well’s normal', '% of'], ['Intake falling fast', 'per hour, two readings', ' psi/h']];
+    var limits = LIM.map(function (r, i) {
+      var st = i === 4 ? 5 : i === 5 ? 10 : 1;
+      return { l: r[0], basis: r[1], def: DEF[i] + r[2], v: s.lim[i] + r[2], c: s.lim[i] !== DEF[i] ? '#B04A17' : '#1B2026', when: s.lim[i] !== DEF[i] ? 'you, just now' : 'NFC default',
+        dn: m(function (n) { n.lim[i] = Math.max(1, n.lim[i] - st); }), up: m(function (n) { n.lim[i] = n.lim[i] + st; }) };
+    });
+    var CEIL = { B: 266, F: 311, H: 356 };
+    var order = s.order;
+    var panels = order.map(function (pi, pos) {
+      var hidden = !!s.hide[pi];
+      return { l: PANELS[pi][0], d: PANELS[pi][1], op: hidden ? 0.5 : 1, tl: hidden ? 'Hidden' : 'Shown',
+        tbg: hidden ? '#FFFFFF' : '#E3EFE7', tfg: hidden ? '#5B6775' : '#24603C', tbd: hidden ? '#D3D9E0' : '#B9D6C3',
+        tog: m(function (n) { n.hide[pi] = !n.hide[pi]; }),
+        upF: m(function (n) { if (pos > 0) { var t = n.order[pos - 1]; n.order[pos - 1] = n.order[pos]; n.order[pos] = t; } }),
+        dnF: m(function (n) { if (pos < n.order.length - 1) { var t = n.order[pos + 1]; n.order[pos + 1] = n.order[pos]; n.order[pos] = t; } }) };
+    });
+    var shown = order.filter(function (pi) { return !s.hide[pi]; });
+    var preview = shown.map(function (pi) { var big = pi === 1 || pi === 2; return { l: PANELS[pi][0], span: big || pi === 0 ? 'span 2' : 'span 1', h: pi === 0 ? '36px' : big ? '64px' : '46px' }; });
+    preview.push({ l: 'Can I trust these numbers?', span: 'span 2', h: '36px' });
+    return {
+      steps: STEPS.map(function (st, i) { var on = i === s.step; return { n: i + 1, l: st[0], d: st[1], bg: on ? '#EEF0F2' : 'transparent', dotBg: on ? '#E2662B' : i < s.step ? '#4A6378' : '#E6EAEE', dotFg: on || i < s.step ? '#FFFFFF' : '#5B6775', pick: go({ step: i }) }; }),
+      s1: s.step === 0, s2: s.step === 1, s3: s.step === 2, s4: s.step === 3, s5: s.step === 4,
+      wellTabs: WELLS.map(function (n, i) { var c = sel(i === w); return { name: n, bg: c.bg, fg: c.fg, bd: c.bd, pick: go({ well: i }) }; }),
+      methods: [['peak', 'Peak and decline', 'three numbers — fastest'], ['upload', 'Upload a table', 'from your forecasting software'], ['none', 'No forecast for this well', 'compare it with the others instead']].map(function (x) { var on = x[0] === meth; return { l: x[1], d: x[2], bg: on ? '#FFF4EC' : '#FFFFFF', bd: on ? '#E2662B' : '#D3D9E0', pick: m(function (n) { n.method[w] = x[0]; }) }; }),
+      mPeak: meth === 'peak', mUpload: meth === 'upload', mNone: meth === 'none', showFc: meth === 'peak',
+      knobs: [knob(0, 'Peak oil, bopd', 10, 50, 600, ''), knob(1, 'Days to peak', 1, 1, 20, ''), knob(2, 'Decline per month', 1, 1, 40, ' %')],
+      wellName: WELLS[w], wellColor: WCOL[w], fcPts: fcPts.join(' '), actPts: actPts.join(' '),
+      fcRead: meth === 'peak' ? 'Day ' + DAYS_ON[w] + ': actual ' + Math.round(act(w, DAYS_ON[w])) + ' bopd vs forecast ' + Math.round(fcV(DAYS_ON[w])) + ' — ' + (gap >= 0 ? '+' : '') + gap + ' %.' : meth === 'upload' ? 'Waiting for your table.' : 'No forecast — compared with the pad average on your desk.',
+      targets: [tgt('load', 'Load water back by day 30', 'percent of the water pumped in', 5, 5, 100, ' %', 'Now: 41 % at day 11'), tgt('flare', 'Flare limit', 'share of gas flared, any one day', 1, 0, 50, ' %', 'Now: 13 % today'), tgt('cut', 'Expected oil cut at day 30', 'oil ÷ total liquid', 1, 1, 90, ' %', 'Now: 26 % at day 11')],
+      limits: limits,
+      classes: ['B', 'F', 'H'].map(function (c) { var x = sel(c === s.cls); return { l: c, bg: x.bg, fg: x.fg, bd: x.bd, pick: go({ cls: c }) }; }),
+      ceilText: 'yours: class ' + s.cls + ' · ' + CEIL[s.cls] + ' °F',
+      panels: panels, preview: preview,
+      vis: [['mine', 'Only [Customer]', 'NFC never sees your forecast; their desk shows actuals only'], ['crew', '[Customer] and NFC crew on this pad', 'the foreman sees the dashed line too']].map(function (v) { var on = v[0] === s.vis; return { l: v[1], d: v[2], bg: on ? '#FFF4EC' : '#FFFFFF', bd: on ? '#E2662B' : '#D3D9E0', pick: go({ vis: v[0] }) }; }),
+      people: [{ e: 'engineer@customer', r: 'can set up' }, { e: 'foreman@customer', r: 'can view' }, { e: 'asset.mgr@customer', r: 'can view' }],
+      log: [{ t: '22 Nov 16:10', who: 'Engineer', x: 'intake low limit 85 % → 80 %' }, { t: '20 Nov 09:02', who: 'Engineer', x: 'loaded forecast for ' + WELLS[0] + ', ' + WELLS[1] }, { t: '13 Nov 07:45', who: 'Engineer', x: 'flare limit set to 10 %' }, { t: '12 Nov 18:30', who: 'NFC admin', x: 'invited engineer@customer as can set up' }],
+      back: go({ step: Math.max(0, s.step - 1) }), backVis: s.step === 0 ? 'hidden' : 'visible',
+      next: go({ step: Math.min(4, s.step + 1) }), nextLabel: s.step === 4 ? 'Done — open my desk' : 'Next →'
+    };
+  }
+}
+</script>
+</body>
+</html>
