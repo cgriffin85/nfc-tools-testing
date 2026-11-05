@@ -277,10 +277,24 @@ function makeBg(){var c=document.createElement("canvas");c.width=cv.width;c.heig
   var lg=g.createLinearGradient(0,0,W*0.4,H);lg.addColorStop(0,"#B39D78");lg.addColorStop(.55,"#9C8562");lg.addColorStop(1,"#8A7454");g.fillStyle=lg;g.fillRect(0,0,W,H);
   [[.72,.18,70,"201,180,143"],[.9,.8,80,"125,106,76"],[.58,.88,66,"188,167,127"],[.2,.1,70,"143,122,87"],[.15,.92,70,"178,156,118"],[.82,.45,60,"170,148,110"]].forEach(function(b){
     var rg=g.createRadialGradient(W*b[0],H*b[1],0,W*b[0],H*b[1],b[2]);rg.addColorStop(0,"rgba("+b[3]+",0.9)");rg.addColorStop(1,"rgba("+b[3]+",0)");g.fillStyle=rg;g.fillRect(0,0,W,H)});
-  var x0=edgeX(),pt=Math.round(H*0.16),ph=Math.round(H*0.68);
-  g.save();g.shadowColor="rgba(0,0,0,0.38)";g.shadowBlur=14;g.shadowOffsetX=8;g.fillStyle="#7E868F";g.fillRect(0,pt,x0,ph);g.restore();
-  var pg=g.createLinearGradient(0,pt,0,pt+ph);[[0,"#4A5159"],[.14,"#7E868F"],[.34,"#BCC3CA"],[.46,"#E1E5E8"],[.58,"#C4CAD0"],[.8,"#8C949C"],[1,"#545B63"]].forEach(function(s){pg.addColorStop(s[0],s[1])});
-  g.fillStyle=pg;g.fillRect(0,pt,x0,ph);g.fillStyle="#2A2F35";g.fillRect(x0-3,pt,3,ph);
+  /* the joint, end-on to the reader: rusty low-carbon tube on the left, its collar at the end. The collar's end is the
+     read point. A 2-7/8" EUE collar is about 4-7/8" long, longer than half this window, so it is drawn shorter than true
+     scale to show it is a collar; its OD is drawn true to the tube (about 3.67" over 2.875"). */
+  var x0=edgeX(),cy=H/2,th=Math.round(H*0.52),ch=Math.round(th*3.668/2.875),cl=Math.round(Math.min(120,x0*0.62)),cx=x0-cl;
+  function rust(y0,h,stops){var gr=g.createLinearGradient(0,y0,0,y0+h);stops.forEach(function(s){gr.addColorStop(s[0],s[1])});return gr}
+  var TUBE=[[0,"#2E241E"],[.12,"#5A3D2B"],[.32,"#8C5B3A"],[.46,"#A9714A"],[.6,"#91603E"],[.82,"#5E412E"],[1,"#2B211B"]];
+  var COLL=[[0,"#272220"],[.1,"#4A3A30"],[.3,"#7A5640"],[.45,"#946A4C"],[.6,"#7E5A42"],[.84,"#4C3B30"],[1,"#24201E"]];
+  g.save();g.shadowColor="rgba(0,0,0,0.4)";g.shadowBlur=14;g.shadowOffsetX=8;g.fillStyle="#4A3A30";g.fillRect(cx,cy-ch/2,cl,ch);g.restore();
+  g.fillStyle=rust(cy-th/2,th,TUBE);g.fillRect(0,cy-th/2,cx,th);
+  g.fillStyle=rust(cy-ch/2,ch,COLL);g.fillRect(cx,cy-ch/2,cl,ch);
+  /* rust speckle, the same every time */
+  var seed=7;function rnd(){seed=(seed*16807)%2147483647;return seed/2147483647}
+  for(var i=0;i<260;i++){var px=rnd()*x0,py=cy-ch/2+rnd()*ch,inC=px>=cx,half=(inC?ch:th)/2;if(Math.abs(py-cy)>half-1)continue;
+    g.fillStyle=rnd()<0.6?"rgba(176,96,48,"+(0.25+rnd()*0.35)+")":"rgba(40,28,22,"+(0.2+rnd()*0.3)+")";g.fillRect(px,py,1+rnd()*2.5,1+rnd()*2)}
+  /* shoulder where the tube goes into the collar, and the chamfer at the collar's end */
+  g.fillStyle="rgba(20,14,10,0.55)";g.fillRect(cx,cy-ch/2,2,ch);
+  g.fillStyle="rgba(255,226,196,0.18)";g.fillRect(x0-7,cy-ch/2+3,4,ch-6);
+  g.fillStyle="#1C1612";g.fillRect(x0-3,cy-ch/2,3,ch);
   bg=c}
 function drawTape(){if(!W)return;if(!bg)makeBg();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);ctx.drawImage(bg,0,0);ctx.setTransform(DPR,0,0,DPR,0,0);
   var x0=edgeX(),th=56,ty=Math.round(H/2-th/2),V=curF;
